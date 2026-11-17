@@ -1,4 +1,4 @@
--- Week 2: rent charges.
+-- Phase 2: rent charges.
 --
 -- One row per tenant per rent period. Rent is due at the START of each period (paid in advance).
 -- Periods are always computed from the tenancy start date (period n = start + n × months), never

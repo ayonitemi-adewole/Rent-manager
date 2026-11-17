@@ -9,11 +9,11 @@ Starting point: Vite 8 + React 19 + TypeScript scaffold, nothing else yet.
 
 ## Guiding principles
 
-1. **The interviews gate the build.** Phase 0 setup work is safe to do in parallel, but don't go past Week 2 until you hit the bar: at least 8 of 20 landlords with strong pain and 3 committed pilots.
+1. **The interviews gate the build.** Phase 0 setup work is safe to do in parallel, but don't go past Phase 2 until you hit the bar: at least 8 of 20 landlords with strong pain and 3 committed pilots.
 2. **Money is never ours.** Funds settle straight to the landlord's bank account through a Flutterwave subaccount. We never hold a balance.
 3. **The ledger is the product.** Every naira is stored as integer kobo. Charges and payments are append-friendly, and nothing is silently overwritten.
 4. **Mobile-first, low-bandwidth.** Assume a mid-range Android phone on 3G. Pages stay small and forms stay short.
-5. **Ship to pilots weekly.** Each week ends with something a pilot landlord could see, even if you're the one driving it.
+5. **Ship to pilots every phase.** Each phase ends with something a pilot landlord could see, even if you're the one driving it.
 
 ---
 
@@ -25,7 +25,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 | --- | --- |
 | Create a **Flutterwave business account** and submit KYC (CAC docs or a starter-business route) | Going live and creating subaccounts needs approval. This can take 1–3 weeks. |
 | Create a **Termii account** and register a **sender ID** (e.g. `RentMgr`) | Sender ID approval takes days. Without it, messages to DND numbers fail. |
-| Create the **Supabase project** (choose the region closest to Nigeria, e.g. `eu-west`) and the **Vercel project** | Free, instant, and unblocks Week 1. |
+| Create the **Supabase project** (choose the region closest to Nigeria, e.g. `eu-west`) and the **Vercel project** | Free, instant, and unblocks Phase 1. |
 | Buy a domain (e.g. `rentmanager.ng` or `.com.ng`) | SMS links look more trustworthy with a short, branded domain. |
 | Keep the **manual pilot** running: one Google Sheet plus WhatsApp reminders sent by hand | Real data and real objections to design against. |
 
@@ -38,16 +38,16 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] Add Vitest for unit tests (charge and date maths especially)
 - [x] Replace the Vite template README with a project README
 
-**Done when:** the interview scorecard has 20 entries and the go/no-go decision is written down. If interviews show **caretakers** are the main collectors, or that **monthly savings** matters more than reminders, revise this roadmap before Week 1.
+**Done when:** the interview scorecard has 20 entries and the go/no-go decision is written down. If interviews show **caretakers** are the main collectors, or that **monthly savings** matters more than reminders, revise this roadmap before Phase 1.
 
 ---
 
-## Phase 1 — Foundation (Week 1): auth, schema, properties, units, tenants
+## Phase 1 — Foundation (~1 week): auth, schema, properties, units, tenants
 
 **Goal:** a landlord can sign in with their phone and enter their whole portfolio.
 
 ### Database (first migration)
-- [x] Create the portfolio tables (landlords, properties, units, tenants) with enums, foreign keys and indexes. Charges and payments tables come with their weeks
+- [x] Create the portfolio tables (landlords, properties, units, tenants) with enums, foreign keys and indexes. Charges and payments tables come in their own phases
 - [x] Turn on **RLS on every table**. Policies chain ownership back to `landlords.id = auth.uid()`
 - [x] TypeScript types: hand-written in generated format for now; `npm run db:types` replaces them once the CLI is linked
 
@@ -56,7 +56,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] **Send SMS Auth Hook**, demo version: a Postgres hook stores OTPs in `dev_sms_outbox`
 - [ ] Before the pilot: swap the hook for an edge function (`auth-sms-hook`) that delivers OTPs through Termii
 - [x] Normalise phone numbers to E.164 (`+234…`). Accept `080…`, `234…` and `+234…` input
-- [x] First login → onboarding: name (bank details come in Week 3)
+- [x] First login → onboarding: name (bank details come in Phase 3)
 
 ### Screens
 - [x] App shell: bottom nav (Dashboard · Properties · Tenants · Settings)
@@ -69,7 +69,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ---
 
-## Phase 2 — Charges engine & dashboard (Week 2)
+## Phase 2 — Charges engine & dashboard (~1 week)
 
 **Goal:** the app knows what each tenant owes and when, and the landlord can see it at a glance.
 
@@ -84,7 +84,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] SQL tests for yearly, 6-monthly and monthly periods, leap years, month-end starts, paid-up-to and move-out (`supabase/tests/chargeable_periods.sql`)
 
 ### Dashboard
-- [x] Summary cards: overdue and due in 30 days (amount + tenant count). "Collected this month" comes with payments (Week 3–4)
+- [x] Summary cards: overdue and due in 30 days (amount + tenant count). "Collected this month" comes with payments (Phases 3–4)
 - [x] Lists: **Overdue** → **Due in 30 days** (→ **Paid recently** with payments), each row showing tenant, unit, amount and days late or left
 - [x] Tap a row → tenant detail with their charges
 - [x] Queries go through the `charge_overview` view (security_invoker, so RLS applies)
@@ -93,7 +93,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ---
 
-## Phase 3 — Payments (Week 3)
+## Phase 3 — Payments (~1 week)
 
 **Goal:** a tenant pays online and the charge flips to paid automatically, with money landing in the landlord's account.
 
@@ -123,7 +123,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ---
 
-## Phase 4 — Reminders & manual payments (Week 4)
+## Phase 4 — Reminders & manual payments (~1 week)
 
 **Goal:** tenants get nudged automatically, and cash payments are recorded too.
 
@@ -145,7 +145,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ---
 
-## Phase 5 — Receipts, tenant page, history (Week 5)
+## Phase 5 — Receipts, tenant page, history (~1 week)
 
 **Goal:** tenants get proof of payment, and landlords get a full ledger.
 
@@ -170,7 +170,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ---
 
-## Phase 6 — Pilot launch & hardening (Week 6)
+## Phase 6 — Pilot launch & hardening (~1 week)
 
 - [ ] Switch Flutterwave and Termii to **live** keys and do one real ₦100 payment end-to-end
 - [ ] Error monitoring (Sentry free tier) on the frontend and edge functions
@@ -194,7 +194,7 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 | Caretakers do most collecting | Caretaker accounts with role-based RLS (view and record payments, no payout changes) |
 | Tenants struggle with lump sums | Rent savings (only with a licensed partner; we still don't hold money) |
 | Landlords ask "can it also do…" | Service charge, electricity and water as extra charge types (the schema handles this via `charge_type`) |
-| Older landlords struggle | Yoruba and Pidgin UI (set up `i18n` keys from Week 1 to make this cheap), voice-note help |
+| Older landlords struggle | Yoruba and Pidgin UI (set up `i18n` keys from Phase 1 to make this cheap), voice-note help |
 | Low SMS open rates | WhatsApp Business API reminders |
 | Paperwork pain | Tenancy agreement and quit notice templates (PDF) |
 | Ready to charge | Pricing: a platform fee via the Flutterwave split, or a flat monthly subscription |

@@ -1,4 +1,4 @@
--- Week 1: landlords, properties, units, tenants.
+-- Phase 1: landlords, properties, units, tenants.
 -- Ownership chain: auth.users → landlords → properties → units → tenants.
 -- Every table has RLS; a landlord can only ever see or change their own rows.
 
@@ -145,5 +145,5 @@ create policy "tenants: owner full access" on public.tenants
     where u.id = tenants.unit_id and p.landlord_id = (select auth.uid())
   ));
 
--- Anonymous visitors get nothing; tenant pages will use a token-checked RPC (Week 5).
+-- Anonymous visitors get nothing; tenant pages will use a token-checked RPC (Phase 5).
 revoke all on public.landlords, public.properties, public.units, public.tenants from anon;
