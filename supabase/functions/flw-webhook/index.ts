@@ -9,14 +9,35 @@ import { requireEnv } from '../_shared/http.ts'
 import { settleTransaction } from '../_shared/settle.ts'
 import { adminClient } from '../_shared/supabase.ts'
 
-type WebhookBody = { event?: string; data?: { id?: number; tx_ref?: string } }
+// Flutterwave sends one of two shapes, depending on the dashboard's "v3 webhooks" setting:
+//   v3:     { event: 'charge.completed', data: { id, tx_ref, status, ... } }
+//   legacy: { id, txRef, status, ... }   (no event field)
+// Either way we only take the transaction id from it and re-verify with Flutterwave.
+type WebhookBody = {
+  event?: string
+  data?: { id?: number; tx_ref?: string }
+  id?: number
+  txRef?: string
+}
+
+function transactionIdOf(body: WebhookBody): number | null {
+  if (body.event) {
+    return body.event === 'charge.completed' && typeof body.data?.id === 'number' ? body.data.id : null
+  }
+  return typeof body.id === 'number' && typeof body.txRef === 'string' ? body.id : null
+}
+
+/** The stored secret, ignoring surrounding whitespace or quotes left by copy-paste. */
+function expectedHash(): string {
+  return requireEnv('FLW_WEBHOOK_HASH').trim().replace(/^(['"])(.*)\1$/, '$2')
+}
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
 
   const admin = adminClient()
   const signature = req.headers.get('verif-hash') ?? ''
-  if (!timingSafeEqual(signature, requireEnv('FLW_WEBHOOK_HASH'))) {
+  if (!timingSafeEqual(signature.trim(), expectedHash())) {
     // Log rejected calls (never processed) so a hash mismatch is visible, not silent.
     // Only a small, capped payload is kept since anyone can call this URL.
     const raw = (await req.text().catch(() => '')).slice(0, 2000)
@@ -41,8 +62,8 @@ Deno.serve(async (req) => {
     .from('webhook_events')
     .insert({
       provider: 'flutterwave',
-      event_type: body.event ?? null,
-      external_id: body.data?.id != null ? String(body.data.id) : null,
+      event_type: body.event ?? 'legacy',
+      external_id: transactionIdOf(body)?.toString() ?? null,
       payload: body,
     })
     .select('id')
@@ -54,8 +75,9 @@ Deno.serve(async (req) => {
 
   try {
     let outcome = 'ignored'
-    if (body.event === 'charge.completed' && typeof body.data?.id === 'number') {
-      const tx = await verifyTransaction(body.data.id)
+    const transactionId = transactionIdOf(body)
+    if (transactionId !== null) {
+      const tx = await verifyTransaction(transactionId)
       outcome = (await settleTransaction(admin, tx)).outcome
     }
     await admin
