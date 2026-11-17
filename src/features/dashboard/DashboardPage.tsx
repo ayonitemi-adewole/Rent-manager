@@ -1,4 +1,5 @@
-import { AlertTriangle, CalendarClock, PartyPopper, Plus, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CalendarClock, Landmark, PartyPopper, Plus, type LucideIcon } from 'lucide-react'
+import { useLandlord } from '@/features/landlord/api'
 import { Link } from 'react-router'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
@@ -15,6 +16,7 @@ import { cn } from '@/lib/utils'
 export function DashboardPage() {
   const charges = useOpenCharges()
   const tenants = useTenants('active')
+  const { data: landlord } = useLandlord()
 
   const isPending = charges.isPending || tenants.isPending
   const error = charges.error ?? tenants.error
@@ -49,6 +51,19 @@ export function DashboardPage() {
 
       {ready && !noTenants && (
         <div className="space-y-6">
+          {landlord && !landlord.flw_subaccount_id && (
+            <Card className="border-primary/30 bg-secondary py-4">
+              <CardContent className="flex items-center gap-3 px-4">
+                <Landmark className="text-primary size-6 shrink-0" />
+                <p className="flex-1 text-sm">
+                  <span className="font-semibold">Get paid online.</span> Add the bank account rent should go to.
+                </p>
+                <Button asChild size="sm">
+                  <Link to="/settings/payout">Set up</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <StatCard icon={AlertTriangle} label="Overdue" bucket={overdue} tone="text-destructive" />
             <StatCard icon={CalendarClock} label="Due in 30 days" bucket={dueSoon} tone="text-warning" />

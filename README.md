@@ -31,6 +31,24 @@ Demo mode uses a **free hosted Supabase project** and **Flutterwave test keys**.
 
 > `dev_sms_outbox` and its hook are **demo only**. Before the pilot, switch the Send SMS hook to the Termii edge function (Roadmap, Phase 1).
 
+## Online payments (Flutterwave test mode)
+
+1. In the Flutterwave dashboard, switch to **Test mode**. Copy your **secret key** from Settings → API keys.
+2. Under Settings → Webhooks:
+   - **URL:** `https://<project-ref>.supabase.co/functions/v1/flw-webhook`
+   - **Secret hash:** any long random string you make up.
+3. Give the edge functions their secrets. They live in Supabase, never in `.env.local`:
+   ```sh
+   npx supabase secrets set FLW_SECRET_KEY=FLWSECK_TEST-... FLW_WEBHOOK_HASH=<your-secret-hash> APP_URL=http://localhost:5173
+   ```
+   `APP_URL` is where Flutterwave sends tenants back after paying. Change it to the Vercel URL when you deploy.
+4. In the app: go to **Settings → Payout account**, choose a bank and enter an account number.
+   > In test mode, Flutterwave's account lookup may only work for its test accounts, e.g. Access Bank (044) `0690000031`.
+5. Open a tenant, copy their payment link, open it, and tap **Pay**. Use a Flutterwave [test card](https://developer.flutterwave.com/docs/test-cards).
+6. Back in the app, the tenant's charge shows **Paid**.
+
+Edge functions are in `supabase/functions/`. Deploy them with `npm run functions:deploy` (no Docker needed). Test them with `npm run test:functions` (uses `npx deno`).
+
 ## Scripts
 
 | Command | What it does |

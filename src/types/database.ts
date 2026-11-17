@@ -62,27 +62,159 @@ export type Database = {
       }
       landlords: {
         Row: {
+          account_name: string | null
+          account_number: string | null
+          bank_code: string | null
+          bank_name: string | null
           created_at: string
+          flw_subaccount_id: string | null
+          flw_subaccount_ref: number | null
           full_name: string
           id: string
+          payout_updated_at: string | null
           phone: string
           updated_at: string
         }
         Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
           created_at?: string
+          flw_subaccount_id?: string | null
+          flw_subaccount_ref?: number | null
           full_name: string
           id?: string
+          payout_updated_at?: string | null
           phone?: string
           updated_at?: string
         }
         Update: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
           created_at?: string
+          flw_subaccount_id?: string | null
+          flw_subaccount_ref?: number | null
           full_name?: string
           id?: string
+          payout_updated_at?: string | null
           phone?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      payment_attempts: {
+        Row: {
+          amount_kobo: number
+          charge_id: string
+          created_at: string
+          failure_reason: string | null
+          flw_transaction_id: number | null
+          id: string
+          status: string
+          tx_ref: string
+          updated_at: string
+        }
+        Insert: {
+          amount_kobo: number
+          charge_id: string
+          created_at?: string
+          failure_reason?: string | null
+          flw_transaction_id?: number | null
+          id?: string
+          status?: string
+          tx_ref: string
+          updated_at?: string
+        }
+        Update: {
+          amount_kobo?: number
+          charge_id?: string
+          created_at?: string
+          failure_reason?: string | null
+          flw_transaction_id?: number | null
+          id?: string
+          status?: string
+          tx_ref?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_attempts_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "charge_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_attempts_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "rent_charges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_kobo: number
+          charge_id: string
+          created_at: string
+          flw_transaction_id: number | null
+          id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          note: string | null
+          paid_at: string
+          recorded_by: string | null
+          reference: string
+          void_reason: string | null
+          voided_at: string | null
+        }
+        Insert: {
+          amount_kobo: number
+          charge_id: string
+          created_at?: string
+          flw_transaction_id?: number | null
+          id?: string
+          method: Database["public"]["Enums"]["payment_method"]
+          note?: string | null
+          paid_at?: string
+          recorded_by?: string | null
+          reference: string
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Update: {
+          amount_kobo?: number
+          charge_id?: string
+          created_at?: string
+          flw_transaction_id?: number | null
+          id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          note?: string | null
+          paid_at?: string
+          recorded_by?: string | null
+          reference?: string
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "charge_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "rent_charges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       properties: {
         Row: {
@@ -223,6 +355,13 @@ export type Database = {
             foreignKeyName: "tenants_unit_id_fkey"
             columns: ["unit_id"]
             isOneToOne: false
+            referencedRelation: "charge_overview"
+            referencedColumns: ["unit_id"]
+          },
+          {
+            foreignKeyName: "tenants_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
             referencedRelation: "units"
             referencedColumns: ["id"]
           },
@@ -264,10 +403,50 @@ export type Database = {
             foreignKeyName: "units_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
+            referencedRelation: "charge_overview"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "units_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_events: {
+        Row: {
+          error: string | null
+          event_type: string | null
+          external_id: string | null
+          id: string
+          payload: Json
+          processed_at: string | null
+          provider: string
+          received_at: string
+        }
+        Insert: {
+          error?: string | null
+          event_type?: string | null
+          external_id?: string | null
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          provider: string
+          received_at?: string
+        }
+        Update: {
+          error?: string | null
+          event_type?: string | null
+          external_id?: string | null
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          provider?: string
+          received_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -318,15 +497,35 @@ export type Database = {
         }[]
       }
       dev_send_sms_hook: { Args: { event: Json }; Returns: Json }
+      generate_all_charges: { Args: never; Returns: number }
+      generate_tenant_charges: {
+        Args: { p_tenant_id: string }
+        Returns: number
+      }
       random_token: { Args: never; Returns: string }
+      record_payment: {
+        Args: {
+          p_amount_kobo: number
+          p_charge_id: string
+          p_flw_transaction_id?: number
+          p_method: Database["public"]["Enums"]["payment_method"]
+          p_note?: string
+          p_paid_at?: string
+          p_recorded_by?: string
+          p_reference: string
+        }
+        Returns: string
+      }
       rent_period_months: {
         Args: { p: Database["public"]["Enums"]["rent_period"] }
         Returns: number
       }
+      tenant_portal: { Args: { p_token: string }; Returns: Json }
       today_lagos: { Args: never; Returns: string }
     }
     Enums: {
       charge_status: "unpaid" | "partially_paid" | "paid" | "cancelled"
+      payment_method: "link" | "cash" | "transfer"
       rent_period: "monthly" | "six_monthly" | "yearly"
       tenant_status: "active" | "moved_out"
       unit_type:
@@ -468,6 +667,7 @@ export const Constants = {
   public: {
     Enums: {
       charge_status: ["unpaid", "partially_paid", "paid", "cancelled"],
+      payment_method: ["link", "cash", "transfer"],
       rent_period: ["monthly", "six_monthly", "yearly"],
       tenant_status: ["active", "moved_out"],
       unit_type: [

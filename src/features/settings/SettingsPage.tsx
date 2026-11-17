@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { Link } from 'react-router'
 import { z } from 'zod'
 import { Field, FormError } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
@@ -62,10 +63,25 @@ export function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Payout account</CardTitle>
-            <CardDescription>
-              The bank account tenants’ rent is paid into. Coming in a later update (Flutterwave).
-            </CardDescription>
+            <CardDescription>The bank account tenants’ rent is paid into.</CardDescription>
           </CardHeader>
+          <CardContent className="space-y-3">
+            {landlord?.account_number ? (
+              <div className="text-sm">
+                <p className="font-semibold">{landlord.account_name}</p>
+                <p className="text-muted-foreground">
+                  {landlord.bank_name} · ••••{landlord.account_number.slice(-4)}
+                </p>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Not set up yet. Tenants can’t pay online until you add one.
+              </p>
+            )}
+            <Button asChild variant={landlord?.account_number ? 'outline' : 'default'}>
+              <Link to="/settings/payout">{landlord?.account_number ? 'Change account' : 'Set up payout account'}</Link>
+            </Button>
+          </CardContent>
         </Card>
 
         <Button variant="outline" className="w-full" onClick={signOut}>

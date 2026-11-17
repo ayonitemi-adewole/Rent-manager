@@ -98,26 +98,28 @@ Some of these approvals take days or weeks, so **start them today**, even before
 **Goal:** a tenant pays online and the charge flips to paid automatically, with money landing in the landlord's account.
 
 ### Landlord payout setup
-- [ ] Bank picker from Flutterwave `GET /banks/NG`
-- [ ] **Resolve the account name** (`POST /accounts/resolve`) and show it back to the landlord to confirm. This catches typos before money goes astray
-- [ ] Edge function `flw-create-subaccount`: creates the subaccount and stores `flw_subaccount_id`. Secret keys live only in edge function secrets, never in the client
+- [x] Bank picker (popular banks first) from Flutterwave `GET /banks/NG`
+- [x] **Resolve the account name** (`POST /accounts/resolve`) and show it back to the landlord to confirm. This catches typos before money goes astray
+- [x] Edge function `flw-payout` (banks / resolve / save): creates or updates the subaccount and stores `flw_subaccount_id`. Payout columns are writable only by the function. Secret keys live only in edge function secrets, never in the client
 
 ### Checkout
-- [ ] Create the Flutterwave checkout **on demand** when the tenant taps Pay, rather than pre-generating static links. Amounts change (partial payments, edits), and on-demand checkout always uses the current balance
-- [ ] Edge function `flw-checkout`: takes the tenant token and charge ID, then:
+- [x] Create the Flutterwave checkout **on demand** when the tenant taps Pay, rather than pre-generating static links. Amounts change (partial payments, edits), and on-demand checkout always uses the current balance
+- [x] Edge function `flw-checkout`: takes the tenant token and charge ID, then:
   - inserts a `payment_attempts` row with a unique `tx_ref`
   - calls Flutterwave `POST /v3/payments` with the `subaccounts` split, `redirect_url` and customer phone
   - returns the hosted checkout URL
 
 ### Webhook (the part that must be bulletproof)
-- [ ] Edge function `flw-webhook`:
+- [x] Edge function `flw-webhook`:
   1. Check the `verif-hash` header against your secret hash
   2. Store the raw event in `webhook_events` (helps debugging and makes replays safe)
   3. **Re-verify** via `GET /transactions/{id}/verify`. Never trust the webhook body alone
   4. Check status `successful`, the currency `NGN` and the amount against the attempt
   5. Inside a single SQL function (`record_payment`): insert the payment (`reference` is unique, so duplicates are no-ops) and update the charge's `amount_paid_kobo` and `status`
-- [ ] The redirect page also calls verify, so the tenant sees a result even if the webhook is slow
-- [ ] Test end-to-end in Flutterwave **test mode**, including a duplicate webhook delivery and an underpayment
+- [x] The redirect page (`/t/:token/paid`) calls `flw-verify`, so the tenant sees a result even if the webhook is slow
+- [x] Unit tests for settlement: underpayment, wrong currency, failed / pending / unknown transactions, kobo conversion (`npm run test:functions`)
+- [x] Basic tenant page (`/t/:token`) with a Pay button per open charge, via the token-checked `tenant_portal` RPC (full page in Phase 5)
+- [ ] Test end-to-end in Flutterwave **test mode**, including a duplicate webhook delivery (needs your test keys)
 
 **Done when:** a test payment flips the charge to paid within seconds, and replaying the webhook changes nothing.
 

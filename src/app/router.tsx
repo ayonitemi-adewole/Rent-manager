@@ -8,6 +8,8 @@ import { PropertiesPage } from '@/features/properties/PropertiesPage'
 import { PropertyDetailPage } from '@/features/properties/PropertyDetailPage'
 import { EditPropertyPage, NewPropertyPage } from '@/features/properties/PropertyFormPage'
 import { EditUnitPage, NewUnitPage } from '@/features/properties/UnitFormPage'
+import { PayoutPage } from '@/features/payout/PayoutPage'
+import { PaymentResultPage } from '@/features/public/PaymentResultPage'
 import { ReceiptPage } from '@/features/public/ReceiptPage'
 import { TenantPortalPage } from '@/features/public/TenantPortalPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
@@ -22,6 +24,7 @@ export const router = createBrowserRouter([
 
   // Public, no login: links sent to tenants by SMS.
   { path: '/t/:token', element: <TenantPortalPage /> },
+  { path: '/t/:token/paid', element: <PaymentResultPage /> },
   { path: '/r/:token', element: <ReceiptPage /> },
 
   // Landlord app.
@@ -47,6 +50,7 @@ export const router = createBrowserRouter([
               { path: 'tenants/:tenantId', element: <TenantDetailPage /> },
               { path: 'tenants/:tenantId/edit', element: <EditTenantPage /> },
               { path: 'settings', element: <SettingsPage /> },
+              { path: 'settings/payout', element: <PayoutPage /> },
             ],
           },
         ],
