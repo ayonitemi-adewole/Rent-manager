@@ -14,8 +14,19 @@ type WebhookBody = { event?: string; data?: { id?: number; tx_ref?: string } }
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
 
+  const admin = adminClient()
   const signature = req.headers.get('verif-hash') ?? ''
   if (!timingSafeEqual(signature, requireEnv('FLW_WEBHOOK_HASH'))) {
+    // Log rejected calls (never processed) so a hash mismatch is visible, not silent.
+    // Only a small, capped payload is kept since anyone can call this URL.
+    const raw = (await req.text().catch(() => '')).slice(0, 2000)
+    await admin.from('webhook_events').insert({
+      provider: 'flutterwave',
+      event_type: null,
+      external_id: null,
+      payload: { raw, had_signature: signature !== '' },
+      error: signature ? 'invalid verif-hash' : 'missing verif-hash',
+    })
     return new Response('Unauthorized', { status: 401 })
   }
 
@@ -26,7 +37,6 @@ Deno.serve(async (req) => {
     return new Response('Bad request', { status: 400 })
   }
 
-  const admin = adminClient()
   const { data: logged, error: logError } = await admin
     .from('webhook_events')
     .insert({
