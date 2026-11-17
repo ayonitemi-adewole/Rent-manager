@@ -66,6 +66,8 @@ type SubaccountInput = {
   bankCode: string
   businessName: string
   mobile: string
+  /** Required by Flutterwave. Settlement notices go here. */
+  email: string
 }
 
 type Subaccount = { id: number; subaccount_id: string }
@@ -82,6 +84,7 @@ export const createSubaccount = (input: SubaccountInput) =>
       account_number: input.accountNumber,
       business_name: input.businessName,
       business_mobile: input.mobile,
+      business_email: input.email,
       country: 'NG',
       ...SPLIT,
     }),

@@ -59,11 +59,15 @@ Deno.serve(
 
     const banks = await withFlutterwaveMessage('Could not load banks from Flutterwave', listBanks)
     const bankName = banks.find((b) => b.code === bankCode)?.name.trim() ?? null
+    const mobile = String(landlord.phone).replace(/^\+/, '')
     const input = {
       accountNumber,
       bankCode,
       businessName: landlord.full_name,
-      mobile: String(landlord.phone).replace(/^\+/, ''),
+      mobile,
+      // Landlords sign up by phone, so there's no real email yet. Flutterwave requires one;
+      // use a stable placeholder until we collect a real address.
+      email: `${mobile}@${Deno.env.get('LANDLORD_EMAIL_DOMAIN') ?? 'landlords.rentpadi.app'}`,
     }
     const sub = await withFlutterwaveMessage('Flutterwave could not save this account', () =>
       landlord.flw_subaccount_ref
