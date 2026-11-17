@@ -5,7 +5,7 @@ import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChargeBadge } from '@/features/charges/ChargeBadge'
-import { dueLabel } from '@/lib/charges'
+import { dueLabel, isOpen } from '@/lib/charges'
 import { friendlyError } from '@/lib/errors'
 import { formatKobo } from '@/lib/money'
 import { formatDate } from '@/lib/rent'
@@ -17,7 +17,10 @@ export function TenantPortalPage() {
   const { data: portal, isPending, error, refetch } = usePortal(token)
   const checkout = useStartCheckout(token)
 
-  const open = portal?.charges.filter((c) => c.balance_kobo > 0 && c.status !== 'paid') ?? []
+  // One payment at a time, oldest first, so a tenant can't pay next period before this one.
+  const open = (portal?.charges ?? []).filter(isOpen).sort((a, b) => a.due_date.localeCompare(b.due_date))
+  const current = open[0]
+  const next = open[1]
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8">
@@ -36,23 +39,28 @@ export function TenantPortalPage() {
             </p>
           </div>
 
-          {open.length === 0 ? (
+          {!current ? (
             <Card>
               <CardContent className="text-sm">You’re all paid up. Thank you!</CardContent>
             </Card>
           ) : (
             <ul className="space-y-3">
-              {open.map((c) => (
-                <ChargeCard
-                  key={c.id}
-                  charge={c}
-                  canPay={portal.can_pay_online}
-                  paying={checkout.isPending && checkout.variables === c.id}
-                  disabled={checkout.isPending}
-                  onPay={() => checkout.mutate(c.id)}
-                />
-              ))}
+              <ChargeCard
+                charge={current}
+                canPay={portal.can_pay_online}
+                paying={checkout.isPending}
+                disabled={checkout.isPending}
+                onPay={() => checkout.mutate(current.id)}
+              />
             </ul>
+          )}
+
+          {next && (
+            <p className="text-muted-foreground text-sm">
+              Next: {formatKobo(next.balance_kobo)} due {formatDate(next.due_date)}
+              {open.length > 2 && ` (and ${open.length - 2} more after that)`}. You can pay it once this one is
+              paid.
+            </p>
           )}
 
           {checkout.error && (

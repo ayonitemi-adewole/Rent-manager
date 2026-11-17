@@ -617,6 +617,10 @@ export type Database = {
         }[]
       }
       dev_send_sms_hook: { Args: { event: Json }; Returns: Json }
+      earlier_open_charge_due: {
+        Args: { p_charge_id: string }
+        Returns: string
+      }
       generate_all_charges: { Args: never; Returns: number }
       generate_tenant_charges: {
         Args: { p_tenant_id: string }

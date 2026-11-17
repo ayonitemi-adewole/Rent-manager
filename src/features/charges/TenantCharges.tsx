@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { QueryState } from '@/components/QueryState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { dueLabel } from '@/lib/charges';
+import { dueLabel, firstOpenCharge, isOpen } from '@/lib/charges';
 import { formatKobo } from '@/lib/money';
 import { formatDate } from '@/lib/rent';
 import { useTenantCharges } from './api';
@@ -23,6 +23,9 @@ export function TenantCharges({ tenantId }: { tenantId: string }) {
   const sortedCharges = charges
     ?.slice()
     .sort((a, b) => a.period_start.localeCompare(b.period_start));
+
+  // Rent is paid in order: only the earliest unpaid period can be recorded.
+  const payableId = firstOpenCharge(charges ?? [])?.id;
 
   return (
     <Card>
@@ -68,7 +71,7 @@ export function TenantCharges({ tenantId }: { tenantId: string }) {
                   {formatKobo(c.amount_kobo)}
                 </span>
                 <ChargeBadge charge={c} />
-                {c.balance_kobo > 0 && c.status !== 'cancelled' && (
+                {c.id === payableId ? (
                   <Button
                     asChild
                     variant="link"
@@ -79,6 +82,12 @@ export function TenantCharges({ tenantId }: { tenantId: string }) {
                       Record payment
                     </Link>
                   </Button>
+                ) : (
+                  isOpen(c) && (
+                    <span className="text-muted-foreground text-xs">
+                      After the earlier rent
+                    </span>
+                  )
                 )}
               </div>
             </li>

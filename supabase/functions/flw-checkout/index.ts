@@ -47,6 +47,13 @@ Deno.serve(
     const balanceKobo = charge.amount_kobo - charge.amount_paid_kobo
     if (charge.status === 'paid' || balanceKobo <= 0) throw new UserError('This rent is already paid.')
 
+    // Rent is paid in order (same rule as public.earlier_open_charge_due).
+    const { data: earlier, error: earlierError } = await admin.rpc('earlier_open_charge_due', {
+      p_charge_id: charge.id,
+    })
+    if (earlierError) throw earlierError
+    if (earlier) throw new UserError(`Please pay the earlier rent (due ${earlier}) first.`)
+
     const txRef = `RP-${crypto.randomUUID()}`
     const { error: attemptError } = await admin
       .from('payment_attempts')

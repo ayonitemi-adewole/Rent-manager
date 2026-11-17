@@ -66,3 +66,16 @@ export function bucketCharges(charges: Charge[]): { overdue: Bucket; dueSoon: Bu
     dueSoon: make('due_soon', (a, b) => a.days_until_due - b.days_until_due),
   }
 }
+
+type Payable = { id: string; due_date: string; balance_kobo: number; status: ChargeStatus }
+
+/** Is there still money owed on this charge? */
+export const isOpen = (c: Payable) => c.balance_kobo > 0 && c.status !== 'cancelled' && c.status !== 'paid'
+
+/**
+ * Rent is paid in order: only the earliest open charge can be paid or recorded.
+ * Mirrors public.earlier_open_charge in SQL. Returns null when nothing is owed.
+ */
+export function firstOpenCharge<T extends Payable>(charges: T[]): T | null {
+  return charges.filter(isOpen).sort((a, b) => a.due_date.localeCompare(b.due_date))[0] ?? null
+}

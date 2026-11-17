@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bucketCharges, dueLabel, type Charge } from './charges'
+import { bucketCharges, dueLabel, firstOpenCharge, type Charge } from './charges'
 
 describe('dueLabel', () => {
   it.each([
@@ -59,5 +59,24 @@ describe('bucketCharges', () => {
       charge({ timing: 'overdue', amount_kobo: 1_000, amount_paid_kobo: 400, balance_kobo: 600 }),
     ])
     expect(overdue.totalKobo).toBe(600)
+  })
+})
+
+describe('firstOpenCharge', () => {
+  const c = (id: string, due_date: string, balance_kobo: number, status: Charge['status'] = 'unpaid') =>
+    ({ id, due_date, balance_kobo, status })
+
+  it('picks the earliest unpaid period, whatever the list order', () => {
+    expect(firstOpenCharge([c('dec', '2026-12-17', 100), c('nov', '2026-11-17', 100)])?.id).toBe('nov')
+  })
+  it('skips paid and cancelled periods', () => {
+    const charges = [c('oct', '2026-10-17', 0, 'paid'), c('nov', '2026-11-17', 100, 'cancelled'), c('dec', '2026-12-17', 100)]
+    expect(firstOpenCharge(charges)?.id).toBe('dec')
+  })
+  it('a part-paid period still comes first', () => {
+    expect(firstOpenCharge([c('dec', '2026-12-17', 100), c('nov', '2026-11-17', 40, 'partially_paid')])?.id).toBe('nov')
+  })
+  it('null when nothing is owed', () => {
+    expect(firstOpenCharge([c('nov', '2026-11-17', 0, 'paid')])).toBeNull()
   })
 })
