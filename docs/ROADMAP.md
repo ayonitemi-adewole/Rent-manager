@@ -1,4 +1,4 @@
-# Rent Manager — Implementation Roadmap
+# RentPadi — Implementation Roadmap
 
 Companion to [Rent Manager — Landlord Interviews & MVP Plan](./Rent%20Manager%20—%20Landlord%20Interviews%20&%20MVP%20Plan.md).
 That doc says **what** to build and **whether** to build it. This one says **how** and **in what order**.
@@ -30,13 +30,13 @@ Some of these approvals take days or weeks, so **start them today**, even before
 | Keep the **manual pilot** running: one Google Sheet plus WhatsApp reminders sent by hand | Real data and real objections to design against. |
 
 **Repo foundation (≈1 evening):**
-- [ ] Add Tailwind v4 (`@tailwindcss/vite`) and initialise shadcn/ui
-- [ ] Add `react-router`, `@tanstack/react-query`, `@supabase/supabase-js`, `react-hook-form` + `zod`, `date-fns`
-- [ ] Add the Supabase CLI, run `supabase init`, and keep migrations in `supabase/migrations/`
-- [ ] Set up `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, plus `.env.example`
-- [ ] Add `vercel.json` with an SPA rewrite to `/index.html`
-- [ ] Add Vitest for unit tests (charge and date maths especially)
-- [ ] Replace the Vite template README with a project README
+- [x] Add Tailwind v4 (`@tailwindcss/vite`) and initialise shadcn/ui
+- [x] Add `react-router`, `@tanstack/react-query`, `@supabase/supabase-js`, `react-hook-form` + `zod`, `date-fns`
+- [x] Add the Supabase CLI, run `supabase init`, and keep migrations in `supabase/migrations/`
+- [x] Set up `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, plus `.env.example`
+- [x] Add `vercel.json` with an SPA rewrite to `/index.html`
+- [x] Add Vitest for unit tests (charge and date maths especially)
+- [x] Replace the Vite template README with a project README
 
 **Done when:** the interview scorecard has 20 entries and the go/no-go decision is written down. If interviews show **caretakers** are the main collectors, or that **monthly savings** matters more than reminders, revise this roadmap before Week 1.
 
