@@ -1,4 +1,4 @@
-# Rent Manager — Implementation Roadmap
+# RentPadi — Implementation Roadmap
 
 Companion to [Rent Manager — Landlord Interviews & MVP Plan](./Rent%20Manager%20—%20Landlord%20Interviews%20&%20MVP%20Plan.md).
 That doc says **what** to build and **whether** to build it. This one says **how** and **in what order**.
@@ -9,11 +9,11 @@ Starting point: Vite 8 + React 19 + TypeScript scaffold, nothing else yet.
 
 ## Guiding principles
 
-1. **The interviews gate the build.** Phase 0 setup work is safe to do in parallel, but don't go past Week 2 until you hit the bar: at least 8 of 20 landlords with strong pain and 3 committed pilots.
+1. **The interviews gate the build.** Phase 0 setup work is safe to do in parallel, but don't go past Phase 2 until you hit the bar: at least 8 of 20 landlords with strong pain and 3 committed pilots.
 2. **Money is never ours.** Funds settle straight to the landlord's bank account through a Flutterwave subaccount. We never hold a balance.
 3. **The ledger is the product.** Every naira is stored as integer kobo. Charges and payments are append-friendly, and nothing is silently overwritten.
 4. **Mobile-first, low-bandwidth.** Assume a mid-range Android phone on 3G. Pages stay small and forms stay short.
-5. **Ship to pilots weekly.** Each week ends with something a pilot landlord could see, even if you're the one driving it.
+5. **Ship to pilots every phase.** Each phase ends with something a pilot landlord could see, even if you're the one driving it.
 
 ---
 
@@ -25,152 +25,157 @@ Some of these approvals take days or weeks, so **start them today**, even before
 | --- | --- |
 | Create a **Flutterwave business account** and submit KYC (CAC docs or a starter-business route) | Going live and creating subaccounts needs approval. This can take 1–3 weeks. |
 | Create a **Termii account** and register a **sender ID** (e.g. `RentMgr`) | Sender ID approval takes days. Without it, messages to DND numbers fail. |
-| Create the **Supabase project** (choose the region closest to Nigeria, e.g. `eu-west`) and the **Vercel project** | Free, instant, and unblocks Week 1. |
+| Create the **Supabase project** (choose the region closest to Nigeria, e.g. `eu-west`) and the **Vercel project** | Free, instant, and unblocks Phase 1. |
 | Buy a domain (e.g. `rentmanager.ng` or `.com.ng`) | SMS links look more trustworthy with a short, branded domain. |
 | Keep the **manual pilot** running: one Google Sheet plus WhatsApp reminders sent by hand | Real data and real objections to design against. |
 
 **Repo foundation (≈1 evening):**
-- [ ] Add Tailwind v4 (`@tailwindcss/vite`) and initialise shadcn/ui
-- [ ] Add `react-router`, `@tanstack/react-query`, `@supabase/supabase-js`, `react-hook-form` + `zod`, `date-fns`
-- [ ] Add the Supabase CLI, run `supabase init`, and keep migrations in `supabase/migrations/`
-- [ ] Set up `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, plus `.env.example`
-- [ ] Add `vercel.json` with an SPA rewrite to `/index.html`
-- [ ] Add Vitest for unit tests (charge and date maths especially)
-- [ ] Replace the Vite template README with a project README
+- [x] Add Tailwind v4 (`@tailwindcss/vite`) and initialise shadcn/ui
+- [x] Add `react-router`, `@tanstack/react-query`, `@supabase/supabase-js`, `react-hook-form` + `zod`, `date-fns`
+- [x] Add the Supabase CLI, run `supabase init`, and keep migrations in `supabase/migrations/`
+- [x] Set up `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, plus `.env.example`
+- [x] Add `vercel.json` with an SPA rewrite to `/index.html`
+- [x] Add Vitest for unit tests (charge and date maths especially)
+- [x] Replace the Vite template README with a project README
 
-**Done when:** the interview scorecard has 20 entries and the go/no-go decision is written down. If interviews show **caretakers** are the main collectors, or that **monthly savings** matters more than reminders, revise this roadmap before Week 1.
+**Done when:** the interview scorecard has 20 entries and the go/no-go decision is written down. If interviews show **caretakers** are the main collectors, or that **monthly savings** matters more than reminders, revise this roadmap before Phase 1.
 
 ---
 
-## Phase 1 — Foundation (Week 1): auth, schema, properties, units, tenants
+## Phase 1 — Foundation (~1 week): auth, schema, properties, units, tenants
 
 **Goal:** a landlord can sign in with their phone and enter their whole portfolio.
 
 ### Database (first migration)
-- [ ] Create all core tables (see [Schema](#schema-refined)), enums, foreign keys and indexes
-- [ ] Turn on **RLS on every table**. Policies chain ownership back to `landlords.id = auth.uid()`
-- [ ] Generate TypeScript types with `supabase gen types typescript` and add an npm script for it
+- [x] Create the portfolio tables (landlords, properties, units, tenants) with enums, foreign keys and indexes. Charges and payments tables come in their own phases
+- [x] Turn on **RLS on every table**. Policies chain ownership back to `landlords.id = auth.uid()`
+- [x] TypeScript types: hand-written in generated format for now; `npm run db:types` replaces them once the CLI is linked
 
 ### Auth
-- [ ] Supabase **phone OTP** login
-- [ ] Supabase has no built-in Termii provider, so use the **Send SMS Auth Hook** (an edge function, `auth-sms-hook`) to deliver OTPs through Termii. Use Supabase's test OTP numbers during development.
-- [ ] Normalise phone numbers to E.164 (`+234…`). Accept `080…`, `234…` and `+234…` input
-- [ ] First login → onboarding: name, then optionally bank details (bank details can be skipped until Week 3)
+- [x] Supabase **phone OTP** login
+- [x] **Send SMS Auth Hook**, demo version: a Postgres hook stores OTPs in `dev_sms_outbox`
+- [ ] Before the pilot: swap the hook for an edge function (`auth-sms-hook`) that delivers OTPs through Termii
+- [x] Normalise phone numbers to E.164 (`+234…`). Accept `080…`, `234…` and `+234…` input
+- [x] First login → onboarding: name (bank details come in Phase 3)
 
 ### Screens
-- [ ] App shell: bottom nav (Dashboard · Properties · Tenants · Settings)
-- [ ] Properties: list, add, edit
-- [ ] Units within a property: label, type (room / flat / shop), rent amount, rent period
-- [ ] Tenants: add to a vacant unit (name, phone, start date, period, agreed amount), edit, mark moved out
-- [ ] Empty states that guide the next step ("Add your first property")
+- [x] App shell: bottom nav (Dashboard · Properties · Tenants · Settings)
+- [x] Properties: list, add, edit, delete (blocked once a unit has tenant history)
+- [x] Units within a property: label, type, rent amount, rent period; "save and add another"
+- [x] Tenants: add to a vacant unit (name, phone, start date, period, agreed amount, "paid up to"), edit, mark moved out
+- [x] Empty states that guide the next step ("Add your first property")
 
 **Done when:** you can enter a real pilot landlord's portfolio (from the manual-pilot sheet) in under 10 minutes on a phone.
 
 ---
 
-## Phase 2 — Charges engine & dashboard (Week 2)
+## Phase 2 — Charges engine & dashboard (~1 week)
 
 **Goal:** the app knows what each tenant owes and when, and the landlord can see it at a glance.
 
 ### Charge generation (the core logic; test it well)
-- [ ] A pure TS/SQL function: given `start_date`, `period` and `amount`, return the next period's `period_start`, `period_end` and `due_date`
+- [x] A pure SQL function (`chargeable_periods`) returns each period's `period_start` and `period_end`; `due_date` = `period_start`
   - Rent is due on `period_start` (Nigerian norm: rent is paid in advance)
   - Watch month-end edge cases: a tenancy starting Jan 31 should not drift to Feb 28 forever. Anchor to the original start day
-- [ ] When a tenant is added, create the **current** charge. Offer "already paid this period?" so existing tenants aren't shown as overdue
-- [ ] A **daily `pg_cron` job** that:
-  - creates the next charge **45 days before** it's due (so the 30-day reminder has something to point at)
-  - moves unpaid charges past `due_date` to `overdue`
-- [ ] Unique constraint on `(tenant_id, period_start)` so the job can rerun without creating duplicates
-- [ ] Unit tests for yearly, 6-monthly and monthly periods, leap years and month-end starts
+- [x] When a tenant is added or their terms change, a trigger (re)builds their unpaid charges. "Paid up to" stops existing tenants showing as overdue
+- [x] A **daily `pg_cron` job** (00:30 Lagos) creates the next charge **45 days before** it's due
+  - Changed: "overdue" is not a stored status. The `charge_overview` view derives it from `due_date` vs today (Lagos time), so it's always current without a job flipping it
+- [x] Unique constraint on `(tenant_id, charge_type, period_start)` so the job can rerun without creating duplicates
+- [x] SQL tests for yearly, 6-monthly and monthly periods, leap years, month-end starts, paid-up-to and move-out (`supabase/tests/chargeable_periods.sql`)
 
 ### Dashboard
-- [ ] Summary cards: collected this month, outstanding, overdue count
-- [ ] Lists: **Overdue** → **Due in 30 days** → **Paid recently**, each row showing tenant, unit, amount and days late or left
-- [ ] Tap a row → tenant detail with their charges
-- [ ] Wrap the queries in a SQL view or RPC (`dashboard_summary`) so the client stays light
+- [x] Summary cards: collected this month, overdue and due in 30 days (amount + count)
+- [x] Lists: **Overdue** → **Due in 30 days** → **Paid recently**, each row showing tenant, unit, amount and days late or left
+- [x] Tap a row → tenant detail with their charges
+- [x] Queries go through the `charge_overview` view (security_invoker, so RLS applies)
 
 **Done when:** the dashboard for a pilot landlord matches their own notebook or sheet.
 
 ---
 
-## Phase 3 — Payments (Week 3)
+## Phase 3 — Payments (~1 week)
 
 **Goal:** a tenant pays online and the charge flips to paid automatically, with money landing in the landlord's account.
 
 ### Landlord payout setup
-- [ ] Bank picker from Flutterwave `GET /banks/NG`
-- [ ] **Resolve the account name** (`POST /accounts/resolve`) and show it back to the landlord to confirm. This catches typos before money goes astray
-- [ ] Edge function `flw-create-subaccount`: creates the subaccount and stores `flw_subaccount_id`. Secret keys live only in edge function secrets, never in the client
+- [x] Bank picker (popular banks first) from Flutterwave `GET /banks/NG`
+- [x] **Resolve the account name** (`POST /accounts/resolve`) and show it back to the landlord to confirm. This catches typos before money goes astray
+- [x] Edge function `flw-payout` (banks / resolve / save): creates or updates the subaccount and stores `flw_subaccount_id`. Payout columns are writable only by the function. Secret keys live only in edge function secrets, never in the client
 
 ### Checkout
-- [ ] Create the Flutterwave checkout **on demand** when the tenant taps Pay, rather than pre-generating static links. Amounts change (partial payments, edits), and on-demand checkout always uses the current balance
-- [ ] Edge function `flw-checkout`: takes the tenant token and charge ID, then:
+- [x] Create the Flutterwave checkout **on demand** when the tenant taps Pay, rather than pre-generating static links. Amounts change (partial payments, edits), and on-demand checkout always uses the current balance
+- [x] Edge function `flw-checkout`: takes the tenant token and charge ID, then:
   - inserts a `payment_attempts` row with a unique `tx_ref`
   - calls Flutterwave `POST /v3/payments` with the `subaccounts` split, `redirect_url` and customer phone
   - returns the hosted checkout URL
 
 ### Webhook (the part that must be bulletproof)
-- [ ] Edge function `flw-webhook`:
+- [x] Edge function `flw-webhook`:
   1. Check the `verif-hash` header against your secret hash
   2. Store the raw event in `webhook_events` (helps debugging and makes replays safe)
   3. **Re-verify** via `GET /transactions/{id}/verify`. Never trust the webhook body alone
   4. Check status `successful`, the currency `NGN` and the amount against the attempt
   5. Inside a single SQL function (`record_payment`): insert the payment (`reference` is unique, so duplicates are no-ops) and update the charge's `amount_paid_kobo` and `status`
-- [ ] The redirect page also calls verify, so the tenant sees a result even if the webhook is slow
-- [ ] Test end-to-end in Flutterwave **test mode**, including a duplicate webhook delivery and an underpayment
+- [x] The redirect page (`/t/:token/paid`) calls `flw-verify`, so the tenant sees a result even if the webhook is slow
+- [x] Unit tests for settlement: underpayment, wrong currency, failed / pending / unknown transactions, kobo conversion (`npm run test:functions`)
+- [x] Basic tenant page (`/t/:token`) with a Pay button per open charge, via the token-checked `tenant_portal` RPC (full page in Phase 5)
+- [x] Tested end-to-end in Flutterwave **test mode**: two payments recorded, a resent webhook was processed without double-counting
 
 **Done when:** a test payment flips the charge to paid within seconds, and replaying the webhook changes nothing.
 
 ---
 
-## Phase 4 — Reminders & manual payments (Week 4)
+## Phase 4 — Reminders & manual payments (~1 week)
 
 **Goal:** tenants get nudged automatically, and cash payments are recorded too.
 
 ### Reminders
-- [ ] Daily `pg_cron` job → edge function `send-reminders` (run around 9am WAT, never at night)
-- [ ] Schedule: **30, 14, 7 and 1 days before** due, then overdue at **+1, +7 and +14 days** (cap it; don't spam)
-- [ ] Unique constraint on `reminders (charge_id, kind)` so each reminder sends at most once, even across retries
-- [ ] Skip charges that are paid; for partially paid charges, mention the balance
-- [ ] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rentmgr.ng/t/x7Kp2 – Mr Adeyemi`
-- [ ] Store the Termii message ID and delivery status. Show "reminder sent" on the tenant's row
-- [ ] Per-landlord toggle to pause reminders for a tenant (landlords will ask for this)
+- [x] Daily `pg_cron` job (`queue-rent-reminders`, 9am WAT) queues each day's reminders in SQL (`queue_reminders`)
+- [ ] SMS sender: edge function `send-reminders` that delivers queued reminders through Termii (needs a Termii account + sender ID). Until then reminders stay **queued** and are shown on the tenant page
+- [x] Schedule before due: **yearly 60, 30, 14, 7, 1 days**; **six-monthly 30, 14, 7, 1**; **monthly 14, 7, 1**. Then overdue at **+1, +7 and +14 days**. Yearly charges are created 75 days ahead (45 otherwise) so the first reminder has a charge
+- [x] Unique constraint on `reminders (charge_id, kind)` so each reminder sends at most once, even across retries
+- [x] Skip charges that are paid; for partially paid charges, mention the balance
+- [x] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rentmgr.ng/t/x7Kp2 – Mr Adeyemi`
+- [x] Reminders card on the tenant page: each reminder's date, timing, status and text
+- [x] **Send reminder on WhatsApp** button (same wording as the SMS), works without any SMS provider
+- [ ] Store the Termii message ID and delivery status (columns exist; filled by the sender)
+- [x] Per-tenant toggle to pause reminders (tenant form, since Phase 1) for a tenant (landlords will ask for this)
 
 ### Manual payments
-- [ ] "Record payment" on a charge: amount, method (cash / transfer), date, optional note or reference
-- [ ] Partial amounts allowed; the status updates via the same `record_payment` function as the webhook
-- [ ] Void a payment with a reason, keeping the row. Mistakes happen, but the ledger stays auditable
+- [x] "Record payment" on a charge: amount, method (cash / transfer), date, optional note or reference
+- [x] Partial amounts allowed (never more than owed); the status updates via the same `record_payment` function as the webhook
+- [x] Void a hand-recorded payment with a reason, keeping the row. Mistakes happen, but the ledger stays auditable
 
 **Done when:** a pilot tenant receives the reminder and the landlord can log a cash payment in three taps.
 
 ---
 
-## Phase 5 — Receipts, tenant page, history (Week 5)
+## Phase 5 — Receipts, tenant page, history (~1 week)
 
 **Goal:** tenants get proof of payment, and landlords get a full ledger.
 
 ### Tenant page (no login): `/t/:token`
-- [ ] `tenants.access_token` is random and unguessable (≥ 22 characters, base62)
-- [ ] Data is served through a `SECURITY DEFINER` RPC or edge function that takes the token. **Don't** open RLS to anonymous users
-- [ ] Shows the landlord's name, unit, amount due and due date, a **Pay** button and past receipts
-- [ ] Trust signals: landlord name, the Flutterwave badge, and "Money goes directly to [landlord's bank name] account ending 1234"
-- [ ] Landlord can regenerate the token, which invalidates the old link
+- [x] `tenants.access_token` is random and unguessable (24 URL-safe characters, 144 bits)
+- [x] Data is served through a `SECURITY DEFINER` RPC (`tenant_portal`) or edge function that takes the token. **Don't** open RLS to anonymous users
+- [x] Shows the landlord's name, unit, the earliest amount due (one at a time) with a **Pay** button, the next amount, and past receipts
+- [x] Trust signals: landlord name, the Flutterwave badge, and "Money goes directly to [landlord's bank name] account ending 1234"
+- [x] Landlord can regenerate the token (**Reset link**), which invalidates the old link
 
 ### Receipts
-- [ ] A sequential receipt number per landlord (e.g. `RM-0001`)
-- [ ] Receipt page at `/r/:token`, printable. Show the amount, period covered, method, date and balance remaining
-- [ ] Send the receipt link by SMS automatically after every payment (online or manual)
+- [x] A sequential receipt number per landlord (`RP-0001`), assigned after insert so webhook replays never skip a number
+- [x] Receipt page at `/r/:token`, printable (voided payments marked VOID). Show the amount, period covered, method, date and balance remaining
+- [x] Receipt SMS queued automatically after every payment (online or manual); delivered once the SMS sender exists. **Send on WhatsApp** works now
 
 ### History
-- [ ] Tenant ledger: all charges and payments with a running balance
-- [ ] Unit history: all tenants over time
-- [ ] CSV export (cheap to build, and landlords and accountants like it)
+- [x] Tenant statement: all charges and payments with a running balance (`/tenants/:id/statement`)
+- [x] Unit history: all tenants over time (on the unit's page)
+- [x] CSV export: per-tenant statement, and all payments from Settings (formula-injection safe)
 
 **Done when:** a tenant can open their link on a cheap phone, pay, and receive a receipt, all without an account.
 
 ---
 
-## Phase 6 — Pilot launch & hardening (Week 6)
+## Phase 6 — Pilot launch & hardening (~1 week)
 
 - [ ] Switch Flutterwave and Termii to **live** keys and do one real ₦100 payment end-to-end
 - [ ] Error monitoring (Sentry free tier) on the frontend and edge functions
@@ -194,7 +199,7 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 | Caretakers do most collecting | Caretaker accounts with role-based RLS (view and record payments, no payout changes) |
 | Tenants struggle with lump sums | Rent savings (only with a licensed partner; we still don't hold money) |
 | Landlords ask "can it also do…" | Service charge, electricity and water as extra charge types (the schema handles this via `charge_type`) |
-| Older landlords struggle | Yoruba and Pidgin UI (set up `i18n` keys from Week 1 to make this cheap), voice-note help |
+| Older landlords struggle | Yoruba and Pidgin UI (set up `i18n` keys from Phase 1 to make this cheap), voice-note help |
 | Low SMS open rates | WhatsApp Business API reminders |
 | Paperwork pain | Tenancy agreement and quit notice templates (PDF) |
 | Ready to charge | Pricing: a platform fee via the Flutterwave split, or a flat monthly subscription |
