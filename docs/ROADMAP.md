@@ -47,22 +47,23 @@ Some of these approvals take days or weeks, so **start them today**, even before
 **Goal:** a landlord can sign in with their phone and enter their whole portfolio.
 
 ### Database (first migration)
-- [ ] Create all core tables (see [Schema](#schema-refined)), enums, foreign keys and indexes
-- [ ] Turn on **RLS on every table**. Policies chain ownership back to `landlords.id = auth.uid()`
-- [ ] Generate TypeScript types with `supabase gen types typescript` and add an npm script for it
+- [x] Create the portfolio tables (landlords, properties, units, tenants) with enums, foreign keys and indexes. Charges and payments tables come with their weeks
+- [x] Turn on **RLS on every table**. Policies chain ownership back to `landlords.id = auth.uid()`
+- [x] TypeScript types: hand-written in generated format for now; `npm run db:types` replaces them once the CLI is linked
 
 ### Auth
-- [ ] Supabase **phone OTP** login
-- [ ] Supabase has no built-in Termii provider, so use the **Send SMS Auth Hook** (an edge function, `auth-sms-hook`) to deliver OTPs through Termii. Use Supabase's test OTP numbers during development.
-- [ ] Normalise phone numbers to E.164 (`+234…`). Accept `080…`, `234…` and `+234…` input
-- [ ] First login → onboarding: name, then optionally bank details (bank details can be skipped until Week 3)
+- [x] Supabase **phone OTP** login
+- [x] **Send SMS Auth Hook**, demo version: a Postgres hook stores OTPs in `dev_sms_outbox`
+- [ ] Before the pilot: swap the hook for an edge function (`auth-sms-hook`) that delivers OTPs through Termii
+- [x] Normalise phone numbers to E.164 (`+234…`). Accept `080…`, `234…` and `+234…` input
+- [x] First login → onboarding: name (bank details come in Week 3)
 
 ### Screens
-- [ ] App shell: bottom nav (Dashboard · Properties · Tenants · Settings)
-- [ ] Properties: list, add, edit
-- [ ] Units within a property: label, type (room / flat / shop), rent amount, rent period
-- [ ] Tenants: add to a vacant unit (name, phone, start date, period, agreed amount), edit, mark moved out
-- [ ] Empty states that guide the next step ("Add your first property")
+- [x] App shell: bottom nav (Dashboard · Properties · Tenants · Settings)
+- [x] Properties: list, add, edit, delete (blocked once a unit has tenant history)
+- [x] Units within a property: label, type, rent amount, rent period; "save and add another"
+- [x] Tenants: add to a vacant unit (name, phone, start date, period, agreed amount, "paid up to"), edit, mark moved out
+- [x] Empty states that guide the next step ("Add your first property")
 
 **Done when:** you can enter a real pilot landlord's portfolio (from the manual-pilot sheet) in under 10 minutes on a phone.
 

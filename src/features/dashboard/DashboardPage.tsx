@@ -1,6 +1,8 @@
 import { AlertTriangle, CalendarClock, CheckCircle2, LayoutDashboard } from 'lucide-react'
+import { Link } from 'react-router'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatKobo } from '@/lib/money'
 
@@ -32,6 +34,11 @@ export function DashboardPage() {
         icon={LayoutDashboard}
         title="No rent to track yet"
         description="Add a property, its units and your tenants. Rent due dates will show up here."
+        action={
+          <Button asChild>
+            <Link to="/properties">Set up properties</Link>
+          </Button>
+        }
       />
     </>
   )
