@@ -119,7 +119,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] The redirect page (`/t/:token/paid`) calls `flw-verify`, so the tenant sees a result even if the webhook is slow
 - [x] Unit tests for settlement: underpayment, wrong currency, failed / pending / unknown transactions, kobo conversion (`npm run test:functions`)
 - [x] Basic tenant page (`/t/:token`) with a Pay button per open charge, via the token-checked `tenant_portal` RPC (full page in Phase 5)
-- [ ] Test end-to-end in Flutterwave **test mode**, including a duplicate webhook delivery (needs your test keys)
+- [x] Tested end-to-end in Flutterwave **test mode**: two payments recorded, a resent webhook was processed without double-counting
 
 **Done when:** a test payment flips the charge to paid within seconds, and replaying the webhook changes nothing.
 
