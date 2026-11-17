@@ -5,6 +5,8 @@
 
 /* RentPadi palette — green brand (money, "paid"), amber = due, red = overdue */
 :root {
+  /* Native controls (select lists, date pickers, scrollbars) follow the theme. */
+  color-scheme: light;
   --radius: 0.75rem;
   --background: oklch(0.985 0.003 150);
   --foreground: oklch(0.2 0.02 155);
@@ -29,6 +31,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.17 0.01 155);
   --foreground: oklch(0.96 0.005 150);
   --card: oklch(0.21 0.012 155);
