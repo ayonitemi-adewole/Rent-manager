@@ -132,7 +132,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 ### Reminders
 - [x] Daily `pg_cron` job (`queue-rent-reminders`, 9am WAT) queues each day's reminders in SQL (`queue_reminders`)
 - [ ] SMS sender: edge function `send-reminders` that delivers queued reminders through Termii (needs a Termii account + sender ID). Until then reminders stay **queued** and are shown on the tenant page
-- [x] Schedule: **30, 14, 7 and 1 days before** due, then overdue at **+1, +7 and +14 days** (cap it; don't spam)
+- [x] Schedule before due: **yearly 60, 30, 14, 7, 1 days**; **six-monthly 30, 14, 7, 1**; **monthly 14, 7, 1**. Then overdue at **+1, +7 and +14 days**. Yearly charges are created 75 days ahead (45 otherwise) so the first reminder has a charge
 - [x] Unique constraint on `reminders (charge_id, kind)` so each reminder sends at most once, even across retries
 - [x] Skip charges that are paid; for partially paid charges, mention the balance
 - [x] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rentmgr.ng/t/x7Kp2 – Mr Adeyemi`

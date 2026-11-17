@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns'
 // Mirrors public.reminder_message in SQL, so a WhatsApp reminder reads like the SMS one.
 
 export const REMINDER_KIND_LABEL: Record<string, string> = {
+  d60: '60 days before',
   d30: '30 days before',
   d14: '14 days before',
   d7: '7 days before',
@@ -10,6 +11,13 @@ export const REMINDER_KIND_LABEL: Record<string, string> = {
   od1: '1 day late',
   od7: '7 days late',
   od14: '14 days late',
+}
+
+/** Matches public.reminder_kind: monthly starts at 14 days, six-monthly at 30, yearly at 60. */
+export function reminderDaysBefore(period: 'monthly' | 'six_monthly' | 'yearly'): string {
+  if (period === 'monthly') return '14, 7 and 1'
+  if (period === 'yearly') return '60, 30, 14, 7 and 1'
+  return '30, 14, 7 and 1'
 }
 
 type MessageInput = {

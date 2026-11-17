@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTenantCharges } from '@/features/charges/api'
 import { useLandlord } from '@/features/landlord/api'
 import { formatDate } from '@/lib/rent'
-import { REMINDER_KIND_LABEL, reminderMessage, whatsappLink } from '@/lib/reminders'
+import type { RentPeriod } from '@/lib/rent'
+import { REMINDER_KIND_LABEL, reminderDaysBefore, reminderMessage, whatsappLink } from '@/lib/reminders'
 import { useTenantReminders } from './api'
 
 const STATUS: Record<string, { label: string; className: string }> = {
@@ -17,7 +18,14 @@ const STATUS: Record<string, { label: string; className: string }> = {
 }
 
 type Props = {
-  tenant: { id: string; full_name: string; phone: string; access_token: string; reminders_enabled: boolean }
+  tenant: {
+    id: string
+    full_name: string
+    phone: string
+    access_token: string
+    reminders_enabled: boolean
+    rent_period: RentPeriod
+  }
   unitLabel: string
 }
 
@@ -55,7 +63,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
       <CardContent className="space-y-3">
         <p className="text-muted-foreground text-sm">
           {tenant.reminders_enabled
-            ? 'Automatic SMS 30, 14, 7 and 1 days before rent is due, then 1, 7 and 14 days late.'
+            ? `Automatic SMS ${reminderDaysBefore(tenant.rent_period)} days before rent is due, then 1, 7 and 14 days late.`
             : 'Automatic reminders are off for this tenant.'}
         </p>
 

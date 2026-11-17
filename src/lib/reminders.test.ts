@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { reminderMessage, whatsappLink } from './reminders'
+import { reminderDaysBefore, reminderMessage, whatsappLink } from './reminders'
 
 const base = {
   tenantName: 'Tola Bakare',
@@ -44,4 +44,10 @@ describe('whatsappLink', () => {
   it('uses digits only and encodes the text', () => {
     expect(whatsappLink('+2348031234567', 'Hi & bye')).toBe('https://wa.me/2348031234567?text=Hi%20%26%20bye')
   })
+})
+
+describe('reminderDaysBefore', () => {
+  it('monthly starts at 14 days', () => expect(reminderDaysBefore('monthly')).toBe('14, 7 and 1'))
+  it('six-monthly starts at 30 days', () => expect(reminderDaysBefore('six_monthly')).toBe('30, 14, 7 and 1'))
+  it('yearly starts at 60 days', () => expect(reminderDaysBefore('yearly')).toBe('60, 30, 14, 7 and 1'))
 })

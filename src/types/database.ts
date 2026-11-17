@@ -598,6 +598,10 @@ export type Database = {
       }
     }
     Functions: {
+      charge_horizon_days: {
+        Args: { p_period: Database["public"]["Enums"]["rent_period"] }
+        Returns: number
+      }
       chargeable_periods: {
         Args: {
           p_added_on: string
@@ -646,7 +650,11 @@ export type Database = {
       }
       refresh_charge_paid: { Args: { p_charge_id: string }; Returns: undefined }
       reminder_kind: {
-        Args: { p_due: string; p_today: string }
+        Args: {
+          p_due: string
+          p_period?: Database["public"]["Enums"]["rent_period"]
+          p_today: string
+        }
         Returns: string
       }
       reminder_message: {
