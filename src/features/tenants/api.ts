@@ -85,3 +85,31 @@ export function useUpdateTenant(id: string) {
     onSuccess: invalidate,
   })
 }
+
+/** New secret link for the tenant; the old one stops working. */
+export function useResetTenantLink(id: string) {
+  const invalidate = useInvalidatePortfolio()
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('regenerate_tenant_link', { p_tenant_id: id })
+      if (error) throw error
+    },
+    onSuccess: invalidate,
+  })
+}
+
+/** Everyone who has rented a unit, most recent first. */
+export function useUnitTenants(unitId: string) {
+  return useQuery({
+    queryKey: [...portfolioKeys.all, 'unit-tenants', unitId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('id, full_name, start_date, moved_out_at, status, rent_amount_kobo, rent_period')
+        .eq('unit_id', unitId)
+        .order('start_date', { ascending: false })
+      if (error) throw error
+      return data
+    },
+  })
+}

@@ -15,6 +15,7 @@ import { friendlyError } from '@/lib/errors'
 import { parseNairaToKobo } from '@/lib/money'
 import { RENT_PERIODS, UNIT_TYPES, type RentPeriod, type UnitType } from '@/lib/rent'
 import { useCreateUnit, useDeleteUnit, useUnit, useUpdateUnit } from './api'
+import { UnitHistory } from './UnitHistory'
 
 const schema = z.object({
   label: z.string().trim().min(1, 'Give the unit a name').max(50),
@@ -98,6 +99,7 @@ export function EditUnitPage() {
             error={update.error}
             onSubmit={(v) => update.mutate(toRow(v), { onSuccess: () => navigate(back, { replace: true }) })}
           />
+          <UnitHistory unitId={unitId} />
           <div className="mt-10 space-y-3 border-t pt-6">
             <FormError
               message={

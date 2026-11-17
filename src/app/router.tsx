@@ -16,6 +16,7 @@ import { TenantPortalPage } from '@/features/public/TenantPortalPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { TenantDetailPage } from '@/features/tenants/TenantDetailPage'
 import { EditTenantPage, NewTenantPage } from '@/features/tenants/TenantFormPages'
+import { StatementPage } from '@/features/tenants/StatementPage'
 import { TenantsPage } from '@/features/tenants/TenantsPage'
 import { AppLayout } from './AppLayout'
 import { NotFoundPage } from './NotFoundPage'
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
               { path: 'tenants/new', element: <NewTenantPage /> },
               { path: 'tenants/:tenantId', element: <TenantDetailPage /> },
               { path: 'tenants/:tenantId/edit', element: <EditTenantPage /> },
+              { path: 'tenants/:tenantId/statement', element: <StatementPage /> },
               { path: 'tenants/:tenantId/charges/:chargeId/record', element: <RecordPaymentPage /> },
               { path: 'settings', element: <SettingsPage /> },
               { path: 'settings/payout', element: <PayoutPage /> },

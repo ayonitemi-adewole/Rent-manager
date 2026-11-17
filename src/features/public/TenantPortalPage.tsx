@@ -1,5 +1,5 @@
-import { Lock } from 'lucide-react'
-import { useParams } from 'react-router'
+import { ChevronRight, Lock } from 'lucide-react'
+import { Link, useParams } from 'react-router'
 import { Logo } from '@/components/Logo'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import { formatKobo } from '@/lib/money'
 import { formatDate } from '@/lib/rent'
 import { usePortal, useStartCheckout, type PortalCharge } from './api'
 
-// No-login tenant page (basic version; Phase 5 adds receipts and history).
+// No-login tenant page: what's owed now (one period at a time), pay online, past receipts.
 export function TenantPortalPage() {
   const { token = '' } = useParams()
   const { data: portal, isPending, error, refetch } = usePortal(token)
@@ -67,6 +67,30 @@ export function TenantPortalPage() {
             <p role="alert" className="text-destructive text-sm">
               {friendlyError(checkout.error)}
             </p>
+          )}
+
+          {portal.receipts.length > 0 && (
+            <section className="space-y-2">
+              <h2 className="font-semibold">Your receipts</h2>
+              <Card className="divide-y overflow-hidden py-0">
+                {portal.receipts.map((r) => (
+                  <Link
+                    key={r.receipt_token}
+                    to={`/r/${r.receipt_token}`}
+                    className="hover:bg-accent/50 flex items-center justify-between gap-3 px-4 py-3 text-sm transition-colors"
+                  >
+                    <span>
+                      <span className="font-medium">{r.receipt_number}</span>
+                      <span className="text-muted-foreground"> · {formatDate(r.paid_at.slice(0, 10))}</span>
+                    </span>
+                    <span className="flex items-center gap-1 font-semibold tabular-nums">
+                      {formatKobo(r.amount_kobo)}
+                      <ChevronRight className="text-muted-foreground size-4" />
+                    </span>
+                  </Link>
+                ))}
+              </Card>
+            </section>
           )}
 
           {portal.can_pay_online ? (

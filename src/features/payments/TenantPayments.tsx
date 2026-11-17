@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { friendlyError } from '@/lib/errors'
 import { formatKobo } from '@/lib/money'
 import { formatDate } from '@/lib/rent'
+import { whatsappLink } from '@/lib/reminders'
 import { cn } from '@/lib/utils'
 import { METHOD_LABEL, useTenantPayments, useVoidPayment } from './api'
 
@@ -44,6 +45,31 @@ export function TenantPayments({ tenantId }: { tenantId: string }) {
                     </p>
                     {p.note && <p className="text-muted-foreground text-xs">“{p.note}”</p>}
                     {voided && <p className="text-destructive text-xs">Voided: {p.void_reason}</p>}
+                    {p.receipt_token && (
+                      <p className="flex flex-wrap gap-x-3 text-xs">
+                        <a
+                          href={`/r/${p.receipt_token}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary font-medium hover:underline"
+                        >
+                          Receipt {p.receipt_number}
+                        </a>
+                        {!voided && p.tenant_phone && (
+                          <a
+                            href={whatsappLink(
+                              p.tenant_phone,
+                              `Receipt ${p.receipt_number} for ${formatKobo(p.amount_kobo ?? 0)}: ${window.location.origin}/r/${p.receipt_token}`,
+                            )}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            Send on WhatsApp
+                          </a>
+                        )}
+                      </p>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <span className={cn('font-semibold tabular-nums', voided && 'line-through')}>

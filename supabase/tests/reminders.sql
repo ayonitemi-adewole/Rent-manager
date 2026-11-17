@@ -61,4 +61,10 @@ union all
 select 'message: due tomorrow',
   m like 'Hi Tola, your rent of N350,000 for Flat 2 is due tomorrow, 2 Dec.%',
   m, null
-from (select public.reminder_message('d1', 'Tola', 35000000, 'Flat 2', date '2026-12-02', 'L', 'Mr A') as m) s;
+from (select public.reminder_message('d1', 'Tola', 35000000, 'Flat 2', date '2026-12-02', 'L', 'Mr A') as m) s
+union all
+select 'message: receipt',
+  m = 'Hi Tola, we received N350,000 for Flat 2. Receipt RP-0007: https://x.app/r/abc - Mr Adeyemi',
+  m, null
+from (select public.receipt_message('Tola Bakare', 35000000, 'Flat 2', 'RP-0007',
+                                    'https://x.app/r/abc', 'Mr Adeyemi') as m) s;

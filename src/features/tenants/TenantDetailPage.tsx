@@ -1,4 +1,4 @@
-import { Check, Copy, LogOut, MessageCircle, Pencil, Phone } from 'lucide-react'
+import { Check, Copy, FileText, LogOut, MessageCircle, Pencil, Phone, RefreshCw } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { ConfirmAction } from '@/components/ConfirmAction'
@@ -15,12 +15,13 @@ import { formatDate, rentPeriodLabel, todayIso } from '@/lib/rent'
 import { TenantCharges } from '@/features/charges/TenantCharges'
 import { TenantPayments } from '@/features/payments/TenantPayments'
 import { TenantReminders } from '@/features/payments/TenantReminders'
-import { useTenant, useUpdateTenant } from './api'
+import { useResetTenantLink, useTenant, useUpdateTenant } from './api'
 
 export function TenantDetailPage() {
   const { tenantId = '' } = useParams()
   const { data: t, isPending, error, refetch } = useTenant(tenantId)
   const update = useUpdateTenant(tenantId)
+  const resetLink = useResetTenantLink(tenantId)
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
 
@@ -116,12 +117,31 @@ export function TenantDetailPage() {
                   </Button>
                 </div>
                 {copyFailed && <p className="text-muted-foreground text-xs">Couldn’t copy automatically. Press and hold the link to copy it.</p>}
+                <ConfirmAction
+                  trigger={
+                    <>
+                      <RefreshCw /> Reset link
+                    </>
+                  }
+                  triggerVariant="ghost"
+                  triggerClassName="text-muted-foreground -ml-2"
+                  question="Make a new link? The old one stops working right away, including in reminders already sent."
+                  confirmLabel="Reset link"
+                  pending={resetLink.isPending}
+                  onConfirm={() => resetLink.mutate()}
+                />
+                <FormError message={resetLink.error ? friendlyError(resetLink.error) : null} />
               </CardContent>
             </Card>
           )}
 
           <TenantCharges tenantId={t.id} />
           <TenantPayments tenantId={t.id} />
+          <Button asChild variant="outline" className="h-11 w-full">
+            <Link to={`/tenants/${tenantId}/statement`}>
+              <FileText /> Full statement and CSV
+            </Link>
+          </Button>
           {active && <TenantReminders tenant={t} unitLabel={t.units?.label ?? ''} />}
 
           {active && (

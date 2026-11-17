@@ -13,6 +13,7 @@ import { useAuth } from '@/features/auth/auth-context'
 import { useLandlord, useSaveLandlord } from '@/features/landlord/api'
 import { friendlyError } from '@/lib/errors'
 import { formatNgPhone } from '@/lib/phone'
+import { ExportPaymentsCard } from './ExportPaymentsCard'
 
 const schema = z.object({ fullName: z.string().trim().min(2, 'Enter your full name').max(100) })
 
@@ -83,6 +84,8 @@ export function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+
+        <ExportPaymentsCard />
 
         <Button variant="outline" className="w-full" onClick={signOut}>
           <LogOut /> Sign out

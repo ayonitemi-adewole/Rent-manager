@@ -25,6 +25,7 @@ export type Portal = {
   payout_account_last4: string | null
   can_pay_online: boolean
   charges: PortalCharge[]
+  receipts: { receipt_number: string; receipt_token: string; amount_kobo: number; paid_at: string }[]
 }
 
 /** The tenant's page data, by their secret link token. null = invalid link. */

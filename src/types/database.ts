@@ -88,6 +88,7 @@ export type Database = {
           id: string
           payout_updated_at: string | null
           phone: string
+          receipt_seq: number
           updated_at: string
         }
         Insert: {
@@ -102,6 +103,7 @@ export type Database = {
           id?: string
           payout_updated_at?: string | null
           phone?: string
+          receipt_seq?: number
           updated_at?: string
         }
         Update: {
@@ -116,6 +118,7 @@ export type Database = {
           id?: string
           payout_updated_at?: string | null
           phone?: string
+          receipt_seq?: number
           updated_at?: string
         }
         Relationships: []
@@ -181,6 +184,8 @@ export type Database = {
           method: Database["public"]["Enums"]["payment_method"]
           note: string | null
           paid_at: string
+          receipt_number: string | null
+          receipt_token: string
           recorded_by: string | null
           reference: string
           void_reason: string | null
@@ -195,6 +200,8 @@ export type Database = {
           method: Database["public"]["Enums"]["payment_method"]
           note?: string | null
           paid_at?: string
+          receipt_number?: string | null
+          receipt_token?: string
           recorded_by?: string | null
           reference: string
           void_reason?: string | null
@@ -209,6 +216,8 @@ export type Database = {
           method?: Database["public"]["Enums"]["payment_method"]
           note?: string | null
           paid_at?: string
+          receipt_number?: string | null
+          receipt_token?: string
           recorded_by?: string | null
           reference?: string
           void_reason?: string | null
@@ -275,6 +284,7 @@ export type Database = {
           id: string
           kind: string
           message: string
+          payment_id: string | null
           provider_message_id: string | null
           scheduled_for: string
           sent_at: string | null
@@ -289,6 +299,7 @@ export type Database = {
           id?: string
           kind: string
           message: string
+          payment_id?: string | null
           provider_message_id?: string | null
           scheduled_for: string
           sent_at?: string | null
@@ -303,6 +314,7 @@ export type Database = {
           id?: string
           kind?: string
           message?: string
+          payment_id?: string | null
           provider_message_id?: string | null
           scheduled_for?: string
           sent_at?: string | null
@@ -322,6 +334,20 @@ export type Database = {
             columns: ["charge_id"]
             isOneToOne: false
             referencedRelation: "rent_charges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payment_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
             referencedColumns: ["id"]
           },
         ]
@@ -566,8 +592,11 @@ export type Database = {
           period_end: string | null
           period_start: string | null
           property_name: string | null
+          receipt_number: string | null
+          receipt_token: string | null
           tenant_id: string | null
           tenant_name: string | null
+          tenant_phone: string | null
           unit_label: string | null
           void_reason: string | null
           voided_at: string | null
@@ -629,6 +658,18 @@ export type Database = {
       owns_charge: { Args: { p_charge_id: string }; Returns: boolean }
       queue_reminders: { Args: never; Returns: number }
       random_token: { Args: never; Returns: string }
+      receipt: { Args: { p_token: string }; Returns: Json }
+      receipt_message: {
+        Args: {
+          p_amount_kobo: number
+          p_landlord_name: string
+          p_link: string
+          p_receipt_number: string
+          p_tenant_name: string
+          p_unit_label: string
+        }
+        Returns: string
+      }
       record_manual_payment: {
         Args: {
           p_amount_kobo: number
@@ -653,6 +694,7 @@ export type Database = {
         Returns: string
       }
       refresh_charge_paid: { Args: { p_charge_id: string }; Returns: undefined }
+      regenerate_tenant_link: { Args: { p_tenant_id: string }; Returns: string }
       reminder_kind: {
         Args: {
           p_due: string

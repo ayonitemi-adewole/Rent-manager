@@ -155,21 +155,21 @@ Some of these approvals take days or weeks, so **start them today**, even before
 **Goal:** tenants get proof of payment, and landlords get a full ledger.
 
 ### Tenant page (no login): `/t/:token`
-- [ ] `tenants.access_token` is random and unguessable (≥ 22 characters, base62)
-- [ ] Data is served through a `SECURITY DEFINER` RPC or edge function that takes the token. **Don't** open RLS to anonymous users
-- [ ] Shows the landlord's name, unit, amount due and due date, a **Pay** button and past receipts
-- [ ] Trust signals: landlord name, the Flutterwave badge, and "Money goes directly to [landlord's bank name] account ending 1234"
-- [ ] Landlord can regenerate the token, which invalidates the old link
+- [x] `tenants.access_token` is random and unguessable (24 URL-safe characters, 144 bits)
+- [x] Data is served through a `SECURITY DEFINER` RPC (`tenant_portal`) or edge function that takes the token. **Don't** open RLS to anonymous users
+- [x] Shows the landlord's name, unit, the earliest amount due (one at a time) with a **Pay** button, the next amount, and past receipts
+- [x] Trust signals: landlord name, the Flutterwave badge, and "Money goes directly to [landlord's bank name] account ending 1234"
+- [x] Landlord can regenerate the token (**Reset link**), which invalidates the old link
 
 ### Receipts
-- [ ] A sequential receipt number per landlord (e.g. `RM-0001`)
-- [ ] Receipt page at `/r/:token`, printable. Show the amount, period covered, method, date and balance remaining
-- [ ] Send the receipt link by SMS automatically after every payment (online or manual)
+- [x] A sequential receipt number per landlord (`RP-0001`), assigned after insert so webhook replays never skip a number
+- [x] Receipt page at `/r/:token`, printable (voided payments marked VOID). Show the amount, period covered, method, date and balance remaining
+- [x] Receipt SMS queued automatically after every payment (online or manual); delivered once the SMS sender exists. **Send on WhatsApp** works now
 
 ### History
-- [ ] Tenant ledger: all charges and payments with a running balance
-- [ ] Unit history: all tenants over time
-- [ ] CSV export (cheap to build, and landlords and accountants like it)
+- [x] Tenant statement: all charges and payments with a running balance (`/tenants/:id/statement`)
+- [x] Unit history: all tenants over time (on the unit's page)
+- [x] CSV export: per-tenant statement, and all payments from Settings (formula-injection safe)
 
 **Done when:** a tenant can open their link on a cheap phone, pay, and receive a receipt, all without an account.
 
