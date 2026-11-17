@@ -1,4 +1,5 @@
 // Minimal Flutterwave v3 client. Docs: https://developer.flutterwave.com/v3.0/reference
+import { FALLBACK_BANKS } from './banks.ts'
 import { requireEnv, UserError } from './http.ts'
 
 const BASE = 'https://api.flutterwave.com/v3'
@@ -33,7 +34,17 @@ export class FlutterwaveError extends Error {
 
 export type Bank = { id: number; code: string; name: string }
 
-export const listBanks = () => flw<Bank[]>('/banks/NG')
+/** Flutterwave's bank list, or a built-in list if that endpoint fails. Never throws for API errors. */
+export async function listBanks(): Promise<Pick<Bank, 'code' | 'name'>[]> {
+  try {
+    const banks = await flw<Bank[]>('/banks/NG')
+    if (banks.length > 0) return banks
+  } catch (err) {
+    if (!(err instanceof FlutterwaveError)) throw err
+    console.warn('Using fallback bank list')
+  }
+  return FALLBACK_BANKS
+}
 
 export async function resolveAccount(accountNumber: string, bankCode: string): Promise<string> {
   try {
