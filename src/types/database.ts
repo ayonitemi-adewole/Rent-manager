@@ -119,6 +119,56 @@ export type Database = {
           },
         ]
       }
+      rent_charges: {
+        Row: {
+          amount_kobo: number
+          amount_paid_kobo: number
+          charge_type: string
+          created_at: string
+          due_date: string
+          id: string
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["charge_status"]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_kobo: number
+          amount_paid_kobo?: number
+          charge_type?: string
+          created_at?: string
+          due_date: string
+          id?: string
+          period_end: string
+          period_start: string
+          status?: Database["public"]["Enums"]["charge_status"]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_kobo?: number
+          amount_paid_kobo?: number
+          charge_type?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          status?: Database["public"]["Enums"]["charge_status"]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rent_charges_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           access_token: string
@@ -221,13 +271,62 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      charge_overview: {
+        Row: {
+          amount_kobo: number | null
+          amount_paid_kobo: number | null
+          balance_kobo: number | null
+          days_until_due: number | null
+          due_date: string | null
+          id: string | null
+          period_end: string | null
+          period_start: string | null
+          property_id: string | null
+          property_name: string | null
+          status: Database["public"]["Enums"]["charge_status"] | null
+          tenant_id: string | null
+          tenant_name: string | null
+          tenant_phone: string | null
+          timing: string | null
+          unit_id: string | null
+          unit_label: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rent_charges_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      chargeable_periods: {
+        Args: {
+          p_added_on: string
+          p_horizon: string
+          p_moved_out_at: string
+          p_paid_until: string
+          p_period: Database["public"]["Enums"]["rent_period"]
+          p_start_date: string
+        }
+        Returns: {
+          period_end: string
+          period_start: string
+        }[]
+      }
       dev_send_sms_hook: { Args: { event: Json }; Returns: Json }
       random_token: { Args: never; Returns: string }
+      rent_period_months: {
+        Args: { p: Database["public"]["Enums"]["rent_period"] }
+        Returns: number
+      }
+      today_lagos: { Args: never; Returns: string }
     }
     Enums: {
+      charge_status: "unpaid" | "partially_paid" | "paid" | "cancelled"
       rent_period: "monthly" | "six_monthly" | "yearly"
       tenant_status: "active" | "moved_out"
       unit_type:
@@ -368,6 +467,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      charge_status: ["unpaid", "partially_paid", "paid", "cancelled"],
       rent_period: ["monthly", "six_monthly", "yearly"],
       tenant_status: ["active", "moved_out"],
       unit_type: [

@@ -11,6 +11,7 @@ import { friendlyError } from '@/lib/errors'
 import { formatKobo } from '@/lib/money'
 import { formatNgPhone } from '@/lib/phone'
 import { formatDate, rentPeriodLabel, todayIso } from '@/lib/rent'
+import { TenantCharges } from '@/features/charges/TenantCharges'
 import { useTenant, useUpdateTenant } from './api'
 
 export function TenantDetailPage() {
@@ -120,9 +121,7 @@ export function TenantDetailPage() {
             </Card>
           )}
 
-          <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
-            Rent charges and payment history appear here from the next update.
-          </p>
+          <TenantCharges tenantId={t.id} />
 
           {active && (
             <div className="space-y-3 border-t pt-6">

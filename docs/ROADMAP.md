@@ -74,21 +74,20 @@ Some of these approvals take days or weeks, so **start them today**, even before
 **Goal:** the app knows what each tenant owes and when, and the landlord can see it at a glance.
 
 ### Charge generation (the core logic; test it well)
-- [ ] A pure TS/SQL function: given `start_date`, `period` and `amount`, return the next period's `period_start`, `period_end` and `due_date`
+- [x] A pure SQL function (`chargeable_periods`) returns each period's `period_start` and `period_end`; `due_date` = `period_start`
   - Rent is due on `period_start` (Nigerian norm: rent is paid in advance)
   - Watch month-end edge cases: a tenancy starting Jan 31 should not drift to Feb 28 forever. Anchor to the original start day
-- [ ] When a tenant is added, create the **current** charge. Offer "already paid this period?" so existing tenants aren't shown as overdue
-- [ ] A **daily `pg_cron` job** that:
-  - creates the next charge **45 days before** it's due (so the 30-day reminder has something to point at)
-  - moves unpaid charges past `due_date` to `overdue`
-- [ ] Unique constraint on `(tenant_id, period_start)` so the job can rerun without creating duplicates
-- [ ] Unit tests for yearly, 6-monthly and monthly periods, leap years and month-end starts
+- [x] When a tenant is added or their terms change, a trigger (re)builds their unpaid charges. "Paid up to" stops existing tenants showing as overdue
+- [x] A **daily `pg_cron` job** (00:30 Lagos) creates the next charge **45 days before** it's due
+  - Changed: "overdue" is not a stored status. The `charge_overview` view derives it from `due_date` vs today (Lagos time), so it's always current without a job flipping it
+- [x] Unique constraint on `(tenant_id, charge_type, period_start)` so the job can rerun without creating duplicates
+- [x] SQL tests for yearly, 6-monthly and monthly periods, leap years, month-end starts, paid-up-to and move-out (`supabase/tests/chargeable_periods.sql`)
 
 ### Dashboard
-- [ ] Summary cards: collected this month, outstanding, overdue count
-- [ ] Lists: **Overdue** → **Due in 30 days** → **Paid recently**, each row showing tenant, unit, amount and days late or left
-- [ ] Tap a row → tenant detail with their charges
-- [ ] Wrap the queries in a SQL view or RPC (`dashboard_summary`) so the client stays light
+- [x] Summary cards: overdue and due in 30 days (amount + tenant count). "Collected this month" comes with payments (Week 3–4)
+- [x] Lists: **Overdue** → **Due in 30 days** (→ **Paid recently** with payments), each row showing tenant, unit, amount and days late or left
+- [x] Tap a row → tenant detail with their charges
+- [x] Queries go through the `charge_overview` view (security_invoker, so RLS applies)
 
 **Done when:** the dashboard for a pilot landlord matches their own notebook or sheet.
 

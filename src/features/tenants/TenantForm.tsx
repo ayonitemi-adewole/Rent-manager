@@ -107,7 +107,7 @@ export function TenantForm({ defaultValues, unitOptions, submitLabel, pending, e
         id="paidUntil"
         label="Rent already paid up to (optional)"
         error={errors.paidUntil?.message}
-        hint="For tenants already living there: the date their current rent runs out. Leave empty if they haven’t paid yet."
+        hint="For tenants already living there: the date their paid rent runs out. Leave empty if their current rent hasn’t been paid. Earlier periods are treated as settled."
       >
         <Input id="paidUntil" type="date" className="h-12 text-base" {...form.register('paidUntil')} />
       </Field>
