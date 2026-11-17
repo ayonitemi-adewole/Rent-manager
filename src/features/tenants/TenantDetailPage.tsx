@@ -12,6 +12,8 @@ import { formatKobo } from '@/lib/money'
 import { formatNgPhone } from '@/lib/phone'
 import { formatDate, rentPeriodLabel, todayIso } from '@/lib/rent'
 import { TenantCharges } from '@/features/charges/TenantCharges'
+import { TenantPayments } from '@/features/payments/TenantPayments'
+import { TenantReminders } from '@/features/payments/TenantReminders'
 import { useTenant, useUpdateTenant } from './api'
 
 export function TenantDetailPage() {
@@ -108,8 +110,8 @@ export function TenantDetailPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-muted-foreground text-sm">
-                  The tenant opens this to see what they owe and pay. No login needed. Online payment comes
-                  in a later update.
+                  The tenant opens this to see what they owe and pay online. No login needed. It’s also in every
+                  reminder.
                 </p>
                 <div className="flex gap-2">
                   <code className="bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 text-xs">{tenantLink}</code>
@@ -122,6 +124,8 @@ export function TenantDetailPage() {
           )}
 
           <TenantCharges tenantId={t.id} />
+          <TenantPayments tenantId={t.id} />
+          {active && <TenantReminders tenant={t} unitLabel={t.units?.label ?? ''} />}
 
           {active && (
             <div className="space-y-3 border-t pt-6">

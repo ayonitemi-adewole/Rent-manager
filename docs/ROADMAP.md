@@ -84,8 +84,8 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] SQL tests for yearly, 6-monthly and monthly periods, leap years, month-end starts, paid-up-to and move-out (`supabase/tests/chargeable_periods.sql`)
 
 ### Dashboard
-- [x] Summary cards: overdue and due in 30 days (amount + tenant count). "Collected this month" comes with payments (Phases 3–4)
-- [x] Lists: **Overdue** → **Due in 30 days** (→ **Paid recently** with payments), each row showing tenant, unit, amount and days late or left
+- [x] Summary cards: collected this month, overdue and due in 30 days (amount + count)
+- [x] Lists: **Overdue** → **Due in 30 days** → **Paid recently**, each row showing tenant, unit, amount and days late or left
 - [x] Tap a row → tenant detail with their charges
 - [x] Queries go through the `charge_overview` view (security_invoker, so RLS applies)
 
@@ -130,18 +130,21 @@ Some of these approvals take days or weeks, so **start them today**, even before
 **Goal:** tenants get nudged automatically, and cash payments are recorded too.
 
 ### Reminders
-- [ ] Daily `pg_cron` job → edge function `send-reminders` (run around 9am WAT, never at night)
-- [ ] Schedule: **30, 14, 7 and 1 days before** due, then overdue at **+1, +7 and +14 days** (cap it; don't spam)
-- [ ] Unique constraint on `reminders (charge_id, kind)` so each reminder sends at most once, even across retries
-- [ ] Skip charges that are paid; for partially paid charges, mention the balance
-- [ ] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rentmgr.ng/t/x7Kp2 – Mr Adeyemi`
-- [ ] Store the Termii message ID and delivery status. Show "reminder sent" on the tenant's row
-- [ ] Per-landlord toggle to pause reminders for a tenant (landlords will ask for this)
+- [x] Daily `pg_cron` job (`queue-rent-reminders`, 9am WAT) queues each day's reminders in SQL (`queue_reminders`)
+- [ ] SMS sender: edge function `send-reminders` that delivers queued reminders through Termii (needs a Termii account + sender ID). Until then reminders stay **queued** and are shown on the tenant page
+- [x] Schedule: **30, 14, 7 and 1 days before** due, then overdue at **+1, +7 and +14 days** (cap it; don't spam)
+- [x] Unique constraint on `reminders (charge_id, kind)` so each reminder sends at most once, even across retries
+- [x] Skip charges that are paid; for partially paid charges, mention the balance
+- [x] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rentmgr.ng/t/x7Kp2 – Mr Adeyemi`
+- [x] Reminders card on the tenant page: each reminder's date, timing, status and text
+- [x] **Send reminder on WhatsApp** button (same wording as the SMS), works without any SMS provider
+- [ ] Store the Termii message ID and delivery status (columns exist; filled by the sender)
+- [x] Per-tenant toggle to pause reminders (tenant form, since Phase 1) for a tenant (landlords will ask for this)
 
 ### Manual payments
-- [ ] "Record payment" on a charge: amount, method (cash / transfer), date, optional note or reference
-- [ ] Partial amounts allowed; the status updates via the same `record_payment` function as the webhook
-- [ ] Void a payment with a reason, keeping the row. Mistakes happen, but the ledger stays auditable
+- [x] "Record payment" on a charge: amount, method (cash / transfer), date, optional note or reference
+- [x] Partial amounts allowed (never more than owed); the status updates via the same `record_payment` function as the webhook
+- [x] Void a hand-recorded payment with a reason, keeping the row. Mistakes happen, but the ledger stays auditable
 
 **Done when:** a pilot tenant receives the reminder and the landlord can log a cash payment in three taps.
 

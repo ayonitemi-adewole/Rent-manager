@@ -39,6 +39,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       dev_sms_outbox: {
         Row: {
           created_at: string
@@ -247,6 +262,66 @@ export type Database = {
             columns: ["landlord_id"]
             isOneToOne: false
             referencedRelation: "landlords"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminders: {
+        Row: {
+          channel: string
+          charge_id: string
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          message: string
+          provider_message_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          to_phone: string
+        }
+        Insert: {
+          channel?: string
+          charge_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind: string
+          message: string
+          provider_message_id?: string | null
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          to_phone: string
+        }
+        Update: {
+          channel?: string
+          charge_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          message?: string
+          provider_message_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          to_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "charge_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "rent_charges"
             referencedColumns: ["id"]
           },
         ]
@@ -480,6 +555,47 @@ export type Database = {
           },
         ]
       }
+      payment_overview: {
+        Row: {
+          amount_kobo: number | null
+          charge_id: string | null
+          id: string | null
+          method: Database["public"]["Enums"]["payment_method"] | null
+          note: string | null
+          paid_at: string | null
+          period_end: string | null
+          period_start: string | null
+          property_name: string | null
+          tenant_id: string | null
+          tenant_name: string | null
+          unit_label: string | null
+          void_reason: string | null
+          voided_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "charge_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_charge_id_fkey"
+            columns: ["charge_id"]
+            isOneToOne: false
+            referencedRelation: "rent_charges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rent_charges_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       chargeable_periods: {
@@ -502,7 +618,19 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: number
       }
+      owns_charge: { Args: { p_charge_id: string }; Returns: boolean }
+      queue_reminders: { Args: never; Returns: number }
       random_token: { Args: never; Returns: string }
+      record_manual_payment: {
+        Args: {
+          p_amount_kobo: number
+          p_charge_id: string
+          p_method: Database["public"]["Enums"]["payment_method"]
+          p_note?: string
+          p_paid_on: string
+        }
+        Returns: string
+      }
       record_payment: {
         Args: {
           p_amount_kobo: number
@@ -516,12 +644,33 @@ export type Database = {
         }
         Returns: string
       }
+      refresh_charge_paid: { Args: { p_charge_id: string }; Returns: undefined }
+      reminder_kind: {
+        Args: { p_due: string; p_today: string }
+        Returns: string
+      }
+      reminder_message: {
+        Args: {
+          p_balance_kobo: number
+          p_due: string
+          p_kind: string
+          p_landlord_name: string
+          p_link: string
+          p_tenant_name: string
+          p_unit_label: string
+        }
+        Returns: string
+      }
       rent_period_months: {
         Args: { p: Database["public"]["Enums"]["rent_period"] }
         Returns: number
       }
       tenant_portal: { Args: { p_token: string }; Returns: Json }
       today_lagos: { Args: never; Returns: string }
+      void_payment: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: undefined
+      }
     }
     Enums: {
       charge_status: "unpaid" | "partially_paid" | "paid" | "cancelled"

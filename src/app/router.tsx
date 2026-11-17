@@ -8,6 +8,7 @@ import { PropertiesPage } from '@/features/properties/PropertiesPage'
 import { PropertyDetailPage } from '@/features/properties/PropertyDetailPage'
 import { EditPropertyPage, NewPropertyPage } from '@/features/properties/PropertyFormPage'
 import { EditUnitPage, NewUnitPage } from '@/features/properties/UnitFormPage'
+import { RecordPaymentPage } from '@/features/payments/RecordPaymentPage'
 import { PayoutPage } from '@/features/payout/PayoutPage'
 import { PaymentResultPage } from '@/features/public/PaymentResultPage'
 import { ReceiptPage } from '@/features/public/ReceiptPage'
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
               { path: 'tenants/new', element: <NewTenantPage /> },
               { path: 'tenants/:tenantId', element: <TenantDetailPage /> },
               { path: 'tenants/:tenantId/edit', element: <EditTenantPage /> },
+              { path: 'tenants/:tenantId/charges/:chargeId/record', element: <RecordPaymentPage /> },
               { path: 'settings', element: <SettingsPage /> },
               { path: 'settings/payout', element: <PayoutPage /> },
             ],

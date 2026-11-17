@@ -1,4 +1,6 @@
+import { Link } from 'react-router'
 import { QueryState } from '@/components/QueryState'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { dueLabel } from '@/lib/charges'
 import { formatKobo } from '@/lib/money'
@@ -45,6 +47,11 @@ export function TenantCharges({ tenantId }: { tenantId: string }) {
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span className="font-semibold tabular-nums">{formatKobo(c.amount_kobo)}</span>
                 <ChargeBadge charge={c} />
+                {c.balance_kobo > 0 && c.status !== 'cancelled' && (
+                  <Button asChild variant="link" size="sm" className="h-auto p-0 text-xs">
+                    <Link to={`/tenants/${tenantId}/charges/${c.id}/record`}>Record payment</Link>
+                  </Button>
+                )}
               </div>
             </li>
           ))}
