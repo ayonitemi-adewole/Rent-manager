@@ -9,8 +9,14 @@ export async function invokeFunction<T>(name: string, body: Record<string, unkno
   const { data, error } = await supabase.functions.invoke<T>(name, { body })
   if (error) {
     if (error instanceof FunctionsHttpError) {
-      const payload = (await error.context.json().catch(() => null)) as { error?: string } | null
-      throw new Error(payload?.error ?? 'Something went wrong. Please try again.')
+      // Our functions send { error }; the Supabase gateway sends { msg } or { message }.
+      const payload = (await error.context.json().catch(() => null)) as
+        | { error?: string; msg?: string; message?: string }
+        | null
+      const status = (error.context as Response).status
+      throw new Error(
+        payload?.error ?? payload?.msg ?? payload?.message ?? `Something went wrong (HTTP ${status}). Please try again.`,
+      )
     }
     throw new Error('No connection. Check your internet and try again.')
   }

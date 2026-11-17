@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import { useLandlord } from '@/features/landlord/api'
+import { env } from '@/lib/env'
 import { friendlyError } from '@/lib/errors'
 import { useBanks, useResolvedAccount, useSavePayout, type Bank } from './api'
 
@@ -46,6 +47,13 @@ export function PayoutPage() {
           money.
         </p>
       </div>
+
+      {env.flwPublicKey?.includes('TEST') && (
+        <p className="text-muted-foreground mb-4 rounded-lg border border-dashed p-3 text-xs">
+          <strong>Test mode:</strong> Flutterwave can usually only look up its test accounts. Use{' '}
+          <strong>Access Bank</strong> and account number <strong>0690000031</strong>.
+        </p>
+      )}
 
       <QueryState isPending={banks.isPending} error={banks.error} refetch={banks.refetch} />
 

@@ -431,9 +431,10 @@ enabled = true
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
 
 # ── RentPadi edge functions ──
-# Signed-in landlords only (JWT checked by the gateway and again in the function).
+# Signed-in landlords only. The function checks the user itself (requireUser): the gateway's
+# verify_jwt is off because it can reject tokens from Supabase's newer JWT signing keys.
 [functions.flw-payout]
-verify_jwt = true
+verify_jwt = false
 
 # Public: called by tenants (secret link token checked in the function) or by Flutterwave
 # (verif-hash checked in the function). There's no Supabase login to verify.

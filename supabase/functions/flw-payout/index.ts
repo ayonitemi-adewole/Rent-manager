@@ -1,8 +1,24 @@
 // Landlord payout account: list banks, check an account name, save it as a Flutterwave subaccount.
 // Requires a signed-in landlord. Body: { action: 'banks' } | { action: 'resolve' | 'save', bank_code, account_number }
-import { createSubaccount, listBanks, resolveAccount, updateSubaccount } from '../_shared/flutterwave.ts'
+import {
+  createSubaccount,
+  FlutterwaveError,
+  listBanks,
+  resolveAccount,
+  updateSubaccount,
+} from '../_shared/flutterwave.ts'
 import { handler, json, readJson, UserError } from '../_shared/http.ts'
 import { adminClient, requireUser } from '../_shared/supabase.ts'
+
+/** Flutterwave's own message is the useful one for payout setup problems (bad key, rejected account…). */
+async function withFlutterwaveMessage<T>(step: string, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    if (err instanceof FlutterwaveError) throw new UserError(`${step}: ${err.message}`, 502)
+    throw err
+  }
+}
 
 type Body =
   | { action: 'banks' }
@@ -15,7 +31,7 @@ Deno.serve(
     const body = await readJson<Body>(req)
 
     if (body.action === 'banks') {
-      const banks = await listBanks()
+      const banks = await withFlutterwaveMessage('Could not load banks from Flutterwave', listBanks)
       const sorted = banks
         .map(({ code, name }) => ({ code, name: name.trim() }))
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -41,16 +57,19 @@ Deno.serve(
     if (error) throw error
     if (!landlord) throw new UserError('Finish setting up your profile first.')
 
-    const bankName = (await listBanks()).find((b) => b.code === bankCode)?.name.trim() ?? null
+    const banks = await withFlutterwaveMessage('Could not load banks from Flutterwave', listBanks)
+    const bankName = banks.find((b) => b.code === bankCode)?.name.trim() ?? null
     const input = {
       accountNumber,
       bankCode,
       businessName: landlord.full_name,
       mobile: String(landlord.phone).replace(/^\+/, ''),
     }
-    const sub = landlord.flw_subaccount_ref
-      ? await updateSubaccount(landlord.flw_subaccount_ref, input)
-      : await createSubaccount(input)
+    const sub = await withFlutterwaveMessage('Flutterwave could not save this account', () =>
+      landlord.flw_subaccount_ref
+        ? updateSubaccount(landlord.flw_subaccount_ref, input)
+        : createSubaccount(input),
+    )
 
     const { error: updateError } = await admin
       .from('landlords')
