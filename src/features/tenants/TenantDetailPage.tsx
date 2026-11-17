@@ -1,6 +1,7 @@
 import { Check, Copy, LogOut, MessageCircle, Pencil, Phone } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
+import { ConfirmAction } from '@/components/ConfirmAction'
 import { FormError } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
@@ -21,6 +22,7 @@ export function TenantDetailPage() {
   const { data: t, isPending, error, refetch } = useTenant(tenantId)
   const update = useUpdateTenant(tenantId)
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
 
   const tenantLink = t ? `${window.location.origin}/t/${t.access_token}` : ''
   const active = t?.status === 'active'
@@ -31,14 +33,8 @@ export function TenantDetailPage() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      prompt('Copy this link:', tenantLink)
+      setCopyFailed(true) // clipboard blocked: the link is shown, press and hold to copy
     }
-  }
-
-  function moveOut() {
-    if (!t) return
-    if (!confirm(`Mark ${t.full_name} as moved out today? The unit becomes vacant.`)) return
-    update.mutate({ status: 'moved_out', moved_out_at: todayIso() })
   }
 
   return (
@@ -114,11 +110,12 @@ export function TenantDetailPage() {
                   reminder.
                 </p>
                 <div className="flex gap-2">
-                  <code className="bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 text-xs">{tenantLink}</code>
+                  <code className={copyFailed ? 'bg-muted min-w-0 flex-1 rounded-md px-3 py-2 text-xs break-all select-all' : 'bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 text-xs'}>{tenantLink}</code>
                   <Button variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
                     {copied ? <Check /> : <Copy />}
                   </Button>
                 </div>
+                {copyFailed && <p className="text-muted-foreground text-xs">Couldn’t copy automatically. Press and hold the link to copy it.</p>}
               </CardContent>
             </Card>
           )}
@@ -130,9 +127,18 @@ export function TenantDetailPage() {
           {active && (
             <div className="space-y-3 border-t pt-6">
               <FormError message={update.error ? friendlyError(update.error) : null} />
-              <Button variant="outline" className="w-full" onClick={moveOut} disabled={update.isPending}>
-                <LogOut /> Mark as moved out
-              </Button>
+              <ConfirmAction
+                trigger={
+                  <>
+                    <LogOut /> Mark as moved out
+                  </>
+                }
+                triggerClassName="w-full"
+                question={`Mark ${t.full_name} as moved out today? The unit becomes vacant.`}
+                confirmLabel="Yes, moved out"
+                pending={update.isPending}
+                onConfirm={() => update.mutate({ status: 'moved_out', moved_out_at: todayIso() })}
+              />
             </div>
           )}
         </div>

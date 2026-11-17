@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Field, FormError } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
+import { ConfirmAction } from '@/components/ConfirmAction'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { friendlyError } from '@/lib/errors'
@@ -81,18 +82,18 @@ export function EditPropertyPage() {
                   : null
               }
             />
-            <Button
-              variant="outline"
-              className="text-destructive"
-              disabled={remove.isPending}
-              onClick={() => {
-                if (confirm(`Delete "${property.name}" and all its units?`)) {
-                  remove.mutate(undefined, { onSuccess: () => navigate('/properties', { replace: true }) })
-                }
-              }}
-            >
-              <Trash2 /> Delete property
-            </Button>
+            <ConfirmAction
+              trigger={
+                <>
+                  <Trash2 /> Delete property
+                </>
+              }
+              triggerClassName="text-destructive"
+              question={`Delete “${property.name}” and all its units?`}
+              confirmLabel="Delete property"
+              pending={remove.isPending}
+              onConfirm={() => remove.mutate(undefined, { onSuccess: () => navigate('/properties', { replace: true }) })}
+            />
           </div>
         </>
       )}

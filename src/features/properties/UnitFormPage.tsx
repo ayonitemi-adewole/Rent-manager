@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Field, FormError } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
+import { ConfirmAction } from '@/components/ConfirmAction'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
@@ -107,18 +108,18 @@ export function EditUnitPage() {
                   : null
               }
             />
-            <Button
-              variant="outline"
-              className="text-destructive"
-              disabled={remove.isPending}
-              onClick={() => {
-                if (confirm(`Delete unit "${unit.label}"?`)) {
-                  remove.mutate(undefined, { onSuccess: () => navigate(back, { replace: true }) })
-                }
-              }}
-            >
-              <Trash2 /> Delete unit
-            </Button>
+            <ConfirmAction
+              trigger={
+                <>
+                  <Trash2 /> Delete unit
+                </>
+              }
+              triggerClassName="text-destructive"
+              question={`Delete unit “${unit.label}”?`}
+              confirmLabel="Delete unit"
+              pending={remove.isPending}
+              onConfirm={() => remove.mutate(undefined, { onSuccess: () => navigate(back, { replace: true }) })}
+            />
           </div>
         </>
       )}
