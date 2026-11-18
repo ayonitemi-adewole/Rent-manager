@@ -70,6 +70,41 @@ Deno.test('a redelivered message is handled once', async () => {
   assertEquals(handled.length, 1)
 })
 
+Deno.test('a message without a phone number is skipped, not a crash (Meta would retry forever)', async () => {
+  const body = JSON.stringify({
+    entry: [
+      {
+        changes: [
+          {
+            value: {
+              messages: [
+                { id: 'no-phone', from_user_id: 'NG.1543778274245983', type: 'text', text: { body: 'hi' } },
+                { id: 'ok', from: '2348031234567', type: 'text', text: { body: 'hi' } },
+              ],
+              statuses: [
+                { id: 'wamid.2', status: 'failed', errors: [{ code: 131031, title: 'Business Account locked' }] },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  })
+  const handled: Inbound[] = []
+  const statuses: string[] = []
+  const d = deps(handled, statuses)
+  const res = await handleWaWebhook(await post(body), {
+    ...d,
+    handleStatus: (s) => {
+      statuses.push(`${s.id}:${s.status}:${s.error}`)
+      return Promise.resolve()
+    },
+  })
+  assertEquals(res.status, 200)
+  assertEquals(handled.map((m) => m.id), ['ok'])
+  assertEquals(statuses, ['wamid.2:failed:(#131031) Business Account locked'])
+})
+
 Deno.test('one failing message does not stop the others or cause a retry storm', async () => {
   const two = JSON.stringify({
     entry: [

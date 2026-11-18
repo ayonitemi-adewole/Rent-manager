@@ -93,7 +93,7 @@ const params = (m: ReturnType<typeof reminderTemplate>) =>
 
 Deno.test('due reminder template', () => {
   const m = reminderTemplate(row(), 'https://rentpadi.app/')
-  assertEquals((m.template as { name: string }).name, 'rent_due_reminder')
+  assertEquals((m.template as { name: string }).name, 'rent_in_due_reminder')
   const [body, button] = params(m)
   assertEquals(body.parameters.map((p) => p.text), [
     'Mama',
@@ -120,7 +120,7 @@ Deno.test('receipt template carries the PDF and a receipts button', () => {
 
 Deno.test('template parameter counts match the definitions', () => {
   const count = (s: string) => (s.match(/\{\{\d+\}\}/g) ?? []).length
-  assertEquals(count(TEMPLATE_DEFINITIONS.rent_due_reminder.body), 6)
+  assertEquals(count(TEMPLATE_DEFINITIONS.rent_in_due_reminder.body), 6)
   assertEquals(count(TEMPLATE_DEFINITIONS.rent_overdue_reminder.body), 6)
   assertEquals(count(TEMPLATE_DEFINITIONS.rent_receipt.body), 5)
 })

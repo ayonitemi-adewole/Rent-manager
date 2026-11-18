@@ -135,6 +135,8 @@ if (import.meta.main) {
       handleStatus: async ({ id, status, error }) => {
         // Reminders/receipts we sent: record failures (e.g. number not on WhatsApp).
         if (status !== 'failed') return
+        // Chat replies aren't stored anywhere, so the log is the only place their failures show up.
+        console.error(`wa-webhook: WhatsApp could not deliver ${id}: ${error ?? 'unknown error'}`)
         const { error: dbError } = await admin
           .from('reminders')
           .update({ status: 'failed', error: error ?? 'WhatsApp could not deliver this message' })

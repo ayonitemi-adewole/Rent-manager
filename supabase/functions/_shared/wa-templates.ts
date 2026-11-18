@@ -6,7 +6,7 @@ import { formatDay, nairaDigits } from './receipt-pdf.ts'
 import type { OutboundMessage } from './whatsapp.ts'
 
 export const TEMPLATE_DEFINITIONS = {
-  rent_due_reminder: {
+  rent_in_due_reminder: {
     body:
       'Hi {{1}}, your rent of {{2}} for {{3}} is due on {{4}}. Pay securely here: {{5}}\n\n' +
       'Sent for {{6}} by RentPadi. Tap below to check your rent or get receipts.',
@@ -59,12 +59,24 @@ function build(
   if (header) {
     components.push({
       type: 'header',
-      parameters: [{ type: 'document', document: { id: header.documentId, filename: header.filename } }],
+      parameters: [
+        {
+          type: 'document',
+          document: { id: header.documentId, filename: header.filename },
+        },
+      ],
     })
   }
   // Template parameters may not contain newlines, tabs or 4+ spaces in a row.
-  const clean = (s: string) => s.replace(/[\n\t]+/g, ' ').replace(/ {4,}/g, '   ').slice(0, 1024)
-  components.push({ type: 'body', parameters: params.map((p) => ({ type: 'text', text: clean(p) })) })
+  const clean = (s: string) =>
+    s
+      .replace(/[\n\t]+/g, ' ')
+      .replace(/ {4,}/g, '   ')
+      .slice(0, 1024)
+  components.push({
+    type: 'body',
+    parameters: params.map((p) => ({ type: 'text', text: clean(p) })),
+  })
   // The quick-reply button sends this payload back, so the bot knows which tenancy to open.
   components.push({
     type: 'button',
@@ -72,14 +84,17 @@ function build(
     index: '0',
     parameters: [{ type: 'payload', payload: quickReplyPayload }],
   })
-  return { type: 'template', template: { name, language: { code: 'en' }, components } }
+  return {
+    type: 'template',
+    template: { name, language: { code: 'en' }, components },
+  }
 }
 
 /** Reminder template for a claimed reminder row. */
 export function reminderTemplate(row: OutboundRow, appUrl: string): OutboundMessage {
   const overdue = row.kind.startsWith('od')
   return build(
-    overdue ? 'rent_overdue_reminder' : 'rent_due_reminder',
+    overdue ? 'rent_overdue_reminder' : 'rent_in_due_reminder',
     [
       firstName(row.tenant_name),
       naira(row.balance_kobo),

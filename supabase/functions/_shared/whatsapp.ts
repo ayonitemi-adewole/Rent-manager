@@ -193,7 +193,7 @@ type WebhookValue = {
     interactive?: { button_reply?: { id: string }; list_reply?: { id: string } }
     button?: { payload?: string; text?: string }
   }[]
-  statuses?: { id: string; status: string; errors?: { title?: string; message?: string }[] }[]
+  statuses?: { id: string; status: string; errors?: { code?: number; title?: string; message?: string }[] }[]
 }
 
 /** Pull messages and delivery statuses out of a webhook payload. */
@@ -208,6 +208,9 @@ export function parseWebhook(payload: unknown): {
     for (const change of entry.changes ?? []) {
       const value = change.value ?? {}
       for (const m of value.messages ?? []) {
+        // Without a phone number we can't find the tenant (e.g. Meta's username-only senders): skip it
+        // rather than failing the whole delivery, which would make Meta retry it forever.
+        if (!m?.id || typeof m.from !== 'string' || !m.from) continue
         const reply = m.interactive?.button_reply?.id ?? m.interactive?.list_reply?.id
         // Quick-reply buttons on templates arrive as type "button".
         const templateButton = m.button?.payload ?? m.button?.text
@@ -219,8 +222,10 @@ export function parseWebhook(payload: unknown): {
         })
       }
       for (const s of value.statuses ?? []) {
+        if (!s?.id) continue
         const err = s.errors?.[0]
-        statuses.push({ id: s.id, status: s.status, error: err ? (err.message ?? err.title) : undefined })
+        const error = err ? `${err.code ? `(#${err.code}) ` : ''}${err.message ?? err.title ?? 'failed'}` : undefined
+        statuses.push({ id: s.id, status: s.status, error })
       }
     }
   }
