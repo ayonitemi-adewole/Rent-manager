@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, Printer } from 'lucide-react'
+import { CheckCircle2, FileDown, Printer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { Logo } from '@/components/Logo'
@@ -7,31 +7,9 @@ import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatKobo } from '@/lib/money'
-import { formatDate } from '@/lib/rent'
 import { publicRpc } from '@/lib/public-api'
-
-type Receipt = {
-  receipt_number: string
-  amount_kobo: number
-  method: 'link' | 'cash' | 'transfer'
-  paid_at: string
-  voided: boolean
-  tenant_name: string
-  unit_label: string
-  property_name: string
-  property_address: string | null
-  landlord_name: string
-  period_start: string
-  period_end: string
-  charge_amount_kobo: number
-  balance_after_kobo: number
-}
-
-const METHOD: Record<Receipt['method'], string> = {
-  link: 'Online (Flutterwave)',
-  cash: 'Cash',
-  transfer: 'Bank transfer',
-}
+import { downloadFile } from '@/lib/share'
+import { receiptFileName, receiptPdf, receiptRows, type Receipt } from '@/features/receipts/receipt'
 
 // Public, printable receipt. The link (secret token) is the credential.
 export function ReceiptPage() {
@@ -71,21 +49,12 @@ export function ReceiptPage() {
               </div>
 
               <dl className="divide-y text-sm">
-                <Row label="Received from">{r.tenant_name}</Row>
-                <Row label="Paid to">{r.landlord_name}</Row>
-                <Row label="For">
-                  {r.unit_label}, {r.property_name}
-                  {r.property_address && <span className="text-muted-foreground block text-xs">{r.property_address}</span>}
-                </Row>
-                <Row label="Rent period">
-                  {formatDate(r.period_start)} – {formatDate(r.period_end)}
-                </Row>
-                <Row label="Date paid">{formatDate(r.paid_at.slice(0, 10))}</Row>
-                <Row label="Method">{METHOD[r.method]}</Row>
-                <Row label="Rent for period">{formatKobo(r.charge_amount_kobo)}</Row>
-                <Row label="Balance after this payment">
-                  {r.balance_after_kobo > 0 ? formatKobo(r.balance_after_kobo) : 'Fully paid'}
-                </Row>
+                {receiptRows(r).map(([label, value, note]) => (
+                  <Row key={label} label={label}>
+                    {value}
+                    {note && <span className="text-muted-foreground block text-xs">{note}</span>}
+                  </Row>
+                ))}
               </dl>
 
               {r.voided && (
@@ -96,9 +65,23 @@ export function ReceiptPage() {
             </CardContent>
           </Card>
 
-          <Button variant="outline" className="h-12 print:hidden" onClick={() => window.print()}>
-            <Printer /> Print or save as PDF
-          </Button>
+          <div className="grid grid-cols-2 gap-2 print:hidden">
+            <Button
+              className="h-12"
+              onClick={() =>
+                downloadFile(
+                  new File([receiptPdf(r, window.location.href) as BlobPart], receiptFileName(r), {
+                    type: 'application/pdf',
+                  }),
+                )
+              }
+            >
+              <FileDown /> Download PDF
+            </Button>
+            <Button variant="outline" className="h-12" onClick={() => window.print()}>
+              <Printer /> Print
+            </Button>
+          </div>
           <p className="text-muted-foreground text-center text-xs print:hidden">Issued by RentPadi</p>
         </>
       )}

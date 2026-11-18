@@ -22,6 +22,7 @@ type Props = {
     id: string
     full_name: string
     phone: string
+    whatsapp_phone: string | null
     access_token: string
     reminders_enabled: boolean
     rent_period: RentPeriod
@@ -42,7 +43,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
   const whatsapp =
     open && landlord
       ? whatsappLink(
-          tenant.phone,
+          tenant.whatsapp_phone ?? tenant.phone,
           reminderMessage({
             daysUntilDue: open.days_until_due,
             tenantName: tenant.full_name,

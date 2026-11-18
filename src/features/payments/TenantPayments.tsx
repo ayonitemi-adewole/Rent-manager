@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/rent'
 import { whatsappLink } from '@/lib/reminders'
 import { cn } from '@/lib/utils'
 import { METHOD_LABEL, useTenantPayments, useVoidPayment } from './api'
+import { SendReceiptPdf } from './SendReceiptPdf'
 
 /** Every payment for a tenant, newest first. Hand-recorded ones can be voided (kept, struck through). */
 export function TenantPayments({ tenantId }: { tenantId: string }) {
@@ -46,7 +47,7 @@ export function TenantPayments({ tenantId }: { tenantId: string }) {
                     {p.note && <p className="text-muted-foreground text-xs">“{p.note}”</p>}
                     {voided && <p className="text-destructive text-xs">Voided: {p.void_reason}</p>}
                     {p.receipt_token && (
-                      <p className="flex flex-wrap gap-x-3 text-xs">
+                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                         <a
                           href={`/r/${p.receipt_token}`}
                           target="_blank"
@@ -55,19 +56,20 @@ export function TenantPayments({ tenantId }: { tenantId: string }) {
                         >
                           Receipt {p.receipt_number}
                         </a>
-                        {!voided && p.tenant_phone && (
+                        {!voided && p.tenant_whatsapp && (
                           <a
                             href={whatsappLink(
-                              p.tenant_phone,
+                              p.tenant_whatsapp,
                               `Receipt ${p.receipt_number} for ${formatKobo(p.amount_kobo ?? 0)}: ${window.location.origin}/r/${p.receipt_token}`,
                             )}
                             target="_blank"
                             rel="noreferrer"
                             className="text-primary hover:underline"
                           >
-                            Send on WhatsApp
+                            Send link on WhatsApp
                           </a>
                         )}
+                        <SendReceiptPdf token={p.receipt_token} />
                       </p>
                     )}
                   </div>

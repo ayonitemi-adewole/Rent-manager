@@ -433,6 +433,7 @@ export type Database = {
           status: Database["public"]["Enums"]["tenant_status"]
           unit_id: string
           updated_at: string
+          whatsapp_phone: string | null
         }
         Insert: {
           access_token?: string
@@ -449,6 +450,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["tenant_status"]
           unit_id: string
           updated_at?: string
+          whatsapp_phone?: string | null
         }
         Update: {
           access_token?: string
@@ -465,6 +467,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["tenant_status"]
           unit_id?: string
           updated_at?: string
+          whatsapp_phone?: string | null
         }
         Relationships: [
           {
@@ -612,6 +615,7 @@ export type Database = {
           tenant_id: string | null
           tenant_name: string | null
           tenant_phone: string | null
+          tenant_whatsapp: string | null
           unit_label: string | null
           void_reason: string | null
           voided_at: string | null
