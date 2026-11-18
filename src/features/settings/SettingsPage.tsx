@@ -16,6 +16,7 @@ import { useTour } from '@/features/onboarding/tour-context'
 import { friendlyError } from '@/lib/errors'
 import { formatNgPhone } from '@/lib/phone'
 import { ExportPaymentsCard } from './ExportPaymentsCard'
+import { WhatsappCard } from './WhatsappCard'
 
 export function SettingsPage() {
   const { signOut } = useAuth()
@@ -104,6 +105,8 @@ export function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+
+        <WhatsappCard />
 
         <ExportPaymentsCard />
 

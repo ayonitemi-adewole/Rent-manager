@@ -1,4 +1,4 @@
-import { ChevronRight, Lock } from 'lucide-react'
+import { ChevronRight, Lock, MessageCircle } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { Logo } from '@/components/Logo'
 import { QueryState } from '@/components/QueryState'
@@ -9,6 +9,8 @@ import { dueLabel, isOpen } from '@/lib/charges'
 import { friendlyError } from '@/lib/errors'
 import { formatKobo } from '@/lib/money'
 import { formatDate } from '@/lib/rent'
+import { env } from '@/lib/env'
+import { whatsappLink } from '@/lib/reminders'
 import { usePortal, useStartCheckout, type PortalCharge } from './api'
 
 // No-login tenant page: what's owed now (one period at a time), pay online, past receipts.
@@ -105,6 +107,14 @@ export function TenantPortalPage() {
                 Online payment isn’t available yet. Please pay your landlord directly.
               </p>
             )
+          )}
+
+          {env.whatsappNumber && (
+            <Button asChild variant="outline" className="h-11">
+              <a href={whatsappLink(env.whatsappNumber, 'Hi')} target="_blank" rel="noreferrer">
+                <MessageCircle className="text-success" /> Check rent and receipts on WhatsApp
+              </a>
+            </Button>
           )}
         </>
       )}

@@ -53,6 +53,15 @@ Demo mode uses a **free hosted Supabase project** and **Flutterwave test keys**.
 
 Edge functions are in `supabase/functions/`. Deploy them with `npm run functions:deploy` (no Docker needed). Test them with `npm run test:functions` (uses `npx deno`).
 
+## WhatsApp (Meta Cloud API)
+
+Tenants message RentPadi's WhatsApp number to check what they owe, pay (Flutterwave link), and get receipt PDFs. Landlords who switch on **Settings → WhatsApp** also send reminders and receipts on WhatsApp, alongside SMS.
+
+- `wa-webhook`: the tenant chat. Tenants are recognised by the number they message from: their WhatsApp number, or their phone number.
+- `send-reminders`: runs every 5 minutes (pg_cron). It delivers queued WhatsApp messages once WhatsApp is set up, and queued SMS once Termii is set up.
+
+**Setup:** follow [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md), a step-by-step guide using Meta's free test number. It covers the Meta app, a permanent token, secrets, the webhook, the three message templates, the scheduled sender, end-to-end testing, troubleshooting, and going live.
+
 ## Scripts
 
 | Command | What it does |

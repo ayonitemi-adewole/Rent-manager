@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { receiptPdf, type Receipt } from '@/features/receipts/receipt'
-import { PdfPage, pdfString, wrap } from './pdf'
+import { PdfPage, pdfString, wrap } from '@shared/pdf.ts'
 
 const decode = (bytes: Uint8Array) => new TextDecoder('latin1').decode(bytes)
 

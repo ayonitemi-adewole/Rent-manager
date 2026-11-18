@@ -10,6 +10,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Plain-TypeScript modules shared with the edge functions (e.g. the receipt PDF).
+      '@shared': fileURLToPath(new URL('./supabase/functions/_shared', import.meta.url)),
     },
   },
   build: {
