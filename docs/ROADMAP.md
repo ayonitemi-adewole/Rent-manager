@@ -177,6 +177,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ## Phase 6 — Pilot launch & hardening (~1 week)
 
+- [x] Speed on slow connections: pages load on demand; tenant links skip the login system and supabase-js (252 kB → 141 kB gzipped); loading screen in the HTML; non-blocking font; landlord pages prefetched when idle (not on Data Saver/2G)
 - [ ] Switch Flutterwave and Termii to **live** keys and do one real ₦100 payment end-to-end
 - [ ] Error monitoring (Sentry free tier) on the frontend and edge functions
 - [ ] Daily Supabase backups (or a scheduled `pg_dump` while on the free tier)

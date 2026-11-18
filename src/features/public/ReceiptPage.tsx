@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatKobo } from '@/lib/money'
 import { formatDate } from '@/lib/rent'
-import { supabase } from '@/lib/supabase'
+import { publicRpc } from '@/lib/public-api'
 
 type Receipt = {
   receipt_number: string
@@ -38,11 +38,7 @@ export function ReceiptPage() {
   const { token = '' } = useParams()
   const { data: r, isPending, error, refetch } = useQuery({
     queryKey: ['receipt', token],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('receipt', { p_token: token })
-      if (error) throw error
-      return (data as Receipt | null) ?? null
-    },
+    queryFn: async () => (await publicRpc<Receipt | null>('receipt', { p_token: token })) ?? null,
   })
 
   return (

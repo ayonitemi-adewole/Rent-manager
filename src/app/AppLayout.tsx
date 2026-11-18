@@ -1,7 +1,9 @@
 import { Building2, LayoutDashboard, Settings, Users } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router'
+import { useEffect } from 'react'
+import { NavLink, Outlet, useNavigation } from 'react-router'
 import { Logo } from '@/components/Logo'
 import { cn } from '@/lib/utils'
+import { prefetchCommonPages } from './pages'
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -11,9 +13,19 @@ const nav = [
 ]
 
 export function AppLayout() {
+  const loading = useNavigation().state === 'loading'
+
+  // Once a landlord is in, fetch the pages they open most so taps feel instant.
+  useEffect(prefetchCommonPages, [])
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
       <header className="bg-background/90 sticky top-0 z-10 border-b px-4 py-3 backdrop-blur">
+        {loading && (
+          <div role="progressbar" aria-label="Loading page" className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden">
+            <div className="page-progress bg-primary h-full w-2/5" />
+          </div>
+        )}
         <Logo className="text-lg [&>span:first-child]:size-8" />
       </header>
 
