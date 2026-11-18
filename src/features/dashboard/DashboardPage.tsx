@@ -176,8 +176,8 @@ function ChargeSection({ title, bucket }: { title: string; bucket: Bucket }) {
     <section className="space-y-2">
       <h2 className="font-semibold">{title}</h2>
       <Card className="divide-y overflow-hidden py-0">
-        {bucket.charges.map((c) => (
-          <ChargeRow key={c.id} charge={c} />
+        {bucket.tenants.map((t) => (
+          <ChargeRow key={t.tenantId} due={t} />
         ))}
       </Card>
     </section>
