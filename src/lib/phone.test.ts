@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatNgPhone, normalizeNgPhone } from './phone'
+import { formatNgPhone, formatPhone, normalizeNgPhone, normalizeWhatsappPhone } from './phone'
 
 describe('normalizeNgPhone', () => {
   it.each([
@@ -25,5 +25,25 @@ describe('normalizeNgPhone', () => {
 describe('formatNgPhone', () => {
   it('formats E.164 for display', () => {
     expect(formatNgPhone('+2348031234567')).toBe('0803 123 4567')
+  })
+})
+
+describe('normalizeWhatsappPhone', () => {
+  it.each([
+    ['0803 123 4567', '+2348031234567'],
+    ['+44 7911 123456', '+447911123456'],
+    ['+1 (415) 555-0100', '+14155550100'],
+  ])('%s → %s', (input, expected) => {
+    expect(normalizeWhatsappPhone(input)).toBe(expected)
+  })
+  it.each(['', '447911123456', '+0123456789', '+12345', 'hello'])('rejects %s', (input) => {
+    expect(normalizeWhatsappPhone(input)).toBeNull()
+  })
+})
+
+describe('formatPhone', () => {
+  it('formats Nigerian numbers and leaves others', () => {
+    expect(formatPhone('+2348031234567')).toBe('0803 123 4567')
+    expect(formatPhone('+447911123456')).toBe('+447911123456')
   })
 })

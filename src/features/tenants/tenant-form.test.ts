@@ -5,6 +5,7 @@ const valid: TenantFormValues = {
   unitId: 'unit-1',
   fullName: '  Tola Bakare ',
   phone: '0803 123 4567',
+  whatsapp: '',
   startDate: '2026-01-31',
   rent: '350,000',
   rentPeriod: 'yearly',
@@ -46,11 +47,26 @@ describe('tenantFormToRow', () => {
     expect(tenantFormToRow(parsed)).toEqual({
       full_name: 'Tola Bakare',
       phone: '+2348031234567',
+      whatsapp_phone: null,
       start_date: '2026-01-31',
       rent_amount_kobo: 35_000_000,
       rent_period: 'yearly',
       paid_until: null,
       reminders_enabled: true,
     })
+  })
+})
+
+describe('WhatsApp number', () => {
+  it('rejects a number without a country code', () => {
+    expect(errorPaths({ ...valid, whatsapp: '447911123456' })).toEqual(['whatsapp'])
+  })
+  it('stores a different Nigerian or international number', () => {
+    expect(tenantFormToRow({ ...valid, whatsapp: '0812 345 6789' }).whatsapp_phone).toBe('+2348123456789')
+    expect(tenantFormToRow({ ...valid, whatsapp: '+44 7911 123456' }).whatsapp_phone).toBe('+447911123456')
+  })
+  it('stores nothing when empty or the same as the phone', () => {
+    expect(tenantFormToRow(valid).whatsapp_phone).toBeNull()
+    expect(tenantFormToRow({ ...valid, whatsapp: '+234 803 123 4567' }).whatsapp_phone).toBeNull()
   })
 })

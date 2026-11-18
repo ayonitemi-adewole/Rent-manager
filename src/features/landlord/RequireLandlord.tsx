@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from 'react-router'
 import { FullPageSpinner } from '@/components/FullPageSpinner'
 import { QueryState } from '@/components/QueryState'
-import { useLandlord } from './api'
+import { needsOnboarding, useLandlord } from './api'
 
-/** Sends signed-in users without a landlord profile to onboarding. */
+/** Sends signed-in users to onboarding until they have a profile, an email and the current terms accepted. */
 export function RequireLandlord() {
   const { data: landlord, isPending, error, refetch } = useLandlord()
   if (isPending) return <FullPageSpinner />
@@ -14,6 +14,6 @@ export function RequireLandlord() {
       </div>
     )
   }
-  if (!landlord) return <Navigate to="/onboarding" replace />
+  if (needsOnboarding(landlord)) return <Navigate to="/onboarding" replace />
   return <Outlet />
 }

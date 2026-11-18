@@ -14,3 +14,21 @@ export function formatNgPhone(e164: string): string {
   const local = '0' + e164.replace(/^\+?234/, '')
   return `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`
 }
+
+/**
+ * A WhatsApp number: any Nigerian format, or an international number starting with +
+ * (e.g. "+44 7911 123456"). Returns E.164 or null.
+ */
+export function normalizeWhatsappPhone(input: string): string | null {
+  const ng = normalizeNgPhone(input)
+  if (ng) return ng
+  const trimmed = input.trim()
+  if (!trimmed.startsWith('+')) return null
+  const digits = trimmed.replace(/[^\d]/g, '')
+  return /^[1-9]\d{7,14}$/.test(digits) ? `+${digits}` : null
+}
+
+/** Nigerian numbers as "0803 123 4567"; others as stored ("+447911123456"). */
+export function formatPhone(e164: string): string {
+  return /^\+234\d{10}$/.test(e164) ? formatNgPhone(e164) : e164
+}

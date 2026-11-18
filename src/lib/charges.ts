@@ -49,22 +49,32 @@ export const TIMING_LABEL: Record<ChargeTiming, string> = {
   cancelled: 'Cancelled',
 }
 
-export type Bucket = { count: number; totalKobo: number; charges: Charge[] }
+/** One tenant's open charges in a bucket. A monthly tenant can have two rents due within 30 days. */
+export type TenantDue = {
+  tenantId: string
+  /** Earliest (most urgent) charge first: it sets the row's date. */
+  charges: Charge[]
+  totalKobo: number
+}
 
-/** Split open charges into dashboard buckets. Overdue: most days late first. Due soon: soonest first. */
+/** count is tenants, not charges. */
+export type Bucket = { count: number; totalKobo: number; tenants: TenantDue[] }
+
+/** Split open charges into dashboard buckets, one entry per tenant, most urgent tenant first. */
 export function bucketCharges(charges: Charge[]): { overdue: Bucket; dueSoon: Bucket } {
-  const make = (timing: ChargeTiming, sort: (a: Charge, b: Charge) => number): Bucket => {
-    const list = charges.filter((c) => c.timing === timing).sort(sort)
-    return {
-      count: list.length,
-      totalKobo: list.reduce((sum, c) => sum + c.balance_kobo, 0),
-      charges: list,
+  const make = (timing: ChargeTiming): Bucket => {
+    const byTenant = new Map<string, TenantDue>()
+    const list = charges.filter((c) => c.timing === timing).sort((a, b) => a.days_until_due - b.days_until_due)
+    for (const c of list) {
+      const group = byTenant.get(c.tenant_id) ?? { tenantId: c.tenant_id, charges: [], totalKobo: 0 }
+      group.charges.push(c)
+      group.totalKobo += c.balance_kobo
+      byTenant.set(c.tenant_id, group)
     }
+    const tenants = [...byTenant.values()] // Map keeps first-seen order: most urgent first.
+    return { count: tenants.length, totalKobo: list.reduce((sum, c) => sum + c.balance_kobo, 0), tenants }
   }
-  return {
-    overdue: make('overdue', (a, b) => a.days_until_due - b.days_until_due),
-    dueSoon: make('due_soon', (a, b) => a.days_until_due - b.days_until_due),
-  }
+  return { overdue: make('overdue'), dueSoon: make('due_soon') }
 }
 
 type Payable = { id: string; due_date: string; balance_kobo: number; status: ChargeStatus }

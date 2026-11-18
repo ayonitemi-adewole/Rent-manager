@@ -39,7 +39,7 @@ export function PropertyDetailPage() {
             <h2 className="font-semibold">Units ({property.units.length})</h2>
             {property.units.length > 0 && (
               <Button asChild size="sm" variant="secondary">
-                <Link to={`/properties/${propertyId}/units/new`}>
+                <Link to={`/properties/${propertyId}/units/new`} data-tour="add-unit">
                   <Plus /> Add unit
                 </Link>
               </Button>
@@ -53,7 +53,7 @@ export function PropertyDetailPage() {
               description="Add each room, flat or shop you rent out in this property, with its rent."
               action={
                 <Button asChild>
-                  <Link to={`/properties/${propertyId}/units/new`}>
+                  <Link to={`/properties/${propertyId}/units/new`} data-tour="add-unit">
                     <Plus /> Add unit
                   </Link>
                 </Button>

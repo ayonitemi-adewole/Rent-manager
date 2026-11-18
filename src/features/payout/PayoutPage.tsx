@@ -59,6 +59,7 @@ export function PayoutPage() {
 
       {banks.data && (
         <form
+          data-tour="payout-form"
           className="space-y-4"
           noValidate
           onSubmit={(e) => {

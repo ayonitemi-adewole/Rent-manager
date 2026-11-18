@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
-import { formatNgPhone } from '@/lib/phone'
+import { formatNgPhone, formatPhone } from '@/lib/phone'
 import { todayIso } from '@/lib/rent'
 import { useCreateTenant, useTenant, useUpdateTenant, useVacantUnits } from './api'
 import { TenantForm } from './TenantForm'
@@ -43,6 +43,7 @@ export function NewTenantPage() {
             unitId: preselected?.id ?? '',
             fullName: '',
             phone: '',
+            whatsapp: '',
             startDate: todayIso(),
             rent: preselected ? String(preselected.rent_amount_kobo / 100) : '',
             rentPeriod: preselected?.rent_period ?? 'yearly',
@@ -82,6 +83,7 @@ export function EditTenantPage() {
             unitId: t.unit_id,
             fullName: t.full_name,
             phone: formatNgPhone(t.phone),
+            whatsapp: t.whatsapp_phone ? formatPhone(t.whatsapp_phone) : '',
             startDate: t.start_date,
             rent: String(t.rent_amount_kobo / 100),
             rentPeriod: t.rent_period,

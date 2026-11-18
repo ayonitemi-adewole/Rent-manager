@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import type { ChargeTiming, ChargeStatus } from '@/lib/charges'
-import { invokeFunction } from '@/lib/functions'
-import { supabase } from '@/lib/supabase'
+import { publicFunction, publicRpc } from '@/lib/public-api'
 
 export type PortalCharge = {
   id: string
@@ -32,11 +31,7 @@ export type Portal = {
 export function usePortal(token: string) {
   return useQuery({
     queryKey: ['portal', token],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('tenant_portal', { p_token: token })
-      if (error) throw error
-      return (data as Portal | null) ?? null
-    },
+    queryFn: async () => (await publicRpc<Portal | null>('tenant_portal', { p_token: token })) ?? null,
   })
 }
 
@@ -44,7 +39,7 @@ export function usePortal(token: string) {
 export function useStartCheckout(token: string) {
   return useMutation({
     mutationFn: async (chargeId: string) => {
-      const { link } = await invokeFunction<{ link: string }>('flw-checkout', { token, charge_id: chargeId })
+      const { link } = await publicFunction<{ link: string }>('flw-checkout', { token, charge_id: chargeId })
       window.location.assign(link)
     },
   })
@@ -60,7 +55,7 @@ export function useVerifyPayment(token: string, txRef: string | null, transactio
     // Flutterwave can take a moment to mark a transfer successful: keep checking while pending.
     refetchInterval: (q) => (q.state.data?.outcome === 'pending' ? 4000 : false),
     queryFn: () =>
-      invokeFunction<{ outcome: VerifyOutcome; reason?: string }>('flw-verify', {
+      publicFunction<{ outcome: VerifyOutcome; reason?: string }>('flw-verify', {
         token,
         tx_ref: txRef,
         transaction_id: transactionId,

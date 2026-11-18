@@ -28,7 +28,6 @@
         "npm:@vitejs/plugin-react@^6.1.2",
         "npm:class-variance-authority@~0.7.1",
         "npm:clsx@^2.1.1",
-        "npm:cn@~0.5.2",
         "npm:date-fns@^4.4.0",
         "npm:lucide-react@^1.74.0",
         "npm:oxlint@^1.90.0",

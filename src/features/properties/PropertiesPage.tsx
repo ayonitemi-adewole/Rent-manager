@@ -17,7 +17,7 @@ export function PropertiesPage() {
         action={
           properties?.length ? (
             <Button asChild size="sm">
-              <Link to="/properties/new">
+              <Link to="/properties/new" data-tour="add-property">
                 <Plus /> Add
               </Link>
             </Button>
@@ -33,7 +33,7 @@ export function PropertiesPage() {
           description="A property is a building or compound. You'll add its rooms, flats or shops next."
           action={
             <Button asChild>
-              <Link to="/properties/new">
+              <Link to="/properties/new" data-tour="add-property">
                 <Plus /> Add property
               </Link>
             </Button>
@@ -42,10 +42,14 @@ export function PropertiesPage() {
       )}
 
       <ul className="space-y-3">
-        {properties?.map((p) => (
+        {properties?.map((p, i) => (
           <li key={p.id}>
             <Card className="hover:bg-accent/50 py-0 transition-colors">
-              <Link to={`/properties/${p.id}`} className="flex items-center gap-3 p-4">
+              <Link
+                to={`/properties/${p.id}`}
+                data-tour={i === 0 ? 'property-card' : undefined}
+                className="flex items-center gap-3 p-4"
+              >
                 <div className="bg-secondary text-secondary-foreground grid size-10 shrink-0 place-items-center rounded-lg">
                   <Building2 className="size-5" />
                 </div>

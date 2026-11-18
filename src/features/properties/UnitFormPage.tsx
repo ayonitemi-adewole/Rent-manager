@@ -150,7 +150,7 @@ function UnitForm({ defaultValues, pending, error, hint, showAddAnother, onSubmi
     })
 
   return (
-    <form onSubmit={submit(false)} className="space-y-4" noValidate>
+    <form onSubmit={submit(false)} className="space-y-4" noValidate data-tour="unit-form">
       <Field id="label" label="Unit name" error={errors.label?.message} hint="e.g. “Room 3”, “Flat 2B”, “Shop 1”">
         <Input id="label" className="h-12 text-base" autoFocus {...form.register('label')} />
       </Field>

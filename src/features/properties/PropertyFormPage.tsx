@@ -114,7 +114,7 @@ function PropertyForm({ defaultValues, submitLabel, pending, error, onSubmit }: 
   const { errors } = form.formState
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate data-tour="property-form">
       <Field id="name" label="Property name" error={errors.name?.message} hint="What you call it, e.g. “Bodija house” or “Ring Road shops”">
         <Input id="name" className="h-12 text-base" autoFocus {...form.register('name')} />
       </Field>

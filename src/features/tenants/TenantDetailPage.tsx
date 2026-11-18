@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { friendlyError } from '@/lib/errors'
 import { formatKobo } from '@/lib/money'
-import { formatNgPhone } from '@/lib/phone'
+import { formatNgPhone, formatPhone } from '@/lib/phone'
 import { formatDate, rentPeriodLabel, todayIso } from '@/lib/rent'
 import { TenantCharges } from '@/features/charges/TenantCharges'
 import { TenantPayments } from '@/features/payments/TenantPayments'
@@ -70,7 +70,7 @@ export function TenantDetailPage() {
               </a>
             </Button>
             <Button asChild variant="secondary" className="h-11">
-              <a href={`https://wa.me/${t.phone.replace('+', '')}`} target="_blank" rel="noreferrer">
+              <a href={`https://wa.me/${(t.whatsapp_phone ?? t.phone).replace('+', '')}`} target="_blank" rel="noreferrer">
                 <MessageCircle /> WhatsApp
               </a>
             </Button>
@@ -83,6 +83,7 @@ export function TenantDetailPage() {
             <CardContent>
               <dl className="divide-y text-sm">
                 <Row label="Phone">{formatNgPhone(t.phone)}</Row>
+                {t.whatsapp_phone && <Row label="WhatsApp">{formatPhone(t.whatsapp_phone)}</Row>}
                 <Row label="Unit">
                   {t.units && (
                     <Link to={`/properties/${t.units.property_id}`} className="text-primary hover:underline">

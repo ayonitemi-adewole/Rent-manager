@@ -40,18 +40,32 @@ const charge = (over: Partial<Charge>): Charge => ({
 describe('bucketCharges', () => {
   it('splits by timing, totals balances and sorts most urgent first', () => {
     const charges = [
-      charge({ id: 'late-3', timing: 'overdue', days_until_due: -3, balance_kobo: 500 }),
-      charge({ id: 'late-40', timing: 'overdue', days_until_due: -40, balance_kobo: 1_000 }),
-      charge({ id: 'soon-20', timing: 'due_soon', days_until_due: 20, balance_kobo: 300 }),
-      charge({ id: 'soon-2', timing: 'due_soon', days_until_due: 2, balance_kobo: 200 }),
-      charge({ id: 'later', timing: 'upcoming', days_until_due: 44 }),
+      charge({ tenant_id: 'a', timing: 'overdue', days_until_due: -3, balance_kobo: 500 }),
+      charge({ tenant_id: 'b', timing: 'overdue', days_until_due: -40, balance_kobo: 1_000 }),
+      charge({ tenant_id: 'c', timing: 'due_soon', days_until_due: 20, balance_kobo: 300 }),
+      charge({ tenant_id: 'd', timing: 'due_soon', days_until_due: 2, balance_kobo: 200 }),
+      charge({ tenant_id: 'e', timing: 'upcoming', days_until_due: 44 }),
     ]
     const { overdue, dueSoon } = bucketCharges(charges)
 
-    expect(overdue.charges.map((c) => c.id)).toEqual(['late-40', 'late-3'])
+    expect(overdue.tenants.map((t) => t.tenantId)).toEqual(['b', 'a'])
     expect(overdue).toMatchObject({ count: 2, totalKobo: 1_500 })
-    expect(dueSoon.charges.map((c) => c.id)).toEqual(['soon-2', 'soon-20'])
+    expect(dueSoon.tenants.map((t) => t.tenantId)).toEqual(['d', 'c'])
     expect(dueSoon).toMatchObject({ count: 2, totalKobo: 500 })
+  })
+
+  it('counts a monthly tenant with two rents due as one tenant', () => {
+    const { dueSoon } = bucketCharges([
+      charge({ id: 'jan', tenant_id: 'mama', timing: 'due_soon', days_until_due: 29, balance_kobo: 40_000 }),
+      charge({ id: 'dec', tenant_id: 'mama', timing: 'due_soon', days_until_due: 0, balance_kobo: 40_000 }),
+      charge({ id: 'other', tenant_id: 'tola', timing: 'due_soon', days_until_due: 10, balance_kobo: 5_000 }),
+    ])
+    expect(dueSoon).toMatchObject({ count: 2, totalKobo: 85_000 })
+    expect(dueSoon.tenants.map((t) => [t.tenantId, t.totalKobo])).toEqual([
+      ['mama', 80_000],
+      ['tola', 5_000],
+    ])
+    expect(dueSoon.tenants[0].charges.map((c) => c.id)).toEqual(['dec', 'jan'])
   })
 
   it('uses the remaining balance for partly paid charges', () => {

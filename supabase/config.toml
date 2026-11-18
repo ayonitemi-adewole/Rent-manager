@@ -446,3 +446,7 @@ verify_jwt = false
 
 [functions.flw-webhook]
 verify_jwt = false
+
+# Called by Supabase Auth (Send SMS hook), which signs requests instead of sending a user JWT.
+[functions.sms-hook]
+verify_jwt = false

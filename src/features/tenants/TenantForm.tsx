@@ -41,7 +41,7 @@ export function TenantForm({ defaultValues, unitOptions, submitLabel, pending, e
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate data-tour="tenant-form">
       {unitOptions && (
         <Field id="unitId" label="Unit" error={errors.unitId?.message}>
           <NativeSelect
@@ -74,9 +74,25 @@ export function TenantForm({ defaultValues, unitOptions, submitLabel, pending, e
         id="phone"
         label="Tenant’s phone number"
         error={errors.phone?.message}
-        hint="Rent reminders and receipts go to this number."
+        hint="Rent reminders and receipts go to this number by SMS."
       >
         <Input id="phone" type="tel" inputMode="tel" placeholder="0803 123 4567" className="h-12 text-base" {...form.register('phone')} />
+      </Field>
+
+      <Field
+        id="whatsapp"
+        label="WhatsApp number (if different)"
+        error={errors.whatsapp?.message}
+        hint="Leave empty if they use the same number on WhatsApp."
+      >
+        <Input
+          id="whatsapp"
+          type="tel"
+          inputMode="tel"
+          placeholder="0812 345 6789"
+          className="h-12 text-base"
+          {...form.register('whatsapp')}
+        />
       </Field>
 
       <div className="grid grid-cols-2 gap-3">

@@ -8,11 +8,37 @@
     <meta name="description" content="RentPadi: rent reminders, payments and records for Nigerian landlords." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Font loads without blocking the page: text shows in the phone's own font first. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    </noscript>
     <title>RentPadi</title>
+    <!-- Shown before the app's files arrive; React replaces #root's contents. -->
+    <style>
+      html { background: oklch(0.985 0.003 150); color-scheme: light dark; }
+      .boot { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 20px; }
+      .boot-logo { width: 44px; height: 44px; border-radius: 10px; background: #1f8a55; color: #fff;
+        display: grid; place-items: center; font: 700 17px/1 system-ui, sans-serif; }
+      .boot-spin { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #1f8a5533;
+        border-top-color: #1f8a55; animation: boot-spin 0.8s linear infinite; }
+      @keyframes boot-spin { to { transform: rotate(360deg); } }
+      @media (prefers-color-scheme: dark) { html { background: oklch(0.17 0.01 155); } }
+      @media (prefers-reduced-motion: reduce) { .boot-spin { animation-duration: 2.4s; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot" role="status" aria-label="Loading RentPadi">
+        <div class="boot-logo">RP</div>
+        <div class="boot-spin"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

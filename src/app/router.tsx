@@ -1,66 +1,119 @@
+import type { ComponentType } from 'react'
 import { createBrowserRouter } from 'react-router'
-import { LoginPage } from '@/features/auth/LoginPage'
-import { RequireAuth } from '@/features/auth/RequireAuth'
-import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { OnboardingPage } from '@/features/landlord/OnboardingPage'
-import { RequireLandlord } from '@/features/landlord/RequireLandlord'
-import { PropertiesPage } from '@/features/properties/PropertiesPage'
-import { PropertyDetailPage } from '@/features/properties/PropertyDetailPage'
-import { EditPropertyPage, NewPropertyPage } from '@/features/properties/PropertyFormPage'
-import { EditUnitPage, NewUnitPage } from '@/features/properties/UnitFormPage'
-import { RecordPaymentPage } from '@/features/payments/RecordPaymentPage'
-import { PayoutPage } from '@/features/payout/PayoutPage'
-import { PaymentResultPage } from '@/features/public/PaymentResultPage'
-import { ReceiptPage } from '@/features/public/ReceiptPage'
-import { TenantPortalPage } from '@/features/public/TenantPortalPage'
-import { SettingsPage } from '@/features/settings/SettingsPage'
-import { TenantDetailPage } from '@/features/tenants/TenantDetailPage'
-import { EditTenantPage, NewTenantPage } from '@/features/tenants/TenantFormPages'
-import { StatementPage } from '@/features/tenants/StatementPage'
-import { TenantsPage } from '@/features/tenants/TenantsPage'
-import { AppLayout } from './AppLayout'
+import { FullPageSpinner } from '@/components/FullPageSpinner'
 import { NotFoundPage } from './NotFoundPage'
+import { pages } from './pages'
+import { RouteError } from './RouteError'
+
+/** Route that downloads its page the first time it is opened. */
+function page<K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) {
+  return { lazy: { Component: async () => (await load())[name] } }
+}
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-
-  // Public, no login: links sent to tenants by SMS.
-  { path: '/t/:token', element: <TenantPortalPage /> },
-  { path: '/t/:token/paid', element: <PaymentResultPage /> },
-  { path: '/r/:token', element: <ReceiptPage /> },
-
-  // Landlord app.
   {
-    element: <RequireAuth />,
+    // Shown while the first page downloads, and if a page fails to download.
+    HydrateFallback: FullPageSpinner,
+    ErrorBoundary: RouteError,
     children: [
-      { path: 'onboarding', element: <OnboardingPage /> },
+      // Public, no login: links sent to tenants by SMS.
+      { path: '/t/:token', ...page(pages.tenantPortal, 'TenantPortalPage') },
       {
-        element: <RequireLandlord />,
+        path: '/t/:token/paid',
+        ...page(pages.paymentResult, 'PaymentResultPage'),
+      },
+      { path: '/r/:token', ...page(pages.receipt, 'ReceiptPage') },
+      { path: '/terms', ...page(pages.legal, 'TermsPage') },
+      { path: '/privacy', ...page(pages.legal, 'PrivacyPage') },
+
+      // Login and the landlord app.
+      {
+        ...page(() => import('@/features/auth/AuthLayout'), 'AuthLayout'),
         children: [
+          { path: '/login', ...page(pages.login, 'LoginPage') },
           {
-            element: <AppLayout />,
+            ...page(() => import('@/features/auth/RequireAuth'), 'RequireAuth'),
             children: [
-              { index: true, element: <DashboardPage /> },
-              { path: 'properties', element: <PropertiesPage /> },
-              { path: 'properties/new', element: <NewPropertyPage /> },
-              { path: 'properties/:propertyId', element: <PropertyDetailPage /> },
-              { path: 'properties/:propertyId/edit', element: <EditPropertyPage /> },
-              { path: 'properties/:propertyId/units/new', element: <NewUnitPage /> },
-              { path: 'properties/:propertyId/units/:unitId/edit', element: <EditUnitPage /> },
-              { path: 'tenants', element: <TenantsPage /> },
-              { path: 'tenants/new', element: <NewTenantPage /> },
-              { path: 'tenants/:tenantId', element: <TenantDetailPage /> },
-              { path: 'tenants/:tenantId/edit', element: <EditTenantPage /> },
-              { path: 'tenants/:tenantId/statement', element: <StatementPage /> },
-              { path: 'tenants/:tenantId/charges/:chargeId/record', element: <RecordPaymentPage /> },
-              { path: 'settings', element: <SettingsPage /> },
-              { path: 'settings/payout', element: <PayoutPage /> },
+              {
+                path: 'onboarding',
+                ...page(pages.onboarding, 'OnboardingPage'),
+              },
+              {
+                ...page(() => import('@/features/landlord/RequireLandlord'), 'RequireLandlord'),
+                children: [
+                  {
+                    ...page(() => import('./AppLayout'), 'AppLayout'),
+                    children: [
+                      {
+                        index: true,
+                        ...page(pages.dashboard, 'DashboardPage'),
+                      },
+                      {
+                        path: 'properties',
+                        ...page(pages.properties, 'PropertiesPage'),
+                      },
+                      {
+                        path: 'properties/new',
+                        ...page(pages.propertyForm, 'NewPropertyPage'),
+                      },
+                      {
+                        path: 'properties/:propertyId',
+                        ...page(pages.propertyDetail, 'PropertyDetailPage'),
+                      },
+                      {
+                        path: 'properties/:propertyId/edit',
+                        ...page(pages.propertyForm, 'EditPropertyPage'),
+                      },
+                      {
+                        path: 'properties/:propertyId/units/new',
+                        ...page(pages.unitForm, 'NewUnitPage'),
+                      },
+                      {
+                        path: 'properties/:propertyId/units/:unitId/edit',
+                        ...page(pages.unitForm, 'EditUnitPage'),
+                      },
+                      {
+                        path: 'tenants',
+                        ...page(pages.tenants, 'TenantsPage'),
+                      },
+                      {
+                        path: 'tenants/new',
+                        ...page(pages.tenantForms, 'NewTenantPage'),
+                      },
+                      {
+                        path: 'tenants/:tenantId',
+                        ...page(pages.tenantDetail, 'TenantDetailPage'),
+                      },
+                      {
+                        path: 'tenants/:tenantId/edit',
+                        ...page(pages.tenantForms, 'EditTenantPage'),
+                      },
+                      {
+                        path: 'tenants/:tenantId/statement',
+                        ...page(pages.statement, 'StatementPage'),
+                      },
+                      {
+                        path: 'tenants/:tenantId/charges/:chargeId/record',
+                        ...page(pages.recordPayment, 'RecordPaymentPage'),
+                      },
+                      {
+                        path: 'settings',
+                        ...page(pages.settings, 'SettingsPage'),
+                      },
+                      {
+                        path: 'settings/payout',
+                        ...page(pages.payout, 'PayoutPage'),
+                      },
+                    ],
+                  },
+                ],
+              },
             ],
           },
         ],
       },
+
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
-
-  { path: '*', element: <NotFoundPage /> },
 ])

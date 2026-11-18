@@ -12,7 +12,7 @@ type TenantRow = {
   phone: string
   units: {
     label: string
-    properties: { name: string; landlords: { full_name: string; flw_subaccount_id: string | null } }
+    properties: { name: string; landlords: { name_for_tenants: string; flw_subaccount_id: string | null } }
   }
 }
 
@@ -24,7 +24,7 @@ Deno.serve(
     const admin = adminClient()
     const { data: tenant, error } = await admin
       .from('tenants')
-      .select('id, full_name, phone, units(label, properties(name, landlords(full_name, flw_subaccount_id)))')
+      .select('id, full_name, phone, units(label, properties(name, landlords(name_for_tenants, flw_subaccount_id)))')
       .eq('access_token', token)
       .maybeSingle<TenantRow>()
     if (error) throw error
@@ -72,7 +72,7 @@ Deno.serve(
       subaccountId: landlord.flw_subaccount_id,
       customer: { name: tenant.full_name, phone: phoneDigits, email: `${phoneDigits}@${emailDomain}` },
       title: `Rent: ${tenant.units.label}`,
-      description: `${tenant.units.properties.name} · ${charge.period_start} to ${charge.period_end} · to ${landlord.full_name}`,
+      description: `${tenant.units.properties.name} · ${charge.period_start} to ${charge.period_end} · to ${landlord.name_for_tenants}`,
       meta: { charge_id: charge.id },
     })
 
