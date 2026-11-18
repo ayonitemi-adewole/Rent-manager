@@ -10,8 +10,11 @@ import type { RentPeriod } from '@/lib/rent'
 import { REMINDER_KIND_LABEL, reminderDaysBefore, reminderMessage, whatsappLink } from '@/lib/reminders'
 import { useTenantReminders } from './api'
 
+const CHANNEL: Record<string, string> = { sms: 'SMS', whatsapp: 'WhatsApp' }
+
 const STATUS: Record<string, { label: string; className: string }> = {
-  queued: { label: 'Waiting for SMS setup', className: 'text-muted-foreground' },
+  queued: { label: 'Queued', className: 'text-muted-foreground' },
+  sending: { label: 'Sending', className: 'text-muted-foreground' },
   sent: { label: 'Sent', className: 'border-success/30 bg-success/10 text-success' },
   failed: { label: 'Failed', className: 'border-destructive/30 bg-destructive/10 text-destructive' },
   skipped: { label: 'Skipped', className: 'text-muted-foreground' },
@@ -64,7 +67,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
       <CardContent className="space-y-3">
         <p className="text-muted-foreground text-sm">
           {tenant.reminders_enabled
-            ? `Automatic SMS ${reminderDaysBefore(tenant.rent_period)} days before rent is due, then 1, 7 and 14 days late.`
+            ? `Automatic ${landlord?.whatsapp_reminders ? 'SMS and WhatsApp' : 'SMS'} ${reminderDaysBefore(tenant.rent_period)} days before rent is due, then 1, 7 and 14 days late.`
             : 'Automatic reminders are off for this tenant.'}
         </p>
 
@@ -86,6 +89,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">
                       {formatDate(r.scheduled_for)} · {REMINDER_KIND_LABEL[r.kind] ?? r.kind}
+                      <span className="text-muted-foreground font-normal"> · {CHANNEL[r.channel] ?? r.channel}</span>
                     </span>
                     <Badge variant="outline" className={status.className}>
                       {status.label}

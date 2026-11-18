@@ -53,6 +53,56 @@ Demo mode uses a **free hosted Supabase project** and **Flutterwave test keys**.
 
 Edge functions are in `supabase/functions/`. Deploy them with `npm run functions:deploy` (no Docker needed). Test them with `npm run test:functions` (uses `npx deno`).
 
+## WhatsApp (Meta Cloud API)
+
+Tenants message RentPadi's WhatsApp number to check what they owe, pay (Flutterwave link), and get receipt PDFs. Landlords who switch on **Settings → WhatsApp** also send reminders and receipts on WhatsApp, alongside SMS.
+
+- `wa-webhook`: the tenant chat. Tenants are recognised by the number they message from: their WhatsApp number, or their phone number.
+- `send-reminders`: runs every 5 minutes (pg_cron). It delivers queued WhatsApp messages once WhatsApp is set up, and queued SMS once Termii is set up.
+
+Setup with Meta's free test number (about 20 minutes, no business verification needed):
+
+1. **Create the app.** At [developers.facebook.com](https://developers.facebook.com/apps), go to **Create app → Business**, then add the **WhatsApp** product.
+2. **Test number.** Under **WhatsApp → API Setup**:
+   - Note the test number and its **Phone number ID**.
+   - Add up to 5 **recipient numbers** (your own phones). The test number can only message these.
+3. **Permanent token.** In Business settings, go to **Users → System users**.
+   - Add an admin system user and assign the app.
+   - Generate a token with `whatsapp_business_messaging` and `whatsapp_business_management`. The token on the API Setup page expires in 24 hours.
+4. **App secret.** Under **App settings → Basic**, copy the **App secret**.
+5. **Set the function secrets.** Make up two long random strings for the last two values:
+
+   ```sh
+   npx supabase secrets set WHATSAPP_TOKEN=… WHATSAPP_PHONE_NUMBER_ID=… WHATSAPP_APP_SECRET=…      WHATSAPP_VERIFY_TOKEN=<random string> MESSAGE_SENDER_SECRET=<another random string>
+   ```
+6. **Webhook.** Under **WhatsApp → Configuration**:
+   - Callback URL: `https://<project-ref>.supabase.co/functions/v1/wa-webhook`
+   - Verify token: your `WHATSAPP_VERIFY_TOKEN`
+   - Click **Verify and save**, then subscribe to the **messages** field.
+7. **Templates.** In **WhatsApp Manager → Message templates**, create these three. Use category **Utility**, language **English**, and add one **Quick reply** button each. Meta asks for sample values; any realistic ones work.
+
+   | Name | Header | Body | Quick reply |
+   | --- | --- | --- | --- |
+   | `rent_due_reminder` | none | Hi {{1}}, your rent of {{2}} for {{3}} is due on {{4}}. Pay securely here: {{5}}<br><br>Sent for {{6}} by RentPadi. Tap below to check your rent or get receipts. | Check my rent |
+   | `rent_overdue_reminder` | none | Hi {{1}}, your rent of {{2}} for {{3}} was due on {{4}} and has not been paid yet. Please pay here: {{5}}<br><br>Sent for {{6}} by RentPadi. Already paid? Tap below to check. | Check my rent |
+   | `rent_receipt` | Document | Hi {{1}}, your payment of {{2}} for {{3}} has been received. Receipt {{4}} is attached.<br><br>Sent for {{5}} by RentPadi. | My receipts |
+
+   The wording must match `supabase/functions/_shared/wa-templates.ts`. Approval usually takes minutes to hours.
+8. **Switch on the sender.** In the Supabase SQL editor, run this once:
+
+   ```sql
+   select vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
+   select vault.create_secret('<your MESSAGE_SENDER_SECRET>', 'message_sender_secret');
+   ```
+9. **Show the chat button.** Add `VITE_WHATSAPP_NUMBER=+1555…` (the test number) to `.env.local` and restart the dev server.
+
+To try it, give a tenant one of your recipient numbers as their WhatsApp number, then send "Hi" to the test number from that phone.
+
+Notes:
+- Links in WhatsApp messages use `APP_URL`, so they only open on a phone once the app is deployed somewhere public.
+- Reminders go out between 8am and 8pm Lagos time; receipts go any time. Anything queued more than 2 days ago is skipped, not sent late.
+- Meta charges per template message (reminders, receipts), at low rates in Nigeria. Replies within 24 hours of a tenant's message are free. Check Meta's current pricing before launch.
+
 ## Scripts
 
 | Command | What it does |

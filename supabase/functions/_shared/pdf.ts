@@ -1,5 +1,6 @@
 // A tiny single-page PDF writer for receipts: text, lines and rectangles in the built-in
 // Helvetica fonts. No library: keeps the app small for slow connections.
+// Shared by the web app and edge functions: plain TypeScript, no Deno or DOM APIs.
 // Coordinates are in points (1/72 inch) measured from the TOP-left, unlike raw PDF.
 
 export type Rgb = [number, number, number]

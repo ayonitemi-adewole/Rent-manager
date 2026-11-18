@@ -95,6 +95,7 @@ export type Database = {
           terms_accepted_at: string | null
           terms_version: string | null
           updated_at: string
+          whatsapp_reminders: boolean
         }
         Insert: {
           account_name?: string | null
@@ -115,6 +116,7 @@ export type Database = {
           terms_accepted_at?: string | null
           terms_version?: string | null
           updated_at?: string
+          whatsapp_reminders?: boolean
         }
         Update: {
           account_name?: string | null
@@ -135,6 +137,7 @@ export type Database = {
           terms_accepted_at?: string | null
           terms_version?: string | null
           updated_at?: string
+          whatsapp_reminders?: boolean
         }
         Relationships: []
       }
@@ -292,6 +295,7 @@ export type Database = {
       }
       reminders: {
         Row: {
+          attempted_at: string | null
           channel: string
           charge_id: string
           created_at: string
@@ -307,6 +311,7 @@ export type Database = {
           to_phone: string
         }
         Insert: {
+          attempted_at?: string | null
           channel?: string
           charge_id: string
           created_at?: string
@@ -322,6 +327,7 @@ export type Database = {
           to_phone: string
         }
         Update: {
+          attempted_at?: string | null
           channel?: string
           charge_id?: string
           created_at?: string
@@ -534,6 +540,24 @@ export type Database = {
           },
         ]
       }
+      wa_inbound: {
+        Row: {
+          from_phone: string
+          message_id: string
+          received_at: string
+        }
+        Insert: {
+          from_phone: string
+          message_id: string
+          received_at?: string
+        }
+        Update: {
+          from_phone?: string
+          message_id?: string
+          received_at?: string
+        }
+        Relationships: []
+      }
       webhook_events: {
         Row: {
           error: string | null
@@ -664,6 +688,26 @@ export type Database = {
           period_start: string
         }[]
       }
+      claim_outbound_messages: {
+        Args: { p_channels: string[]; p_limit?: number }
+        Returns: {
+          access_token: string
+          balance_kobo: number
+          channel: string
+          due_date: string
+          id: string
+          kind: string
+          landlord_name: string
+          message: string
+          payment_amount_kobo: number
+          receipt_number: string
+          receipt_token: string
+          tenant_id: string
+          tenant_name: string
+          to_phone: string
+          unit_label: string
+        }[]
+      }
       complete_onboarding: {
         Args: {
           p_display_name: string
@@ -747,12 +791,14 @@ export type Database = {
         Args: { p: Database["public"]["Enums"]["rent_period"] }
         Returns: number
       }
+      run_message_sender: { Args: never; Returns: undefined }
       tenant_portal: { Args: { p_token: string }; Returns: Json }
       today_lagos: { Args: never; Returns: string }
       void_payment: {
         Args: { p_payment_id: string; p_reason: string }
         Returns: undefined
       }
+      wa_tenancies: { Args: { p_phone: string }; Returns: Json }
     }
     Enums: {
       charge_status: "unpaid" | "partially_paid" | "paid" | "cancelled"

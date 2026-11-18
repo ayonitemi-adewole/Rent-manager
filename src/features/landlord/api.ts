@@ -60,3 +60,17 @@ export function useUpdateProfile() {
     onSuccess: () => qc.invalidateQueries({ queryKey: landlordKey }),
   })
 }
+
+/** Settings switch: also send reminders and receipts on WhatsApp (alongside SMS). */
+export function useSetWhatsappReminders() {
+  const qc = useQueryClient()
+  const { session } = useAuth()
+  return useMutation({
+    mutationFn: async (on: boolean) => {
+      if (!session) throw new Error('You are signed out. Please sign in again.')
+      const { error } = await supabase.from('landlords').update({ whatsapp_reminders: on }).eq('id', session.user.id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: landlordKey }),
+  })
+}

@@ -450,3 +450,10 @@ verify_jwt = false
 # Called by Supabase Auth (Send SMS hook), which signs requests instead of sending a user JWT.
 [functions.sms-hook]
 verify_jwt = false
+
+# Called by Meta (signed with the app secret) and by pg_cron (shared secret), not by users.
+[functions.wa-webhook]
+verify_jwt = false
+
+[functions.send-reminders]
+verify_jwt = false
