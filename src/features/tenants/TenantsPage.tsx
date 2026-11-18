@@ -21,7 +21,7 @@ export function TenantsPage() {
         title="Tenants"
         action={
           <Button asChild size="sm">
-            <Link to="/tenants/new">
+            <Link to="/tenants/new" data-tour="add-tenant">
               <Plus /> Add
             </Link>
           </Button>
@@ -60,7 +60,7 @@ export function TenantsPage() {
             description="Add the tenant living in each unit, with when their rent started."
             action={
               <Button asChild>
-                <Link to="/tenants/new">
+                <Link to="/tenants/new" data-tour="add-tenant">
                   <Plus /> Add tenant
                 </Link>
               </Button>

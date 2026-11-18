@@ -50,7 +50,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
             unitLabel,
             dueDate: open.due_date,
             link: `${window.location.origin}/t/${tenant.access_token}`,
-            landlordName: landlord.full_name,
+            landlordName: landlord.name_for_tenants ?? landlord.full_name,
           }),
         )
       : null

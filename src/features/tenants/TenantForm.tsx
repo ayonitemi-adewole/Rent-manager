@@ -41,7 +41,7 @@ export function TenantForm({ defaultValues, unitOptions, submitLabel, pending, e
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate data-tour="tenant-form">
       {unitOptions && (
         <Field id="unitId" label="Unit" error={errors.unitId?.message}>
           <NativeSelect

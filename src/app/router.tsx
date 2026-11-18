@@ -23,6 +23,8 @@ export const router = createBrowserRouter([
         ...page(pages.paymentResult, 'PaymentResultPage'),
       },
       { path: '/r/:token', ...page(pages.receipt, 'ReceiptPage') },
+      { path: '/terms', ...page(pages.legal, 'TermsPage') },
+      { path: '/privacy', ...page(pages.legal, 'PrivacyPage') },
 
       // Login and the landlord app.
       {

@@ -2,6 +2,7 @@ import { Building2, LayoutDashboard, Settings, Users } from 'lucide-react'
 import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigation } from 'react-router'
 import { Logo } from '@/components/Logo'
+import { TourProvider } from '@/features/onboarding/TourProvider'
 import { cn } from '@/lib/utils'
 import { prefetchCommonPages } from './pages'
 
@@ -19,44 +20,51 @@ export function AppLayout() {
   useEffect(prefetchCommonPages, [])
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
-      <header className="bg-background/90 sticky top-0 z-10 border-b px-4 py-3 backdrop-blur">
-        {loading && (
-          <div role="progressbar" aria-label="Loading page" className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden">
-            <div className="page-progress bg-primary h-full w-2/5" />
-          </div>
-        )}
-        <Logo className="text-lg [&>span:first-child]:size-8" />
-      </header>
+    <TourProvider>
+      <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
+        <header className="bg-background/90 sticky top-0 z-10 border-b px-4 py-3 backdrop-blur">
+          {loading && (
+            <div
+              role="progressbar"
+              aria-label="Loading page"
+              className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden"
+            >
+              <div className="page-progress bg-primary h-full w-2/5" />
+            </div>
+          )}
+          <Logo className="text-lg [&>span:first-child]:size-8" />
+        </header>
 
-      <main className="flex-1 px-4 pt-4 pb-24">
-        <Outlet />
-      </main>
+        <main className="flex-1 px-4 pt-4 pb-24">
+          <Outlet />
+        </main>
 
-      <nav
-        aria-label="Main"
-        className="bg-background/95 fixed inset-x-0 bottom-0 z-10 border-t backdrop-blur pb-[env(safe-area-inset-bottom)]"
-      >
-        <ul className="mx-auto grid max-w-2xl grid-cols-4">
-          {nav.map(({ to, label, icon: Icon, end }) => (
-            <li key={to}>
-              <NavLink
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  cn(
-                    'flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-                  )
-                }
-              >
-                <Icon className="size-5" />
-                {label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+        <nav
+          aria-label="Main"
+          className="bg-background/95 fixed inset-x-0 bottom-0 z-10 border-t backdrop-blur pb-[env(safe-area-inset-bottom)]"
+        >
+          <ul className="mx-auto grid max-w-2xl grid-cols-4">
+            {nav.map(({ to, label, icon: Icon, end }) => (
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  end={end}
+                  data-tour={`nav-${label.toLowerCase()}`}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors',
+                      isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                    )
+                  }
+                >
+                  <Icon className="size-5" />
+                  {label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </TourProvider>
   )
 }

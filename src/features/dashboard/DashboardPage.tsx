@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useOpenCharges } from '@/features/charges/api'
 import { ChargeRow } from '@/features/charges/ChargeRow'
 import { useLandlord } from '@/features/landlord/api'
+import { SetupChecklist } from '@/features/onboarding/SetupChecklist'
 import { METHOD_LABEL, usePaymentsSince } from '@/features/payments/api'
 import { useTenants } from '@/features/tenants/api'
 import { bucketCharges, type Bucket } from '@/lib/charges'
@@ -59,33 +60,45 @@ export function DashboardPage() {
         }}
       />
 
-      {ready && noTenants && (
-        <EmptyState
-          icon={Plus}
-          title="No rent to track yet"
-          description="Add a property, its units and your tenants. Rent due dates will show up here."
-          action={
-            <Button asChild>
-              <Link to="/properties">Set up properties</Link>
-            </Button>
+      {ready && noTenants && landlord && (
+        <SetupChecklist
+          landlordId={landlord.id}
+          fallback={
+            <EmptyState
+              icon={Plus}
+              title="No rent to track yet"
+              description="Add a property, its units and your tenants. Rent due dates will show up here."
+              action={
+                <Button asChild>
+                  <Link to="/properties">Set up properties</Link>
+                </Button>
+              }
+            />
           }
         />
       )}
 
       {ready && !noTenants && (
         <div className="space-y-6">
-          {landlord && !landlord.flw_subaccount_id && (
-            <Card className="border-primary/30 bg-secondary py-4">
-              <CardContent className="flex items-center gap-3 px-4">
-                <Landmark className="text-primary size-6 shrink-0" />
-                <p className="flex-1 text-sm">
-                  <span className="font-semibold">Get paid online.</span> Add the bank account rent should go to.
-                </p>
-                <Button asChild size="sm">
-                  <Link to="/settings/payout">Set up</Link>
-                </Button>
-              </CardContent>
-            </Card>
+          {landlord && (
+            <SetupChecklist
+              landlordId={landlord.id}
+              fallback={
+                !landlord.flw_subaccount_id && (
+                  <Card className="border-primary/30 bg-secondary py-4">
+                    <CardContent className="flex items-center gap-3 px-4">
+                      <Landmark className="text-primary size-6 shrink-0" />
+                      <p className="flex-1 text-sm">
+                        <span className="font-semibold">Get paid online.</span> Add the bank account rent should go to.
+                      </p>
+                      <Button asChild size="sm">
+                        <Link to="/settings/payout">Set up</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              }
+            />
           )}
 
           <div className="grid grid-cols-2 gap-3">
@@ -153,7 +166,17 @@ export function DashboardPage() {
   )
 }
 
-function StatCard({ icon: Icon, label, bucket, tone }: { icon: LucideIcon; label: string; bucket: Bucket; tone: string }) {
+function StatCard({
+  icon: Icon,
+  label,
+  bucket,
+  tone,
+}: {
+  icon: LucideIcon
+  label: string
+  bucket: Bucket
+  tone: string
+}) {
   return (
     <Card className="gap-1 py-4">
       <CardContent className="space-y-1 px-4">

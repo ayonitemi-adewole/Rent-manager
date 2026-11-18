@@ -54,7 +54,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 ### Auth
 - [x] Supabase **phone OTP** login
 - [x] **Send SMS Auth Hook**, demo version: a Postgres hook stores OTPs in `dev_sms_outbox`
-- [ ] Before the pilot: swap the hook for an edge function (`auth-sms-hook`) that delivers OTPs through Termii
+- [x] Edge function `sms-hook` (signed Send SMS hook) that delivers OTPs through Termii: built and deployed, **switched on once Termii approves the sender ID** (steps in README)
 - [x] Normalise phone numbers to E.164 (`+234…`). Accept `080…`, `234…` and `+234…` input
 - [x] First login → onboarding: name (bank details come in Phase 3)
 
@@ -181,7 +181,10 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [ ] Switch Flutterwave and Termii to **live** keys and do one real ₦100 payment end-to-end
 - [ ] Error monitoring (Sentry free tier) on the frontend and edge functions
 - [ ] Daily Supabase backups (or a scheduled `pg_dump` while on the free tier)
-- [ ] Short privacy notice and terms (NDPA 2023: you're storing tenants' phone numbers)
+- [x] Short privacy notice and terms (NDPA 2023), accepted at onboarding with version and time recorded; changing `TERMS_VERSION` asks everyone again. **Have a lawyer review the drafts and set a real support mailbox before launch.**
+- [x] Proper landlord onboarding: email (sent to Flutterwave instead of a placeholder), optional name shown to tenants, terms consent; existing landlords asked once
+- [x] Login: plain-English errors, resend with 60 s countdown, code auto-submits
+- [x] Guided setup: dashboard checklist + spotlight tour that dims the app and points at each button (property → unit → tenant → payout)
 - [ ] Onboard 3–5 pilot landlords **in person**: enter their data with them and watch where they hesitate
 - [ ] Message tenants beforehand (through the landlord) so the first SMS isn't mistaken for a scam
 - [ ] Weekly check-in with each pilot; log every confusion in a single "pilot feedback" list

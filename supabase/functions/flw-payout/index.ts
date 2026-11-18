@@ -51,7 +51,7 @@ Deno.serve(
 
     const { data: landlord, error } = await admin
       .from('landlords')
-      .select('id, full_name, phone, flw_subaccount_ref')
+      .select('id, name_for_tenants, email, phone, flw_subaccount_ref')
       .eq('id', user.id)
       .maybeSingle()
     if (error) throw error
@@ -63,11 +63,10 @@ Deno.serve(
     const input = {
       accountNumber,
       bankCode,
-      businessName: landlord.full_name,
+      businessName: landlord.name_for_tenants,
       mobile,
-      // Landlords sign up by phone, so there's no real email yet. Flutterwave requires one;
-      // use a stable placeholder until we collect a real address.
-      email: `${mobile}@${Deno.env.get('LANDLORD_EMAIL_DOMAIN') ?? 'landlords.rentpadi.app'}`,
+      // Collected at onboarding. Landlords from before onboarding asked for it get a stable placeholder.
+      email: landlord.email ?? `${mobile}@${Deno.env.get('LANDLORD_EMAIL_DOMAIN') ?? 'landlords.rentpadi.app'}`,
     }
     const sub = await withFlutterwaveMessage('Flutterwave could not save this account', () =>
       landlord.flw_subaccount_ref

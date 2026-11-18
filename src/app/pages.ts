@@ -8,6 +8,7 @@ export const pages = {
   tenantPortal: () => import('@/features/public/TenantPortalPage'),
   paymentResult: () => import('@/features/public/PaymentResultPage'),
   receipt: () => import('@/features/public/ReceiptPage'),
+  legal: () => import('@/features/legal/LegalPages'),
 
   dashboard: () => import('@/features/dashboard/DashboardPage'),
   properties: () => import('@/features/properties/PropertiesPage'),

@@ -82,13 +82,18 @@ export type Database = {
           bank_code: string | null
           bank_name: string | null
           created_at: string
+          display_name: string | null
+          email: string | null
           flw_subaccount_id: string | null
           flw_subaccount_ref: number | null
           full_name: string
           id: string
+          name_for_tenants: string | null
           payout_updated_at: string | null
           phone: string
           receipt_seq: number
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
         }
         Insert: {
@@ -97,13 +102,18 @@ export type Database = {
           bank_code?: string | null
           bank_name?: string | null
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           flw_subaccount_id?: string | null
           flw_subaccount_ref?: number | null
           full_name: string
           id?: string
+          name_for_tenants?: string | null
           payout_updated_at?: string | null
           phone?: string
           receipt_seq?: number
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Update: {
@@ -112,13 +122,18 @@ export type Database = {
           bank_code?: string | null
           bank_name?: string | null
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           flw_subaccount_id?: string | null
           flw_subaccount_ref?: number | null
           full_name?: string
           id?: string
+          name_for_tenants?: string | null
           payout_updated_at?: string | null
           phone?: string
           receipt_seq?: number
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -644,6 +659,15 @@ export type Database = {
           period_end: string
           period_start: string
         }[]
+      }
+      complete_onboarding: {
+        Args: {
+          p_display_name: string
+          p_email: string
+          p_full_name: string
+          p_terms_version: string
+        }
+        Returns: undefined
       }
       dev_send_sms_hook: { Args: { event: Json }; Returns: Json }
       earlier_open_charge_due: {
