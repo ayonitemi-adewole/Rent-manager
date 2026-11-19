@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
-import { Download } from 'lucide-react'
+import { Download, FileSpreadsheet } from 'lucide-react'
+import { CollapsibleCard } from '@/components/CollapsibleCard'
 import { FormError } from '@/components/Field'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { METHOD_LABEL } from '@/features/payments/api'
 import { downloadCsv, nairaCell, toCsv } from '@/lib/csv'
 import { friendlyError } from '@/lib/errors'
@@ -12,13 +12,22 @@ import { supabase } from '@/lib/supabase'
 export function ExportPaymentsCard() {
   const exportAll = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase
-        .from('payment_overview')
-        .select('*')
-        .order('paid_at', { ascending: true })
+      const { data, error } = await supabase.from('payment_overview').select('*').order('paid_at', { ascending: true })
       if (error) throw error
       const csv = toCsv(
-        ['Date paid', 'Receipt', 'Tenant', 'Unit', 'Property', 'Period start', 'Period end', 'Method', 'Amount (NGN)', 'Status', 'Note'],
+        [
+          'Date paid',
+          'Receipt',
+          'Tenant',
+          'Unit',
+          'Property',
+          'Period start',
+          'Period end',
+          'Method',
+          'Amount (NGN)',
+          'Status',
+          'Note',
+        ],
         data.map((p) => [
           p.paid_at?.slice(0, 10),
           p.receipt_number,
@@ -38,17 +47,19 @@ export function ExportPaymentsCard() {
   })
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Export</CardTitle>
-        <CardDescription>All payments as a spreadsheet (CSV), for your records or accountant.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <FormError message={exportAll.error ? friendlyError(exportAll.error) : null} />
-        <Button variant="outline" onClick={() => exportAll.mutate()} disabled={exportAll.isPending}>
-          <Download /> {exportAll.isPending ? 'Preparing…' : 'Download payments CSV'}
-        </Button>
-      </CardContent>
-    </Card>
+    <CollapsibleCard
+      id="export"
+      icon={<FileSpreadsheet />}
+      title="Export"
+      description="Download every payment as a spreadsheet, for your records or accountant."
+    >
+      <p className="text-muted-foreground text-sm">
+        All payments across your properties, as a CSV file that opens in Excel or Google Sheets.
+      </p>
+      <FormError message={exportAll.error ? friendlyError(exportAll.error) : null} />
+      <Button variant="outline" onClick={() => exportAll.mutate()} disabled={exportAll.isPending}>
+        <Download /> {exportAll.isPending ? 'Preparing…' : 'Download payments CSV'}
+      </Button>
+    </CollapsibleCard>
   )
 }
