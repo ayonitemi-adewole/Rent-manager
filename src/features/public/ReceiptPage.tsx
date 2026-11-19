@@ -20,7 +20,7 @@ export function ReceiptPage() {
   })
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8 print:max-w-none print:py-0">
+    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8 print:max-w-none print:py-0">
       <Logo />
       <QueryState isPending={isPending} error={error} refetch={refetch} />
       {r === null && <p className="text-sm">This receipt link is not valid.</p>}

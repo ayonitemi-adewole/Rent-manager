@@ -108,6 +108,33 @@
   }
 }
 
+/* Motion: short and purposeful, only to show what changed. Used through motion-safe:, so phones
+   set to "reduce motion" get none of it (tailwind: motion-safe:animate-enter etc.). */
+@theme {
+  /* Something new arrives: a page, a message, an inline question. */
+  --animate-enter: enter 0.2s cubic-bezier(0.2, 0, 0, 1) both;
+  /* Loading spinners: wait a moment first, so quick loads don't flash a spinner. */
+  --animate-enter-late: fade 0.2s ease-out 0.3s both;
+  /* A success worth noticing (payment received). */
+  --animate-pop: pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(6px); }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.5); }
+  }
+}
+
+/* Theme switch: cross-fade light ↔ dark (View Transitions; browsers without it just switch). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
 /* Thin bar at the top while the next page downloads. */
 @keyframes page-progress {
   0% { transform: translateX(-100%); }

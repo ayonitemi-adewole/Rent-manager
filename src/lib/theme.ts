@@ -43,7 +43,10 @@ export function setThemePref(pref: ThemePref) {
   } catch {
     unsaved = pref // can't remember it; still switch for this visit
   }
-  apply()
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Cross-fade light ↔ dark where the browser supports it; otherwise switch at once.
+  if (document.startViewTransition && !reduceMotion) document.startViewTransition(apply)
+  else apply()
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT))
 }
 

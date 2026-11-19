@@ -90,8 +90,29 @@ export function CollapsibleCard({
           />
         </button>
       </h2>
-      <div id={regionId} role="region" aria-label={typeof title === 'string' ? title : undefined} hidden={!open}>
-        <div className="space-y-3 px-5 pb-5">{children}</div>
+      {/* Slides open/closed (grid rows 0fr ↔ 1fr animate to the content's real height). Closed content is
+          inert: not focusable, not read out. */}
+      <div
+        id={regionId}
+        role="region"
+        aria-label={typeof title === 'string' ? title : undefined}
+        inert={!open}
+        className={cn(
+          'grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          {/* pt-1: room for focus rings at the top edge. */}
+          <div
+            className={cn(
+              'space-y-3 px-5 pt-1 pb-5 transition-opacity duration-200 motion-reduce:transition-none',
+              open ? 'opacity-100' : 'opacity-0',
+            )}
+          >
+            {children}
+          </div>
+        </div>
       </div>
     </Card>
   )

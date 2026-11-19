@@ -17,7 +17,7 @@ export function PaymentResultPage() {
   const outcome = verify.data?.outcome
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-4 py-8">
+    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-4 py-8">
       <Logo />
       {cancelled || !txRef ? (
         <Result icon={<XCircle className="text-muted-foreground size-12" />} title="Payment cancelled">
@@ -27,7 +27,7 @@ export function PaymentResultPage() {
         <>
           <QueryState isPending={verify.isPending} error={verify.error} refetch={verify.refetch} />
           {outcome === 'recorded' && (
-            <Result icon={<CheckCircle2 className="text-success size-12" />} title="Payment received">
+            <Result icon={<CheckCircle2 className="text-success size-12 motion-safe:animate-pop" />} title="Payment received">
               Thank you! Your landlord can now see this payment. A receipt will be sent to your phone.
             </Result>
           )}
@@ -52,7 +52,7 @@ export function PaymentResultPage() {
 
 function Result({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 py-6 text-center">
+    <div className="flex flex-col items-center gap-3 py-6 text-center motion-safe:animate-enter">
       {icon}
       <h1 className="text-xl font-bold">{title}</h1>
       <p className="text-muted-foreground max-w-xs text-sm">{children}</p>

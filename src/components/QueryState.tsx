@@ -8,7 +8,7 @@ type Props = { isPending: boolean; error: unknown; refetch?: () => void }
 export function QueryState({ isPending, error, refetch }: Props) {
   if (error) {
     return (
-      <div className="space-y-3 rounded-xl border p-6 text-center">
+      <div className="space-y-3 rounded-xl border p-6 text-center motion-safe:animate-enter">
         <p className="text-sm">{friendlyError(error)}</p>
         {refetch && (
           <Button variant="outline" onClick={() => refetch()}>
@@ -20,7 +20,7 @@ export function QueryState({ isPending, error, refetch }: Props) {
   }
   if (isPending) {
     return (
-      <div className="grid place-items-center py-16" role="status" aria-label="Loading">
+      <div className="grid place-items-center py-16 motion-safe:animate-enter-late" role="status" aria-label="Loading">
         <Loader2 className="text-primary size-6 animate-spin" />
       </div>
     )

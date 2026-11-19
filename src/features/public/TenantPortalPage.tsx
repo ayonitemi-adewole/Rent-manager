@@ -26,7 +26,7 @@ export function TenantPortalPage() {
   const next = open[1]
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8">
+    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8">
       <Logo />
       <QueryState isPending={isPending} error={error} refetch={refetch} />
       {portal === null && (

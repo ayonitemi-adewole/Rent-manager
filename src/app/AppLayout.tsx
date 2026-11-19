@@ -1,6 +1,6 @@
 import { Building2, LayoutDashboard, Settings, Users } from 'lucide-react'
 import { useEffect } from 'react'
-import { NavLink, Outlet, useNavigation } from 'react-router'
+import { NavLink, Outlet, useLocation, useNavigation } from 'react-router'
 import { Logo } from '@/components/Logo'
 import { TourProvider } from '@/features/onboarding/TourProvider'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ const nav = [
 
 export function AppLayout() {
   const loading = useNavigation().state === 'loading'
+  const { pathname } = useLocation()
 
   // Once a landlord is in, fetch the pages they open most so taps feel instant.
   useEffect(prefetchCommonPages, [])
@@ -36,7 +37,10 @@ export function AppLayout() {
         </header>
 
         <main className="flex-1 px-4 pt-4 pb-24">
-          <Outlet />
+          {/* Keyed by page, so each new page fades in (shows that the tap did something). */}
+          <div key={pathname} className="motion-safe:animate-enter">
+            <Outlet />
+          </div>
         </main>
 
         <nav
@@ -52,7 +56,7 @@ export function AppLayout() {
                   data-tour={`nav-${label.toLowerCase()}`}
                   className={({ isActive }) =>
                     cn(
-                      'flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors',
+                      'flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-[color,transform] motion-safe:active:scale-95',
                       isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
                     )
                   }
