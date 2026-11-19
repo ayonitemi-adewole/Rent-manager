@@ -206,7 +206,7 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 | Older landlords struggle | Yoruba and Pidgin UI (set up `i18n` keys from Phase 1 to make this cheap), voice-note help |
 | Low SMS open rates | ✅ **Built (branch `phase-7-whatsapp`):** WhatsApp Business (Meta Cloud API). A tenant chat to check rent, pay and get receipt PDFs; reminders and receipts on WhatsApp alongside SMS (landlord switch); one sender for SMS and WhatsApp. Live once Meta is set up (README). |
 | Paperwork pain | Tenancy agreement and quit notice templates (PDF) |
-| Ready to charge | Pricing: a platform fee via the Flutterwave split, or a flat monthly subscription |
+| Ready to charge | Pricing: a free plan that takes a capped % of online rent (Flutterwave split), or subscription tiers with no %. Brainstorm in [PRICING.md](PRICING.md) |
 
 ---
 
