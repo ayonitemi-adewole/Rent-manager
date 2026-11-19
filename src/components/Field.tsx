@@ -26,7 +26,7 @@ export function Field({ id, label, error, hint, children }: Props) {
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null
   return (
-    <p role="alert" className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
+    <p role="alert" className="motion-safe:animate-enter border-destructive/30 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
       {message}
     </p>
   )

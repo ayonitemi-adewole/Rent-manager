@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTenantCharges } from '@/features/charges/api'
 import { useLandlord } from '@/features/landlord/api'
-import { env } from '@/lib/env'
+import { env } from '@/lib/env'   
 import { formatPhone } from '@/lib/phone'
 import { formatDate } from '@/lib/rent'
 import type { RentPeriod } from '@/lib/rent'
 import { REMINDER_KIND_LABEL, reminderDaysBefore, reminderMessage, whatsappLink } from '@/lib/reminders'
 import { useSendReminderNow, useTenantReminders } from './api'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 const CHANNEL: Record<string, string> = { sms: 'SMS', whatsapp: 'WhatsApp' }
 
@@ -19,7 +20,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
   sending: { label: 'Sending', className: 'text-muted-foreground' },
   sent: { label: 'Sent', className: 'border-success/30 bg-success/10 text-success' },
   failed: { label: 'Failed', className: 'border-destructive/30 bg-destructive/10 text-destructive' },
-  skipped: { label: 'Skipped', className: 'text-muted-foreground' },
+skipped: { label: 'Skipped', className: 'text-muted-foreground' },
 }
 
 type Props = {
@@ -108,7 +109,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
         {whatsapp && !canSendFromRentPadi && (
           <Button asChild variant="secondary" className="h-11 w-full">
             <a href={whatsapp} target="_blank" rel="noreferrer">
-              <MessageCircle /> Send reminder on WhatsApp
+              <WhatsAppIcon /> Send reminder on WhatsApp
             </a>
           </Button>
         )}

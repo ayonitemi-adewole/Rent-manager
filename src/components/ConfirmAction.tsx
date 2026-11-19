@@ -37,7 +37,7 @@ export function ConfirmAction({
   }
 
   return (
-    <div role="alertdialog" aria-label={question} className="bg-muted space-y-3 rounded-lg p-3">
+    <div role="alertdialog" aria-label={question} className="bg-muted space-y-3 rounded-lg p-3 motion-safe:animate-enter">
       <p className="text-sm font-medium">{question}</p>
       <div className="flex gap-2">
         <Button variant="destructive" size="sm" onClick={onConfirm} disabled={pending} autoFocus>

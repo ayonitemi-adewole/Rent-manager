@@ -2,11 +2,23 @@
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
+
+/**
+ * Link previews need absolute image URLs: %APP_URL% in index.html becomes VITE_APP_URL
+ * (e.g. https://rent-padi.vercel.app). Without it the path stays relative, which most apps
+ * still show but some ignore.
+ */
+function appUrl(url: string | undefined): Plugin {
+  return {
+    name: 'rentpadi-app-url',
+    transformIndexHtml: (html) => html.replaceAll('%APP_URL%', (url ?? '').trim().replace(/\/+$/, '')),
+  }
+}
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), appUrl(loadEnv(mode, process.cwd(), 'VITE_').VITE_APP_URL)],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -35,4 +47,4 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
   },
-})
+}))

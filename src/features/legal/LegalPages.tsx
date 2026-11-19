@@ -6,7 +6,7 @@ import { SUPPORT_EMAIL, TERMS_VERSION } from '@/lib/legal'
 
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+    <main className="motion-safe:animate-enter mx-auto max-w-2xl space-y-6 px-4 py-8">
       <Link to="/" aria-label="RentPadi home">
         <Logo />
       </Link>

@@ -1,4 +1,4 @@
-import { ChevronRight, Lock, MessageCircle } from 'lucide-react'
+import { ChevronRight, Lock } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { Logo } from '@/components/Logo'
 import { QueryState } from '@/components/QueryState'
@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/rent'
 import { env } from '@/lib/env'
 import { whatsappLink } from '@/lib/reminders'
 import { usePortal, useStartCheckout, type PortalCharge } from './api'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 // No-login tenant page: what's owed now (one period at a time), pay online, past receipts.
 export function TenantPortalPage() {
@@ -25,7 +26,7 @@ export function TenantPortalPage() {
   const next = open[1]
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8">
+    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-8">
       <Logo />
       <QueryState isPending={isPending} error={error} refetch={refetch} />
       {portal === null && (
@@ -60,8 +61,7 @@ export function TenantPortalPage() {
           {next && (
             <p className="text-muted-foreground text-sm">
               Next: {formatKobo(next.balance_kobo)} due {formatDate(next.due_date)}
-              {open.length > 2 && ` (and ${open.length - 2} more after that)`}. You can pay it once this one is
-              paid.
+              {open.length > 2 && ` (and ${open.length - 2} more after that)`}. You can pay it once this one is paid.
             </p>
           )}
 
@@ -112,7 +112,7 @@ export function TenantPortalPage() {
           {env.whatsappNumber && (
             <Button asChild variant="outline" className="h-11">
               <a href={whatsappLink(env.whatsappNumber, 'Hi')} target="_blank" rel="noreferrer">
-                <MessageCircle className="text-success" /> Check rent and receipts on WhatsApp
+                <WhatsAppIcon /> Check rent and receipts on WhatsApp
               </a>
             </Button>
           )}
