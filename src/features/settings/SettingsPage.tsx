@@ -15,6 +15,7 @@ import { profileSchema, type ProfileForm } from '@/features/landlord/profile-sch
 import { useTour } from '@/features/onboarding/tour-context'
 import { friendlyError } from '@/lib/errors'
 import { formatNgPhone } from '@/lib/phone'
+import { AppearanceCard } from './AppearanceCard'
 import { ExportPaymentsCard } from './ExportPaymentsCard'
 import { WhatsappCard } from './WhatsappCard'
 
@@ -109,6 +110,8 @@ export function SettingsPage() {
         <WhatsappCard />
 
         <ExportPaymentsCard />
+
+        <AppearanceCard />
 
         <Card>
           <CardHeader>

@@ -5,13 +5,11 @@ import { RouterProvider } from 'react-router'
 import { router } from '@/app/router'
 import { SetupNotice } from '@/components/SetupNotice'
 import { isSupabaseConfigured } from '@/lib/env'
+import { initTheme } from '@/lib/theme'
 import './index.css'
 
-// Follow the phone's light/dark setting.
-const dark = window.matchMedia('(prefers-color-scheme: dark)')
-const applyTheme = () => document.documentElement.classList.toggle('dark', dark.matches)
-applyTheme()
-dark.addEventListener('change', applyTheme)
+// Light, dark, or the device's setting (Settings → Appearance).
+initTheme()
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
