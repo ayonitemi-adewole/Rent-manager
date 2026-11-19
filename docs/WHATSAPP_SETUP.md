@@ -432,7 +432,7 @@ The test number is for development only. Before real tenants use it:
    - Function secret: `npx supabase secrets set APP_URL=https://your-domain`
    - SMS link base (SQL Editor): `update public.app_config set value = 'https://your-domain' where key = 'app_url';`
 2. **Verify your business** in Meta Business settings → **Security center**. You'll need CAC registration documents and a website on the business's domain.
-3. **Add a real phone number** under **WhatsApp → API Setup → Add phone number**. It must not already be in use on the WhatsApp app (a fresh SIM is easiest). Set a **display name** (e.g. *RentPadi*). Meta reviews it.
+3. **Add a real phone number** under **WhatsApp → API Setup → Add phone number**. It must not already be in use on the WhatsApp app (a fresh SIM is easiest). Set a **display name** (e.g. *RentPadi*). Meta reviews it. Under **WhatsApp Manager → Phone numbers → Profile**, upload [`docs/brand/whatsapp-profile.png`](brand/whatsapp-profile.png) as the profile photo. The test number's profile can be set the same way.
 4. **Add a payment method** in WhatsApp Manager. Meta charges per *template* message (reminders, receipts). Replies to tenants within 24 hours of their message are free. Check Meta's current Nigeria rates.
 5. **Recreate the three templates** under the real number's WhatsApp account, if it's different from the test one.
 6. **Switch the secrets** to the real number: `WHATSAPP_PHONE_NUMBER_ID`, and a new system-user token with that WhatsApp account assigned.

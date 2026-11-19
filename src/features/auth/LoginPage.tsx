@@ -90,7 +90,7 @@ export function LoginPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-8 px-4 py-10">
       <div className="space-y-2 text-center">
-        <Logo className="justify-center" />
+        <Logo size="lg" className="justify-center" />
         <p className="text-muted-foreground text-sm">Know who has paid. Get rent on time.</p>
       </div>
 

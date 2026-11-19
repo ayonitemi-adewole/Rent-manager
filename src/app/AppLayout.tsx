@@ -32,7 +32,7 @@ export function AppLayout() {
               <div className="page-progress bg-primary h-full w-2/5" />
             </div>
           )}
-          <Logo className="text-lg [&>span:first-child]:size-8" />
+          <Logo size="sm" />
         </header>
 
         <main className="flex-1 px-4 pt-4 pb-24">

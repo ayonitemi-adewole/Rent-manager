@@ -5,6 +5,7 @@ Tenants get reminded by SMS and pay through a link; the money settles straight i
 
 - Product plan: [docs/Rent Manager — Landlord Interviews & MVP Plan.md](docs/Rent%20Manager%20—%20Landlord%20Interviews%20&%20MVP%20Plan.md)
 - Build roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
+- Brand (logo, colours, icon files): [docs/BRAND.md](docs/BRAND.md)
 
 ## Stack
 
