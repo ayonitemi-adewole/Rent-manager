@@ -1,10 +1,10 @@
-import { MessageCircle } from 'lucide-react'
 import { FormError } from '@/components/Field'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLandlord, useSetWhatsappReminders } from '@/features/landlord/api'
 import { env } from '@/lib/env'
 import { friendlyError } from '@/lib/errors'
 import { formatPhone } from '@/lib/phone'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 /** Landlord-wide switch for WhatsApp reminders and receipts. */
 export function WhatsappCard() {
@@ -16,11 +16,9 @@ export function WhatsappCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="text-success size-5" /> WhatsApp
+          <WhatsAppIcon className="size-5" /> WhatsApp
         </CardTitle>
-        <CardDescription>
-          Tenants open WhatsApp more than SMS. Reminders and receipts can go to both.
-        </CardDescription>
+        <CardDescription>Tenants open WhatsApp more than SMS. Reminders and receipts can go to both.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <label className="flex items-start gap-3 rounded-lg border p-3 text-sm">

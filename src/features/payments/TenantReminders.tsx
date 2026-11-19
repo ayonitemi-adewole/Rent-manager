@@ -1,4 +1,3 @@
-import { MessageCircle } from 'lucide-react'
 import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,6 +8,7 @@ import { formatDate } from '@/lib/rent'
 import type { RentPeriod } from '@/lib/rent'
 import { REMINDER_KIND_LABEL, reminderDaysBefore, reminderMessage, whatsappLink } from '@/lib/reminders'
 import { useTenantReminders } from './api'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 const CHANNEL: Record<string, string> = { sms: 'SMS', whatsapp: 'WhatsApp' }
 
@@ -74,7 +74,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
         {whatsapp && (
           <Button asChild variant="secondary" className="h-11 w-full">
             <a href={whatsapp} target="_blank" rel="noreferrer">
-              <MessageCircle /> Send reminder on WhatsApp
+              <WhatsAppIcon /> Send reminder on WhatsApp
             </a>
           </Button>
         )}

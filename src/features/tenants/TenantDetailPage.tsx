@@ -1,4 +1,4 @@
-import { Check, Copy, FileText, LogOut, MessageCircle, Pencil, Phone, RefreshCw } from 'lucide-react'
+import { Check, Copy, FileText, LogOut, Pencil, Phone, RefreshCw } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { ConfirmAction } from '@/components/ConfirmAction'
@@ -8,6 +8,7 @@ import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { friendlyError } from '@/lib/errors'
 import { formatKobo } from '@/lib/money'
 import { formatNgPhone, formatPhone } from '@/lib/phone'
@@ -71,7 +72,7 @@ export function TenantDetailPage() {
             </Button>
             <Button asChild variant="secondary" className="h-11">
               <a href={`https://wa.me/${(t.whatsapp_phone ?? t.phone).replace('+', '')}`} target="_blank" rel="noreferrer">
-                <MessageCircle /> WhatsApp
+                <WhatsAppIcon /> WhatsApp
               </a>
             </Button>
           </div>
