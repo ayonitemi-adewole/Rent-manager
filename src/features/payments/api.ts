@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { portfolioKeys } from '@/features/properties/api'
+import { invokeFunction } from '@/lib/functions'
 import { supabase } from '@/lib/supabase'
 
 export const METHOD_LABEL: Record<string, string> = { link: 'Online', cash: 'Cash', transfer: 'Transfer' }
@@ -94,9 +95,20 @@ export function useTenantReminders(tenantId: string) {
         .select('id, kind, channel, scheduled_for, message, status, sent_at, rent_charges!inner(tenant_id)')
         .eq('rent_charges.tenant_id', tenantId)
         .order('scheduled_for', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(10)
       if (error) throw error
       return data
     },
+  })
+}
+
+/** Send one WhatsApp reminder now, from RentPadi's WhatsApp number (send-reminder-now). */
+export function useSendReminderNow(tenantId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => invokeFunction<{ status: 'sent'; to: string }>('send-reminder-now', { tenant_id: tenantId }),
+    // Sent or failed, the attempt is in the reminder list now.
+    onSettled: () => qc.invalidateQueries({ queryKey: paymentKeys.reminders(tenantId) }),
   })
 }

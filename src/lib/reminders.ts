@@ -12,6 +12,7 @@ export const REMINDER_KIND_LABEL: Record<string, string> = {
   od7: '7 days late',
   od14: '14 days late',
   receipt: 'Receipt',
+  manual: 'Sent by you',
 }
 
 /** Matches public.reminder_kind: monthly starts at 14 days, six-monthly at 30, yearly at 60. */

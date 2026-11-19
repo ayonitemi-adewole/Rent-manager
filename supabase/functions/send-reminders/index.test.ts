@@ -132,3 +132,11 @@ Deno.test('login code template: code in the body and the copy-code button', () =
   assertEquals(body.parameters[0].text, '482913')
   assertEquals(button.parameters[0].text, '482913')
 })
+
+Deno.test('manual reminders pick the due or overdue template by date', () => {
+  const name = (due: string) =>
+    (reminderTemplate(row({ kind: 'manual', due_date: due }), 'x', '2026-11-19').template as { name: string }).name
+  assertEquals(name('2026-11-25'), 'rent_in_due_reminder')
+  assertEquals(name('2026-11-19'), 'rent_in_due_reminder')
+  assertEquals(name('2026-11-18'), 'rent_overdue_reminder')
+})

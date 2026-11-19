@@ -46,6 +46,10 @@ export type OutboundRow = {
   payment_amount_kobo: number | null
 }
 
+/** Today's date in Lagos, as YYYY-MM-DD. */
+export const lagosToday = (now = new Date()) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos' }).format(now)
+
 const naira = (kobo: number) => `₦${nairaDigits(kobo)}`
 const firstName = (name: string) => name.trim().split(/\s+/)[0]
 
@@ -91,8 +95,9 @@ function build(
 }
 
 /** Reminder template for a claimed reminder row. */
-export function reminderTemplate(row: OutboundRow, appUrl: string): OutboundMessage {
-  const overdue = row.kind.startsWith('od')
+export function reminderTemplate(row: OutboundRow, appUrl: string, today = lagosToday()): OutboundMessage {
+  // Manual reminders (sent by the landlord) can be before or after the due date.
+  const overdue = row.kind.startsWith('od') || (row.kind === 'manual' && row.due_date < today)
   return build(
     overdue ? 'rent_overdue_reminder' : 'rent_in_due_reminder',
     [
