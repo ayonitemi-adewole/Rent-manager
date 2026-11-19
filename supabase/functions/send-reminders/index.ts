@@ -7,7 +7,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
 import { receiptFileName, receiptPdf, type Receipt } from '../_shared/receipt-pdf.ts'
 import { adminClient } from '../_shared/supabase.ts'
-import { sendSms, type TermiiConfig } from '../_shared/termii.ts'
+import { sendSms, termiiConfigFromEnv } from '../_shared/termii.ts'
 import { receiptTemplate, reminderTemplate, type OutboundRow } from '../_shared/wa-templates.ts'
 import { sendWhatsApp, uploadMedia, whatsappConfigFromEnv, type WhatsAppConfig } from '../_shared/whatsapp.ts'
 
@@ -68,18 +68,11 @@ function whatsappSender(admin: SupabaseClient, wa: WhatsAppConfig, appUrl: strin
   }
 }
 
-function termiiFromEnv(): TermiiConfig | null {
-  const apiKey = Deno.env.get('TERMII_API_KEY')
-  const senderId = Deno.env.get('TERMII_SENDER_ID')
-  if (!apiKey || !senderId) return null
-  return { apiKey, senderId, baseUrl: Deno.env.get('TERMII_BASE_URL') ?? 'https://v3.api.termii.com' }
-}
-
 if (import.meta.main) {
   const admin = adminClient()
   const appUrl = (Deno.env.get('APP_URL') ?? '').replace(/\/$/, '')
   const wa = whatsappConfigFromEnv()
-  const termii = termiiFromEnv()
+  const termii = termiiConfigFromEnv()
 
   Deno.serve((req) =>
     handleSend(req, {

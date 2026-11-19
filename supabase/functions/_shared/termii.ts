@@ -8,10 +8,11 @@ export type TermiiConfig = {
   baseUrl: string
 }
 
-export function termiiConfigFromEnv(): TermiiConfig {
+/** null until Termii is set up (TERMII_API_KEY + TERMII_SENDER_ID). */
+export function termiiConfigFromEnv(): TermiiConfig | null {
   const apiKey = Deno.env.get('TERMII_API_KEY')
   const senderId = Deno.env.get('TERMII_SENDER_ID')
-  if (!apiKey || !senderId) throw new Error('TERMII_API_KEY and TERMII_SENDER_ID must be set')
+  if (!apiKey || !senderId) return null
   return { apiKey, senderId, baseUrl: Deno.env.get('TERMII_BASE_URL') ?? 'https://v3.api.termii.com' }
 }
 

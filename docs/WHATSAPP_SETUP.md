@@ -4,6 +4,7 @@ This guide connects RentPadi to WhatsApp, step by step. Once it's done:
 
 - **Tenants** can message RentPadi's WhatsApp number to see what they owe, get a Flutterwave payment link, and receive their receipts as PDFs.
 - **Landlords** who switch on **Settings → WhatsApp** send their rent reminders and receipts on WhatsApp as well as by SMS.
+- **Landlords' login codes** can arrive on WhatsApp, so sign-in works before Termii SMS is ready (step 11).
 
 You'll use **Meta's free test number**. You don't need business verification, a new SIM, or a payment method yet. Plan for **30–45 minutes**, plus however long Meta takes to approve the three message templates (usually minutes, sometimes a few hours).
 
@@ -23,10 +24,11 @@ You'll use **Meta's free test number**. You don't need business verification, a 
 8. [Create the three message templates](#8-create-the-three-message-templates)
 9. [Switch on the scheduled sender](#9-switch-on-the-scheduled-sender)
 10. [Show the WhatsApp button to tenants](#10-show-the-whatsapp-button-to-tenants)
-11. [Test everything end to end](#11-test-everything-end-to-end)
-12. [Troubleshooting](#12-troubleshooting)
-13. [Going live with a real number](#13-going-live-with-a-real-number)
-14. [Reference: every value and where it goes](#14-reference-every-value-and-where-it-goes)
+11. [Send landlord login codes on WhatsApp](#11-send-landlord-login-codes-on-whatsapp)
+12. [Test everything end to end](#12-test-everything-end-to-end)
+13. [Troubleshooting](#13-troubleshooting)
+14. [Going live with a real number](#14-going-live-with-a-real-number)
+15. [Reference: every value and where it goes](#15-reference-every-value-and-where-it-goes)
 
 ---
 
@@ -195,9 +197,9 @@ This tells Meta where to deliver tenants' messages.
       curl.exe -s -X POST "https://graph.facebook.com/v23.0/<WABA_ID>/subscribed_apps" -H "Authorization: Bearer <token>"
       ```
       It should print `{"success":true}`.
-5. Test it: from one of your allow-listed phones, send `Hi` to the test number. You should get the reply *"Hello! This WhatsApp number isn't linked to a rent account on RentPadi…"*. That's correct for now: no tenant has your number yet. You'll link one in step 11.
+5. Test it: from one of your allow-listed phones, send `Hi` to the test number. You should get the reply *"Hello! This WhatsApp number isn't linked to a rent account on RentPadi…"*. That's correct for now: no tenant has your number yet. You'll link one in step 12.
 
-> No reply at all? See [Troubleshooting](#12-troubleshooting). Meta's app dashboard also has a **Test** button next to the `messages` field, which sends a sample event.
+> No reply at all? See [Troubleshooting](#13-troubleshooting). Meta's app dashboard also has a **Test** button next to the `messages` field, which sends a sample event.
 
 ---
 
@@ -361,7 +363,69 @@ The tenant payment page (`/t/…`) can show a **"Check rent and receipts on What
 
 ---
 
-## 11. Test everything end to end
+## 11. Send landlord login codes on WhatsApp
+
+Landlords sign in with a 6-digit code. Supabase creates the code and hands it to the `sms-hook` function, which delivers it:
+
+- **on WhatsApp first**, as the `login_code` template, once WhatsApp is set up (steps 2–7);
+- **by SMS through Termii** if WhatsApp refuses the message, or if WhatsApp isn't set up. This only works once Termii is set up.
+
+You can do this step before Termii is ready. While you're on the test number, though, only your allow-listed phones (step 3) can receive codes, so only those numbers can sign in.
+
+### a. Create the `login_code` template
+
+Meta writes the wording for login-code templates itself; you only choose the options.
+
+1. In **WhatsApp Manager → Message templates → Create template**, choose category **Authentication**.
+2. **Name:** `login_code`. **Language:** **English** (plain English, not US or UK, as in step 8).
+3. **Code delivery:** **Copy code**. The landlord taps the button, then pastes the code into RentPadi.
+4. **Content:** tick **Add security recommendation** ("For your security, do not share this code."). Also tick **Add expiry time** and set it to **10 minutes**, unless you've changed the OTP expiry in Supabase (**Authentication → Sign In / Providers → Phone**).
+5. **Button text:** leave Meta's default **Copy code**.
+6. **Submit.** Authentication templates are usually approved within minutes.
+
+The landlord sees something like: *"**482913** is your verification code. For your security, do not share this code. This code expires in 10 minutes."* with a **Copy code** button.
+
+### b. Point Supabase's Send SMS hook at the function
+
+Right now, login codes go to the demo table `dev_sms_outbox`. To send them for real:
+
+1. Supabase dashboard → **Authentication → Auth Hooks** → the **Send SMS** hook → **Edit**.
+2. Change the type from **Postgres** to **HTTPS**.
+3. **URL:** `https://<project-ref>.supabase.co/functions/v1/sms-hook`
+4. Click **Generate secret**. Copy it (it looks like `v1,whsec_…`) and keep the dialog open.
+5. In a terminal, set it as a function secret. Keep the quotes, because of the comma:
+
+   ```sh
+   npx supabase secrets set SEND_SMS_HOOK_SECRET='v1,whsec_…'
+   ```
+
+6. Back in the dashboard, click **Save** / **Update hook**.
+7. Make sure `sms-hook` is deployed: `npm run functions:deploy`.
+
+### c. Try it
+
+1. Sign out of RentPadi, and sign in with one of your allow-listed numbers.
+2. WhatsApp shows the code from the RentPadi test number within a few seconds. Tap **Copy code**, go back to RentPadi and paste it. It signs you in as soon as it has 6 digits.
+3. If nothing arrives, check **Edge Functions → `sms-hook` → Logs**. It logs which channel failed and Meta's reason; it never logs the code itself.
+
+### d. Choosing the order (optional)
+
+By default the hook tries WhatsApp, then SMS. To change the order, or to use only one channel, set `OTP_CHANNELS`:
+
+```sh
+npx supabase secrets set OTP_CHANNELS=sms,whatsapp   # SMS first, WhatsApp as backup
+npx supabase secrets set OTP_CHANNELS=whatsapp       # WhatsApp only
+```
+
+> **What the fallback can't catch:** it only switches to SMS when Meta **refuses** the message straight away (for example, the template isn't approved yet, or the account is locked). If Meta accepts the message but can't deliver it later, because the number isn't on WhatsApp, the landlord gets nothing. The `wa-webhook` logs then show `WhatsApp could not deliver …`. Once Termii is live, a "Send by SMS instead" link on the code screen would cover this.
+
+### e. Going back to demo codes
+
+To go back to the demo table, switch the Send SMS hook to **Postgres**, schema `public`, function `dev_send_sms_hook`. Nothing else needs to change.
+
+---
+
+## 12. Test everything end to end
 
 ### a. The tenant chat
 
@@ -401,7 +465,7 @@ To test without waiting:
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 Logs first: Dashboard → **Edge Functions → `wa-webhook` (or `send-reminders`) → Logs**. Errors from Meta are logged with their status and message.
 
@@ -410,6 +474,8 @@ Logs first: Dashboard → **Edge Functions → `wa-webhook` (or `send-reminders`
 | **Verify and save** fails | Function not deployed, or verify token mismatch | Run the `curl` check from step 6.5 until it prints the challenge |
 | `Hi` gets no reply, and the logs show nothing (the dashboard **Test** button works) | Your app isn't subscribed to the WhatsApp account, or the `messages` field isn't subscribed | Step 7.4 (`subscribed_apps`), then step 7.3. Also check you're messaging the right test number |
 | Logs: `WhatsApp could not deliver …: (#131031) Business Account locked` (or the dashboard **Send message** test fails with it) | Meta has restricted the WhatsApp account. Common with brand-new business portfolios | [Business Support Home](https://business.facebook.com/business-support-home) → **Request review**, and complete **Business info**. Or create a new app (new test account), then redo steps 3–8 and update the three `WHATSAPP_*` secrets |
+| Login: *"We could not send your code just now"* | `sms-hook` couldn't send on any channel: the `login_code` template isn't approved, Termii isn't set up, or `SEND_SMS_HOOK_SECRET` doesn't match the hook | **Edge Functions → `sms-hook` → Logs**. A `rejected unsigned` line means the hook secret is wrong; redo step 11b |
+| Login code never arrives, and no error shows | WhatsApp accepted the code but couldn't deliver it (number not on WhatsApp, or not on the test number's allow-list) | `wa-webhook` logs show `WhatsApp could not deliver …`. Add the number in step 3, or set up Termii as a fallback |
 | Created a new Meta app, and now nothing works | The secrets still belong to the old app | A new app means a new **app secret**, **Phone number ID**, **token**, webhook, templates and recipient list. Redo steps 3–8 |
 | Logs: `rejected unsigned or badly signed request` | Wrong `WHATSAPP_APP_SECRET` | Re-copy it from **App settings → Basic** and set it again |
 | Logs: `WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID not set` | Secrets missing | Step 6.2, then `npx supabase secrets list` |
@@ -424,7 +490,7 @@ Logs first: Dashboard → **Edge Functions → `wa-webhook` (or `send-reminders`
 
 ---
 
-## 13. Going live with a real number
+## 14. Going live with a real number
 
 The test number is for development only. Before real tenants use it:
 
@@ -434,7 +500,7 @@ The test number is for development only. Before real tenants use it:
 2. **Verify your business** in Meta Business settings → **Security center**. You'll need CAC registration documents and a website on the business's domain.
 3. **Add a real phone number** under **WhatsApp → API Setup → Add phone number**. It must not already be in use on the WhatsApp app (a fresh SIM is easiest). Set a **display name** (e.g. *RentPadi*). Meta reviews it.
 4. **Add a payment method** in WhatsApp Manager. Meta charges per *template* message (reminders, receipts). Replies to tenants within 24 hours of their message are free. Check Meta's current Nigeria rates.
-5. **Recreate the three templates** under the real number's WhatsApp account, if it's different from the test one.
+5. **Recreate the templates** (the three in step 8, plus `login_code`) under the real number's WhatsApp account, if it's different from the test one.
 6. **Switch the secrets** to the real number: `WHATSAPP_PHONE_NUMBER_ID`, and a new system-user token with that WhatsApp account assigned.
 7. **Update the frontend:** `VITE_WHATSAPP_NUMBER=+234…` in the host's environment, then redeploy.
 8. **Publish the app** (switch it from Development to **Live** in the app dashboard). This needs a privacy policy URL; use `https://your-domain/privacy`.
@@ -442,18 +508,20 @@ The test number is for development only. Before real tenants use it:
 
 ---
 
-## 14. Reference: every value and where it goes
+## 15. Reference: every value and where it goes
 
 **Supabase edge function secrets** (`npx supabase secrets set …`):
 
 | Name | What it is | Used by |
 | --- | --- | --- |
-| `WHATSAPP_TOKEN` | System-user access token (step 4) | wa-webhook, send-reminders |
-| `WHATSAPP_PHONE_NUMBER_ID` | Phone number ID (step 3) | wa-webhook, send-reminders |
+| `WHATSAPP_TOKEN` | System-user access token (step 4) | wa-webhook, send-reminders, sms-hook |
+| `WHATSAPP_PHONE_NUMBER_ID` | Phone number ID (step 3) | wa-webhook, send-reminders, sms-hook |
 | `WHATSAPP_APP_SECRET` | App secret (step 5), checks Meta's signatures | wa-webhook |
 | `WHATSAPP_VERIFY_TOKEN` | Your random string (step 6), for Meta's one-time check | wa-webhook |
 | `MESSAGE_SENDER_SECRET` | Your random string (step 6), so only the cron job can trigger sending | send-reminders |
 | `APP_URL` | Public app URL, used to build payment and receipt links | wa-webhook, send-reminders, Flutterwave functions |
+| `SEND_SMS_HOOK_SECRET` | Generated by Supabase for the Send SMS hook (step 11b) | sms-hook |
+| `OTP_CHANNELS` | *Optional.* Order of login-code channels, default `whatsapp,sms` | sms-hook |
 | `WHATSAPP_API_VERSION` | *Optional.* Graph API version, default `v23.0` | wa-webhook, send-reminders |
 
 **Supabase Vault** (SQL, step 9):
@@ -476,7 +544,8 @@ The test number is for development only. Before real tenants use it:
 | WhatsApp → Configuration → Callback URL | `https://<project-ref>.supabase.co/functions/v1/wa-webhook` |
 | WhatsApp → Configuration → Verify token | Same as `WHATSAPP_VERIFY_TOKEN` |
 | WhatsApp → Configuration → Webhook fields | `messages` subscribed |
-| Message templates | `rent_in_due_reminder`, `rent_overdue_reminder`, `rent_receipt`: Utility, English, Active |
+| Message templates | `rent_in_due_reminder`, `rent_overdue_reminder`, `rent_receipt`: Utility, English, Active. `login_code`: Authentication, English, Copy code, Active |
+| Supabase → Auth Hooks → Send SMS | HTTPS, `https://<project-ref>.supabase.co/functions/v1/sms-hook` |
 
 **How the pieces fit:**
 

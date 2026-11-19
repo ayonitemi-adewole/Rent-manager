@@ -29,7 +29,7 @@ Demo mode uses a **free hosted Supabase project** and **Flutterwave test keys**.
 
 > Optional: under the Phone provider you can also add **test phone numbers** with fixed codes (e.g. `2348000000001` → `123456`) so you don't have to look up codes.
 
-> `dev_sms_outbox` and its hook are **demo only**. To send real codes once Termii has approved your sender ID:
+> `dev_sms_outbox` and its hook are **demo only**. Real codes can go out on **WhatsApp** (see [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md), step 11) and/or by **SMS** once Termii has approved your sender ID:
 >
 > 1. Dashboard → Authentication → Hooks → **Send SMS** → switch the type to **HTTPS**, URL `https://<project-ref>.supabase.co/functions/v1/sms-hook`, and generate a secret.
 > 2. `npx supabase secrets set TERMII_API_KEY=… TERMII_SENDER_ID=RentPadi TERMII_BASE_URL=<your Termii base URL> SEND_SMS_HOOK_SECRET='v1,whsec_…'`

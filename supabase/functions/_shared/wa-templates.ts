@@ -122,3 +122,28 @@ export function receiptTemplate(row: OutboundRow, documentId: string, filename: 
     { documentId, filename },
   )
 }
+
+// ─────────────────────────── login codes ───────────────────────────
+
+/**
+ * Authentication template for landlord login codes. Meta writes the wording itself
+ * ("<code> is your verification code. For your security, do not share this code.") —
+ * create it in WhatsApp Manager with Category: Authentication, Language: English,
+ * a "Copy code" button, and (optionally) "This code expires in 10 minutes".
+ */
+export const LOGIN_CODE_TEMPLATE = 'login_code'
+
+/** The code goes in the body and again in the copy-code button (Meta requires both). */
+export function loginCodeTemplate(otp: string): OutboundMessage {
+  return {
+    type: 'template',
+    template: {
+      name: LOGIN_CODE_TEMPLATE,
+      language: { code: 'en' },
+      components: [
+        { type: 'body', parameters: [{ type: 'text', text: otp }] },
+        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: otp }] },
+      ],
+    },
+  }
+}
