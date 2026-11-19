@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "preview": "vite preview",
     "db:types": "supabase gen types typescript --remote > src/types/database.ts",
-    "db:push": "supabase db push",
+    "db:push": "supabase db push --remote",
     "test:functions": "deno test --allow-env supabase/functions",
     "functions:deploy": "supabase functions deploy --use-api"
   },
