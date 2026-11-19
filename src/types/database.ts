@@ -728,6 +728,26 @@ export type Database = {
         Returns: number
       }
       owns_charge: { Args: { p_charge_id: string }; Returns: boolean }
+      prepare_manual_reminder: {
+        Args: { p_landlord_id: string; p_tenant_id: string }
+        Returns: {
+          access_token: string
+          balance_kobo: number
+          channel: string
+          due_date: string
+          id: string
+          kind: string
+          landlord_name: string
+          message: string
+          payment_amount_kobo: number
+          receipt_number: string
+          receipt_token: string
+          tenant_id: string
+          tenant_name: string
+          to_phone: string
+          unit_label: string
+        }[]
+      }
       queue_reminders: { Args: never; Returns: number }
       random_token: { Args: never; Returns: string }
       receipt: { Args: { p_token: string }; Returns: Json }

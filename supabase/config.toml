@@ -457,3 +457,7 @@ verify_jwt = false
 
 [functions.send-reminders]
 verify_jwt = false
+
+# Landlord sends one WhatsApp reminder now. Checks the user itself (requireUser), like flw-payout.
+[functions.send-reminder-now]
+verify_jwt = false

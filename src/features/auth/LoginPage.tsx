@@ -84,7 +84,7 @@ export function LoginPage() {
   function onCodeChange(value: string) {
     const digits = value.replace(/\D/g, '').slice(0, 6)
     setCode(digits)
-    if (digits.length === 6) void verify(digits) // also covers pasting the code from the SMS
+    if (digits.length === 6) void verify(digits) // also covers pasting the code (WhatsApp's copy-code button or the SMS)
   }
 
   return (
@@ -109,7 +109,9 @@ export function LoginPage() {
               className="h-12 text-base"
               autoFocus
             />
-            <p className="text-muted-foreground text-xs">We’ll text you a 6-digit code. No password needed.</p>
+            <p className="text-muted-foreground text-xs">
+              We’ll send a 6-digit code to your WhatsApp or by SMS. No password needed.
+            </p>
           </div>
           {error && (
             <p role="alert" className="text-destructive text-sm">
@@ -142,6 +144,7 @@ export function LoginPage() {
               className="h-12 text-center text-lg tracking-[0.5em]"
               autoFocus
             />
+            <p className="text-muted-foreground text-xs">Check WhatsApp for a message from RentPadi, or your SMS.</p>
           </div>
           {error && (
             <p role="alert" className="text-destructive text-sm">
@@ -191,8 +194,9 @@ export function LoginPage() {
 
       {import.meta.env.DEV && (
         <p className="text-muted-foreground rounded-md border border-dashed p-3 text-xs">
-          Demo mode: no SMS is sent. Find your code in Supabase → Table Editor → <strong>dev_sms_outbox</strong>, or
-          use a test number you set up under the Phone provider.
+          Demo mode: while the Send SMS hook points at <strong>dev_send_sms_hook</strong>, no message is sent. Find your
+          code in Supabase → Table Editor → <strong>dev_sms_outbox</strong>, or use a test number you set up under the
+          Phone provider.
         </p>
       )}
     </main>

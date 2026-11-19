@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from 'jsr:@std/assert@1.0.13'
-import { receiptTemplate, reminderTemplate, TEMPLATE_DEFINITIONS, type OutboundRow } from '../_shared/wa-templates.ts'
+import { loginCodeTemplate, receiptTemplate, reminderTemplate, TEMPLATE_DEFINITIONS, type OutboundRow } from '../_shared/wa-templates.ts'
 import { handleSend, type SendDeps } from './index.ts'
 
 const row = (over: Partial<OutboundRow> = {}): OutboundRow => ({
@@ -123,4 +123,20 @@ Deno.test('template parameter counts match the definitions', () => {
   assertEquals(count(TEMPLATE_DEFINITIONS.rent_in_due_reminder.body), 6)
   assertEquals(count(TEMPLATE_DEFINITIONS.rent_overdue_reminder.body), 6)
   assertEquals(count(TEMPLATE_DEFINITIONS.rent_receipt.body), 5)
+})
+
+Deno.test('login code template: code in the body and the copy-code button', () => {
+  const m = loginCodeTemplate('482913')
+  assertEquals((m.template as { name: string }).name, 'login_code')
+  const [body, button] = params(m)
+  assertEquals(body.parameters[0].text, '482913')
+  assertEquals(button.parameters[0].text, '482913')
+})
+
+Deno.test('manual reminders pick the due or overdue template by date', () => {
+  const name = (due: string) =>
+    (reminderTemplate(row({ kind: 'manual', due_date: due }), 'x', '2026-11-19').template as { name: string }).name
+  assertEquals(name('2026-11-25'), 'rent_in_due_reminder')
+  assertEquals(name('2026-11-19'), 'rent_in_due_reminder')
+  assertEquals(name('2026-11-18'), 'rent_overdue_reminder')
 })

@@ -1,13 +1,16 @@
+import { MessageCircle, Send } from 'lucide-react'
 import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTenantCharges } from '@/features/charges/api'
 import { useLandlord } from '@/features/landlord/api'
+import { env } from '@/lib/env'   
+import { formatPhone } from '@/lib/phone'
 import { formatDate } from '@/lib/rent'
 import type { RentPeriod } from '@/lib/rent'
 import { REMINDER_KIND_LABEL, reminderDaysBefore, reminderMessage, whatsappLink } from '@/lib/reminders'
-import { useTenantReminders } from './api'
+import { useSendReminderNow, useTenantReminders } from './api'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 const CHANNEL: Record<string, string> = { sms: 'SMS', whatsapp: 'WhatsApp' }
@@ -17,7 +20,7 @@ const STATUS: Record<string, { label: string; className: string }> = {
   sending: { label: 'Sending', className: 'text-muted-foreground' },
   sent: { label: 'Sent', className: 'border-success/30 bg-success/10 text-success' },
   failed: { label: 'Failed', className: 'border-destructive/30 bg-destructive/10 text-destructive' },
-  skipped: { label: 'Skipped', className: 'text-muted-foreground' },
+skipped: { label: 'Skipped', className: 'text-muted-foreground' },
 }
 
 type Props = {
@@ -37,6 +40,9 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
   const reminders = useTenantReminders(tenant.id)
   const charges = useTenantCharges(tenant.id)
   const { data: landlord } = useLandlord()
+  const sendNow = useSendReminderNow(tenant.id)
+  // RentPadi's own WhatsApp number is set once WhatsApp Business is live.
+  const canSendFromRentPadi = Boolean(env.whatsappNumber)
 
   // Most urgent open charge: the most overdue, else the soonest due.
   const open = (charges.data ?? [])
@@ -71,7 +77,36 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
             : 'Automatic reminders are off for this tenant.'}
         </p>
 
-        {whatsapp && (
+        {whatsapp && canSendFromRentPadi && (
+          <div className="space-y-2">
+            <Button
+              className="h-11 w-full"
+              disabled={sendNow.isPending || sendNow.isSuccess}
+              onClick={() => sendNow.mutate()}
+            >
+              <Send /> {sendNow.isPending ? 'Sending…' : 'Send reminder from RentPadi'}
+            </Button>
+            {sendNow.isSuccess ? (
+              <p role="status" className="text-success text-xs">
+                Reminder sent on WhatsApp to {formatPhone(sendNow.data.to)}.
+              </p>
+            ) : sendNow.isError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {sendNow.error.message}
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-xs">
+                Sent from RentPadi’s WhatsApp with a Pay button. You can send one every 12 hours.
+              </p>
+            )}
+            <Button asChild variant="secondary" className="h-11 w-full">
+              <a href={whatsapp} target="_blank" rel="noreferrer">
+                <MessageCircle /> Send from my own WhatsApp
+              </a>
+            </Button>
+          </div>
+        )}
+        {whatsapp && !canSendFromRentPadi && (
           <Button asChild variant="secondary" className="h-11 w-full">
             <a href={whatsapp} target="_blank" rel="noreferrer">
               <WhatsAppIcon /> Send reminder on WhatsApp

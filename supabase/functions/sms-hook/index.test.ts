@@ -1,10 +1,13 @@
-import { assertEquals, assertRejects } from 'jsr:@std/assert@1.0.13'
+import { assertEquals, assertRejects, assertStringIncludes } from 'jsr:@std/assert@1.0.13'
 import { sendSms, TermiiError, type TermiiConfig } from '../_shared/termii.ts'
 import { signWebhook, verifyWebhook } from '../_shared/webhook.ts'
-import { handleSmsHook, otpMessage } from './index.ts'
+import { loginCodeTemplate } from '../_shared/wa-templates.ts'
+import type { WhatsAppConfig } from '../_shared/whatsapp.ts'
+import { handleSmsHook, otpMessage, parseChannels, type HookDeps } from './index.ts'
 
 const SECRET = 'v1,whsec_' + btoa('test-secret-of-32-bytes-length!!')
 const config: TermiiConfig = { apiKey: 'key', senderId: 'RentPadi', baseUrl: 'https://termii.test/' }
+const wa: WhatsAppConfig = { token: 't', phoneNumberId: '1', apiVersion: 'v23.0' }
 
 async function signedRequest(payload: unknown, secret = SECRET, timestamp = Math.floor(Date.now() / 1000)) {
   const body = JSON.stringify(payload)
@@ -17,29 +20,75 @@ async function signedRequest(payload: unknown, secret = SECRET, timestamp = Math
   })
 }
 
-function fakeDeps(fail = false) {
-  const sent: { to: string; message: string }[] = []
-  return {
-    sent,
-    deps: {
-      termiiConfigFromEnv: () => config,
-      sendSms: (_c: TermiiConfig, to: string, message: string) => {
-        if (fail) return Promise.reject(new TermiiError('Termii 400: Insufficient balance'))
-        sent.push({ to, message })
-        return Promise.resolve('msg-id')
-      },
+type Sent = { channel: string; to: string; message: unknown }
+
+function fakeDeps(over: Partial<HookDeps> = {}, fail: string[] = []) {
+  const sent: Sent[] = []
+  const deps: HookDeps = {
+    channels: ['whatsapp', 'sms'],
+    whatsapp: wa,
+    termii: config,
+    sendWhatsApp: (_c, to, message) => {
+      if (fail.includes('whatsapp')) return Promise.reject(new Error('WhatsApp 400: template not approved'))
+      sent.push({ channel: 'whatsapp', to, message })
+      return Promise.resolve('wamid.1')
     },
+    sendSms: (_c, to, message) => {
+      if (fail.includes('sms')) return Promise.reject(new TermiiError('Termii 400: Insufficient balance'))
+      sent.push({ channel: 'sms', to, message })
+      return Promise.resolve('msg-id')
+    },
+    ...over,
   }
+  return { sent, deps }
 }
 
 Deno.env.set('SEND_SMS_HOOK_SECRET', SECRET)
 const payload = { user: { phone: '2348031234567' }, sms: { otp: '123456' } }
 
-Deno.test('sends the code to the E.164 number', async () => {
+Deno.test('sends the code on WhatsApp first, as the login_code template', async () => {
   const { sent, deps } = fakeDeps()
   const res = await handleSmsHook(await signedRequest(payload), deps)
   assertEquals(res.status, 200)
-  assertEquals(sent, [{ to: '+2348031234567', message: otpMessage('123456') }])
+  assertEquals(sent, [{ channel: 'whatsapp', to: '+2348031234567', message: loginCodeTemplate('123456') }])
+  assertStringIncludes(JSON.stringify(sent[0].message), '"name":"login_code"')
+})
+
+Deno.test('falls back to SMS when WhatsApp refuses', async () => {
+  const { sent, deps } = fakeDeps({}, ['whatsapp'])
+  const res = await handleSmsHook(await signedRequest(payload), deps)
+  assertEquals(res.status, 200)
+  assertEquals(sent, [{ channel: 'sms', to: '+2348031234567', message: otpMessage('123456') }])
+})
+
+Deno.test('uses SMS only while WhatsApp is not set up', async () => {
+  const { sent, deps } = fakeDeps({ whatsapp: null })
+  await handleSmsHook(await signedRequest(payload), deps)
+  assertEquals(sent.map((s) => s.channel), ['sms'])
+})
+
+Deno.test('uses WhatsApp only while Termii is not set up', async () => {
+  const { sent, deps } = fakeDeps({ termii: null })
+  await handleSmsHook(await signedRequest(payload), deps)
+  assertEquals(sent.map((s) => s.channel), ['whatsapp'])
+})
+
+Deno.test('OTP_CHANNELS can put SMS first', async () => {
+  const { sent, deps } = fakeDeps({ channels: parseChannels('sms, whatsapp') })
+  await handleSmsHook(await signedRequest(payload), deps)
+  assertEquals(sent.map((s) => s.channel), ['sms'])
+})
+
+Deno.test('parseChannels ignores unknown names and duplicates', () => {
+  assertEquals(parseChannels(undefined), ['whatsapp', 'sms'])
+  assertEquals(parseChannels('SMS,telegram,sms'), ['sms'])
+})
+
+Deno.test('nothing set up: a clear hook error, nothing sent', async () => {
+  const { sent, deps } = fakeDeps({ whatsapp: null, termii: null })
+  const res = await handleSmsHook(await signedRequest(payload), deps)
+  assertEquals(res.status, 500)
+  assertEquals(sent, [])
 })
 
 Deno.test('rejects a request signed with another secret', async () => {
@@ -65,10 +114,34 @@ Deno.test('rejects a tampered body', async () => {
   assertEquals((await handleSmsHook(tampered, fakeDeps().deps)).status, 401)
 })
 
-Deno.test('a Termii failure becomes a hook error Supabase understands', async () => {
-  const res = await handleSmsHook(await signedRequest(payload), fakeDeps(true).deps)
+Deno.test('every channel failing becomes a hook error Supabase understands', async () => {
+  const res = await handleSmsHook(await signedRequest(payload), fakeDeps({}, ['whatsapp', 'sms']).deps)
   assertEquals(res.status, 502)
   assertEquals((await res.json()).error.http_code, 502)
+})
+
+Deno.test('accepts the secret however it was pasted', async () => {
+  const body = '{}'
+  const ts = String(Math.floor(Date.now() / 1000))
+  const sig = await signWebhook(SECRET, 'id', ts, body)
+  const headers = new Headers({ 'webhook-id': 'id', 'webhook-timestamp': ts, 'webhook-signature': sig })
+  const raw = SECRET.replace('v1,whsec_', '')
+  for (const pasted of [SECRET, ` ${SECRET}
+`, `'${SECRET}'`, `v1 whsec_${raw}`, `whsec_${raw}`, `other|${SECRET}`]) {
+    assertEquals(await verifyWebhook(pasted.replace('other', 'v1,whsec_' + btoa('old-secret')), headers, body), true, pasted)
+  }
+})
+
+Deno.test('a malformed secret is a clear hook error, not a crash', async () => {
+  Deno.env.set('SEND_SMS_HOOK_SECRET', 'v1,whsec_not base64!!')
+  try {
+    const { sent, deps } = fakeDeps()
+    const res = await handleSmsHook(await signedRequest(payload), deps)
+    assertEquals(res.status, 500)
+    assertEquals(sent, [])
+  } finally {
+    Deno.env.set('SEND_SMS_HOOK_SECRET', SECRET)
+  }
 })
 
 Deno.test('verifyWebhook accepts any of several signatures', async () => {
