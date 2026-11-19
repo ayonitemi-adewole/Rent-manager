@@ -18,10 +18,31 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
+export class WebhookSecretError extends Error {}
+
+/**
+ * The key bytes from a dashboard secret. Forgiving about how it was pasted: surrounding quotes or
+ * spaces, "v1 whsec_…" (PowerShell turns an unquoted comma into a space), or a bare "whsec_…".
+ */
+export function secretKeyBytes(secret: string): Uint8Array<ArrayBuffer> {
+  const b64 = secret
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .trim()
+    .replace(/^v1[,\s]+/, '')
+    .replace(/^whsec_/, '')
+  try {
+    if (!b64) throw new Error('empty')
+    return base64ToBytes(b64)
+  } catch {
+    throw new WebhookSecretError('Hook secret is not in the "v1,whsec_<base64>" format from the dashboard')
+  }
+}
+
 export async function signWebhook(secret: string, id: string, timestamp: string, body: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
-    base64ToBytes(secret.replace(/^v1,/, '').replace(/^whsec_/, '')),
+    secretKeyBytes(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],
@@ -43,6 +64,10 @@ export async function verifyWebhook(
   if (!id || !timestamp || !signatures) return false
   if (Math.abs(nowSeconds - Number(timestamp)) > TOLERANCE_SECONDS) return false
 
-  const expected = await signWebhook(secret, id, timestamp, body)
-  return signatures.split(' ').some((sig) => timingSafeEqual(sig, expected))
+  // Several secrets may be configured, separated by "|" (e.g. while rotating).
+  for (const one of secret.split('|')) {
+    const expected = await signWebhook(one, id, timestamp, body)
+    if (signatures.split(' ').some((sig) => timingSafeEqual(sig, expected))) return true
+  }
+  return false
 }

@@ -12,7 +12,7 @@
 
 import { sendSms, termiiConfigFromEnv, type TermiiConfig } from '../_shared/termii.ts'
 import { loginCodeTemplate } from '../_shared/wa-templates.ts'
-import { verifyWebhook } from '../_shared/webhook.ts'
+import { verifyWebhook, WebhookSecretError } from '../_shared/webhook.ts'
 import { sendWhatsApp, whatsappConfigFromEnv, type WhatsAppConfig } from '../_shared/whatsapp.ts'
 
 type HookPayload = { user?: { phone?: string }; sms?: { otp?: string } }
@@ -57,7 +57,15 @@ export async function handleSmsHook(req: Request, deps: HookDeps = depsFromEnv()
   const body = await req.text()
 
   const secret = Deno.env.get('SEND_SMS_HOOK_SECRET')
-  if (!secret || !(await verifyWebhook(secret, req.headers, body))) {
+  let signed = false
+  try {
+    signed = Boolean(secret) && (await verifyWebhook(secret!, req.headers, body))
+  } catch (err) {
+    if (!(err instanceof WebhookSecretError)) throw err
+    console.error(`sms-hook: SEND_SMS_HOOK_SECRET is malformed. ${err.message}. Set it again, in quotes.`)
+    return hookError(500, 'Login codes are not set up correctly yet.')
+  }
+  if (!signed) {
     console.warn('sms-hook: rejected unsigned or badly signed request')
     return hookError(401, 'Invalid signature')
   }

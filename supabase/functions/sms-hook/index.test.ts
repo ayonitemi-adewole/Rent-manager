@@ -120,6 +120,30 @@ Deno.test('every channel failing becomes a hook error Supabase understands', asy
   assertEquals((await res.json()).error.http_code, 502)
 })
 
+Deno.test('accepts the secret however it was pasted', async () => {
+  const body = '{}'
+  const ts = String(Math.floor(Date.now() / 1000))
+  const sig = await signWebhook(SECRET, 'id', ts, body)
+  const headers = new Headers({ 'webhook-id': 'id', 'webhook-timestamp': ts, 'webhook-signature': sig })
+  const raw = SECRET.replace('v1,whsec_', '')
+  for (const pasted of [SECRET, ` ${SECRET}
+`, `'${SECRET}'`, `v1 whsec_${raw}`, `whsec_${raw}`, `other|${SECRET}`]) {
+    assertEquals(await verifyWebhook(pasted.replace('other', 'v1,whsec_' + btoa('old-secret')), headers, body), true, pasted)
+  }
+})
+
+Deno.test('a malformed secret is a clear hook error, not a crash', async () => {
+  Deno.env.set('SEND_SMS_HOOK_SECRET', 'v1,whsec_not base64!!')
+  try {
+    const { sent, deps } = fakeDeps()
+    const res = await handleSmsHook(await signedRequest(payload), deps)
+    assertEquals(res.status, 500)
+    assertEquals(sent, [])
+  } finally {
+    Deno.env.set('SEND_SMS_HOOK_SECRET', SECRET)
+  }
+})
+
 Deno.test('verifyWebhook accepts any of several signatures', async () => {
   const body = '{}'
   const ts = String(Math.floor(Date.now() / 1000))
