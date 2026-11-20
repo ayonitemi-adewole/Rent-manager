@@ -4,6 +4,8 @@ export const env = {
   flwPublicKey: import.meta.env.VITE_FLW_PUBLIC_KEY as string | undefined,
   /** RentPadi's WhatsApp Business number (E.164), shown to tenants once WhatsApp is live. */
   whatsappNumber: import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined,
+  /** Where landlords and tenants reach RentPadi (Terms and Privacy pages). */
+  supportEmail: import.meta.env.VITE_SUPPORT_EMAIL as string | undefined,
 }
 
 export const isSupabaseConfigured = Boolean(env.supabaseUrl && env.supabaseAnonKey)
