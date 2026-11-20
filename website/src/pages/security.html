@@ -1,0 +1,111 @@
+<!--meta {
+  "title": "Security: how RentPadi protects your money and records | RentPadi",
+  "description": "RentPadi never holds rent money. Payments settle straight to your bank, every payment is verified before it counts, records can't be silently changed, and your data stays yours.",
+  "nav": "security"
+} -->
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow"><svg class="icon"><use href="#i-shield" /></svg> Security and trust</span>
+    <h1>Built so you never have to wonder where the money is</h1>
+    <p class="lead">Trust is the whole product. Here, in plain words, is how RentPadi handles your rent, your records and your tenants' details.</p>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow"><svg class="icon"><use href="#i-bank" /></svg> Rule number one</span>
+      <h2>RentPadi never holds your money</h2>
+      <p>We are software, not a bank or a wallet. When a tenant pays online, a licensed payment company moves the money and settles it into <b>your own bank account</b>. There's no RentPadi balance to withdraw from, and nothing for us to hold back.</p>
+    </div>
+    <div class="flow" data-reveal>
+      <div class="flow-node"><span class="card-icon"><svg class="icon"><use href="#i-phone" /></svg></span><h3>Tenant pays</h3><p>Card, transfer or USSD on a secure checkout</p></div>
+      <div class="flow-arrow"><svg class="icon"><use href="#i-arrow" /></svg></div>
+      <div class="flow-node"><span class="card-icon"><svg class="icon"><use href="#i-lock" /></svg></span><h3>Payment company</h3><p>Licensed, card details never touch RentPadi</p></div>
+      <div class="flow-arrow"><svg class="icon"><use href="#i-arrow" /></svg></div>
+      <div class="flow-node is-you"><span class="card-icon"><svg class="icon"><use href="#i-bank" /></svg></span><h3>Your bank</h3><p>Settled to the account you confirmed</p></div>
+    </div>
+    <div class="flow-aside" data-reveal>
+      <svg class="icon"><use href="#i-alert" /></svg>
+      <p>We'll never offer wallets, "rent savings" or escrow that would mean holding your money. If that ever changes, it will only be through a licensed bank partner, and we'll tell you first.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Payments</span>
+      <h2>Every payment is checked before it counts</h2>
+    </div>
+    <div class="grid grid-3">
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-user-check" /></svg></span><h3>Your account name, confirmed</h3><p>When you add your bank account, we look up the account name and show it to you before saving. A wrong digit can't quietly send rent to a stranger.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-shield" /></svg></span><h3>Verified twice</h3><p>When the payment company tells us a payment succeeded, we check the message is genuine, then ask them directly to confirm the amount, currency and status.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-history" /></svg></span><h3>Never counted twice</h3><p>Each payment has a unique reference. If the same notice arrives again, nothing changes. Your balances stay correct.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-key" /></svg></span><h3>Keys stay on our servers</h3><p>The secret keys that talk to payment and messaging companies live only on our servers, never in the app on your phone.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-link" /></svg></span><h3>Private, resettable tenant links</h3><p>Each tenant link has a long random code that can't be guessed. If one gets passed around, reset it and the old link stops working at once.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-users" /></svg></span><h3>Tenants see only their own rent</h3><p>A tenant's page shows their unit, what they owe and their receipts. Nothing about your other tenants, ever.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-white section-border">
+  <div class="container">
+    <div class="split">
+      <div class="split-copy" data-reveal>
+        <span class="eyebrow"><svg class="icon"><use href="#i-receipt" /></svg> Records</span>
+        <h2>A ledger you can trust in a dispute</h2>
+        <p>Your rent records are only useful if nobody can quietly rewrite them, not even by accident.</p>
+        <ul class="checks">
+          <li><svg class="icon"><use href="#i-check" /></svg><span><b>Money is stored in kobo</b>, as whole numbers, so there are no rounding errors.</span></li>
+          <li><svg class="icon"><use href="#i-check" /></svg><span><b>Mistakes are voided with a reason, never deleted.</b> The original entry stays, marked VOID.</span></li>
+          <li><svg class="icon"><use href="#i-check" /></svg><span><b>Receipt numbers never skip</b>, so a missing receipt is easy to spot.</span></li>
+          <li><svg class="icon"><use href="#i-check" /></svg><span><b>Each landlord's data is walled off</b> at the database level. Even a bug in the app can't show you someone else's tenants.</span></li>
+        </ul>
+      </div>
+      <div class="split-visual" data-reveal>
+        <div class="receipt" role="img" aria-label="A voided receipt, kept in the records">
+          <div class="receipt-head">
+            <span class="brand">{{MARK}}<span class="wordmark"><span>Rent</span> <b>Padi</b></span></span>
+            <span class="receipt-no">Receipt<b>RP-0039</b></span>
+          </div>
+          <span class="stamp" style="color:var(--overdue);border-color:var(--overdue)">VOID</span>
+          <div class="receipt-amount">
+            <div class="muted small">Recorded in error</div>
+            <div class="big" style="text-decoration:line-through;color:var(--subtle)">₦35,000</div>
+          </div>
+          <dl>
+            <dt>Method</dt><dd>Cash</dd>
+            <dt>Recorded</dt><dd>3 Nov 2026</dd>
+            <dt>Voided</dt><dd>3 Nov 2026</dd>
+            <dt>Reason</dt><dd>Typed ₦35,000, meant ₦350,000</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Your data</span>
+      <h2>Your records belong to you</h2>
+    </div>
+    <div class="grid grid-2">
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-phone" /></svg></span><h3>No passwords to steal</h3><p>You log in with a one-time code sent to your phone by WhatsApp or SMS. There's no password to reuse, forget or leak.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-file" /></svg></span><h3>Nigeria's Data Protection Act 2023</h3><p>We collect only what's needed to remind, collect and receipt rent. We never sell your data or your tenants' data. Read our <a href="{{PRIVACY_URL}}">privacy notice</a>.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-download" /></svg></span><h3>Export any time</h3><p>Download your full payment history as a spreadsheet, on every plan, including Padi Free. The file is made safe to open in Excel.</p></div>
+      <div class="card" data-reveal><span class="card-icon"><svg class="icon"><use href="#i-lock" /></svg></span><h3>Never held hostage</h3><p>If a subscription lapses, you keep full access to your ledger and history, and tenants can still pay. We never delete your records to make you pay.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-white section-border">
+  <div class="container container-narrow center" data-reveal>
+    <span class="eyebrow"><svg class="icon"><use href="#i-mail" /></svg> Report a problem</span>
+    <h2>Found something that looks wrong?</h2>
+    <p class="lead">If you think you've found a security issue, or you've received a suspicious message that uses our name, tell us straight away. We read every report.</p>
+    <p><a class="btn btn-primary" href="mailto:{{SUPPORT_EMAIL}}?subject=Security%20report">Email {{SUPPORT_EMAIL}}</a></p>
+  </div>
+</section>

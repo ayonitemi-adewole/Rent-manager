@@ -11,6 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
+    "site:build": "node website/build.ts",
+    "site:dev": "node website/build.ts --serve",
     "db:types": "supabase gen types typescript --remote > src/types/database.ts",
     "db:push": "supabase db push --remote",
     "test:functions": "deno test --allow-env supabase/functions",
