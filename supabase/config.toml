@@ -433,18 +433,18 @@ enabled = true
 # ── RentPadi edge functions ──
 # Signed-in landlords only. The function checks the user itself (requireUser): the gateway's
 # verify_jwt is off because it can reject tokens from Supabase's newer JWT signing keys.
-[functions.flw-payout]
+[functions.payout]
 verify_jwt = false
 
-# Public: called by tenants (secret link token checked in the function) or by Flutterwave
-# (verif-hash checked in the function). There's no Supabase login to verify.
-[functions.flw-checkout]
+# Public: called by tenants (secret link token checked in the function) or by Paystack
+# (x-paystack-signature checked in the function). There's no Supabase login to verify.
+[functions.pay-checkout]
 verify_jwt = false
 
-[functions.flw-verify]
+[functions.pay-verify]
 verify_jwt = false
 
-[functions.flw-webhook]
+[functions.pay-webhook]
 verify_jwt = false
 
 # Called by Supabase Auth (Send SMS hook), which signs requests instead of sending a user JWT.
@@ -458,6 +458,6 @@ verify_jwt = false
 [functions.send-reminders]
 verify_jwt = false
 
-# Landlord sends one WhatsApp reminder now. Checks the user itself (requireUser), like flw-payout.
+# Landlord sends one WhatsApp reminder now. Checks the user itself (requireUser), like payout.
 [functions.send-reminder-now]
 verify_jwt = false

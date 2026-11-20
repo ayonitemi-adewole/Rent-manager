@@ -10,7 +10,7 @@ from (values
     not has_column_privilege('authenticated', 'public.landlords', 'terms_accepted_at', 'UPDATE')
     and not has_column_privilege('authenticated', 'public.landlords', 'terms_version', 'UPDATE')),
   ('landlords cannot write payout details',
-    not has_column_privilege('authenticated', 'public.landlords', 'flw_subaccount_id', 'UPDATE')),
+    not has_column_privilege('authenticated', 'public.landlords', 'paystack_subaccount_code', 'UPDATE')),
   ('profiles are created only by complete_onboarding',
     not has_table_privilege('authenticated', 'public.landlords', 'INSERT')),
   ('signed-in users can complete onboarding',

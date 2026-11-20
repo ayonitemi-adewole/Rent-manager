@@ -36,7 +36,7 @@ export type Portal = {
 export type BotDeps = {
   tenancies: (phone: string) => Promise<Tenancy[]>
   portal: (accessToken: string) => Promise<Portal | null>
-  /** Flutterwave checkout URL. Throws an Error whose message is safe to show the tenant. */
+  /** Paystack checkout URL. Throws an Error whose message is safe to show the tenant. */
   checkout: (accessToken: string, chargeId: string) => Promise<string>
   /** The receipt as a WhatsApp document message, or null if not found. */
   receiptDocument: (receiptToken: string) => Promise<OutboundMessage | null>
@@ -137,7 +137,7 @@ async function forTenancy(action: Action, t: Tenancy, arg: string | undefined, d
       return [
         linkButton(
           `Rent for *${where}*\n${formatDay(open.period_start)} – ${formatDay(open.period_end)}\nAmount: *${naira(open.balance_kobo)}*\n\n` +
-            'Pay securely with Flutterwave (card, bank transfer or USSD). The money goes straight to your landlord’s account, and your receipt comes here.',
+            'Pay securely with Paystack (card, bank transfer or USSD). The money goes straight to your landlord’s account, and your receipt comes here.',
           `Pay ${naira(open.balance_kobo)}`,
           url,
         ),

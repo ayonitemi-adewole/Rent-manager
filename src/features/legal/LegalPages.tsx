@@ -64,10 +64,10 @@ export function TermsPage() {
         <h2>4. Payments</h2>
         <ul>
           <li>
-            Online payments are processed by Flutterwave and settle directly into the bank account you set up. RentPadi
+            Online payments are processed by Paystack and settle directly into the bank account you set up. RentPadi
             never holds your rent.
           </li>
-          <li>Flutterwave’s own terms and fees apply to online payments.</li>
+          <li>Paystack’s own terms and fees apply to online payments. Its fee comes out of each payment before it reaches you.</li>
           <li>
             Payments you record yourself (cash or transfer) are your own record. Check them; receipts are issued from
             what you enter.
@@ -135,7 +135,7 @@ export function PrivacyPage() {
           </li>
           <li>
             <strong>Payments:</strong> amounts, dates and references. Card and bank login details are entered on
-            Flutterwave’s page and never reach RentPadi.
+            Paystack’s page and never reach RentPadi.
           </li>
           <li>Basic technical data needed to keep the service secure, such as sign-in times.</li>
         </ul>
@@ -161,7 +161,7 @@ export function PrivacyPage() {
         <h2>Who we share it with</h2>
         <ul>
           <li>Supabase: secure hosting and database.</li>
-          <li>Flutterwave: online payments and payouts to landlords.</li>
+          <li>Paystack: online payments and payouts to landlords.</li>
           <li>Termii: delivery of SMS codes, reminders and receipts.</li>
         </ul>
         <p>

@@ -1,6 +1,6 @@
-// Fallback list of Nigerian banks with the codes Flutterwave uses (CBN / NIP codes).
-// Used when Flutterwave's GET /banks/NG fails (it is unreliable, especially in test mode).
-// Account-name lookup (/accounts/resolve) still validates every code before anything is saved.
+// Fallback list of Nigerian banks with their CBN / NIP codes (the codes Paystack uses).
+// Used when Paystack's GET /bank fails. Account-name lookup (/bank/resolve) still validates
+// every code before anything is saved.
 export const FALLBACK_BANKS: { code: string; name: string }[] = [
   { code: '044', name: 'Access Bank' },
   { code: '023', name: 'Citibank Nigeria' },

@@ -1,7 +1,7 @@
 // Run: npx deno test supabase/functions/_shared/settle.test.ts
 import { assertEquals } from 'jsr:@std/assert@1.0.13'
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
-import type { VerifiedTransaction } from './flutterwave.ts'
+import type { VerifiedTransaction } from './paystack.ts'
 import { settleTransaction } from './settle.ts'
 
 type Attempt = { id: string; charge_id: string; amount_kobo: number; status: string }
@@ -30,11 +30,13 @@ function fakeAdmin(attempt: Attempt | null) {
 const attempt: Attempt = { id: 'att-1', charge_id: 'chg-1', amount_kobo: 35_000_000, status: 'pending' }
 const tx = (over: Partial<VerifiedTransaction> = {}): VerifiedTransaction => ({
   id: 987,
-  tx_ref: 'RP-abc',
-  status: 'successful',
-  amount: 350_000,
+  reference: 'RP-abc',
+  status: 'success',
+  amount: 35_000_000, // Paystack amounts are kobo
   currency: 'NGN',
+  paid_at: '2026-11-17T10:00:05Z',
   created_at: '2026-11-17T10:00:00Z',
+  gateway_response: 'Successful',
   ...over,
 })
 
@@ -47,21 +49,22 @@ Deno.test('records a successful, full-amount NGN payment', async () => {
     p_amount_kobo: 35_000_000,
     p_method: 'link',
     p_reference: 'RP-abc',
-    p_flw_transaction_id: 987,
-    p_paid_at: '2026-11-17T10:00:00Z',
+    p_gateway: 'paystack',
+    p_gateway_transaction_id: 987,
+    p_paid_at: '2026-11-17T10:00:05Z',
   }])
-  assertEquals(calls.updates, [{ status: 'successful', flw_transaction_id: 987, failure_reason: null }])
+  assertEquals(calls.updates, [{ status: 'successful', gateway_transaction_id: 987, failure_reason: null }])
 })
 
-Deno.test('converts naira with kobo exactly (no float drift)', async () => {
-  const { admin, calls } = fakeAdmin({ ...attempt, amount_kobo: 1_015 })
-  await settleTransaction(admin, tx({ amount: 10.15 }))
-  assertEquals((calls.rpc[0] as { p_amount_kobo: number }).p_amount_kobo, 1_015)
+Deno.test('uses created_at when Paystack gives no paid_at', async () => {
+  const { admin, calls } = fakeAdmin(attempt)
+  await settleTransaction(admin, tx({ paid_at: null }))
+  assertEquals((calls.rpc[0] as { p_paid_at: string }).p_paid_at, '2026-11-17T10:00:00Z')
 })
 
 Deno.test('refuses an underpayment and records nothing', async () => {
   const { admin, calls } = fakeAdmin(attempt)
-  const result = await settleTransaction(admin, tx({ amount: 349_999 }))
+  const result = await settleTransaction(admin, tx({ amount: 34_999_999 }))
   assertEquals(result.outcome, 'failed')
   assertEquals(calls.rpc.length, 0)
 })
@@ -73,21 +76,32 @@ Deno.test('refuses a non-NGN payment', async () => {
   assertEquals(calls.rpc.length, 0)
 })
 
-Deno.test('a failed transaction marks the attempt failed', async () => {
-  const { admin, calls } = fakeAdmin(attempt)
-  const result = await settleTransaction(admin, tx({ status: 'failed' }))
-  assertEquals(result.outcome, 'failed')
-  assertEquals(calls.rpc.length, 0)
-  assertEquals((calls.updates[0] as { status: string }).status, 'failed')
-})
+for (const status of ['failed', 'reversed']) {
+  Deno.test(`a ${status} transaction marks the attempt failed`, async () => {
+    const { admin, calls } = fakeAdmin(attempt)
+    const result = await settleTransaction(admin, tx({ status }))
+    assertEquals(result.outcome, 'failed')
+    assertEquals(calls.rpc.length, 0)
+    assertEquals((calls.updates[0] as { status: string }).status, 'failed')
+  })
+}
 
-Deno.test('a pending transaction changes nothing', async () => {
+Deno.test('an abandoned checkout is reported but the attempt stays open (the tenant may still pay)', async () => {
   const { admin, calls } = fakeAdmin(attempt)
-  assertEquals(await settleTransaction(admin, tx({ status: 'pending' })), { outcome: 'pending' })
+  const result = await settleTransaction(admin, tx({ status: 'abandoned' }))
+  assertEquals(result.outcome, 'failed')
   assertEquals(calls.rpc.length + calls.updates.length, 0)
 })
 
-Deno.test('an unknown tx_ref is ignored', async () => {
+for (const status of ['ongoing', 'pending', 'processing', 'queued']) {
+  Deno.test(`an ${status} transaction changes nothing`, async () => {
+    const { admin, calls } = fakeAdmin(attempt)
+    assertEquals(await settleTransaction(admin, tx({ status })), { outcome: 'pending' })
+    assertEquals(calls.rpc.length + calls.updates.length, 0)
+  })
+}
+
+Deno.test('an unknown reference is ignored', async () => {
   const { admin, calls } = fakeAdmin(null)
   assertEquals((await settleTransaction(admin, tx())).outcome, 'ignored')
   assertEquals(calls.rpc.length, 0)

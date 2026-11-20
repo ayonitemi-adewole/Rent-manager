@@ -31,10 +31,10 @@ describe('publicRpc', () => {
 describe('publicFunction', () => {
   it("surfaces our function's error message", async () => {
     respond(409, { error: 'Pay the rent due 1 Dec first.' })
-    await expect(publicFunction('flw-checkout', {})).rejects.toThrow('Pay the rent due 1 Dec first.')
+    await expect(publicFunction('pay-checkout', {})).rejects.toThrow('Pay the rent due 1 Dec first.')
   })
   it('falls back to the HTTP status', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('oops', { status: 502 })))
-    await expect(publicFunction('flw-verify', {})).rejects.toThrow('HTTP 502')
+    await expect(publicFunction('pay-verify', {})).rejects.toThrow('HTTP 502')
   })
 })

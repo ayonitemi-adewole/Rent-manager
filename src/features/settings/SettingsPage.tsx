@@ -92,14 +92,16 @@ export function SettingsPage() {
           title="Payout account"
           description="The bank account tenants’ rent is paid into."
           status={
-            landlord?.account_number ? (
+            landlord?.paystack_subaccount_code && landlord.account_number ? (
               `${landlord.bank_name} ••${landlord.account_number.slice(-4)}`
+            ) : landlord?.account_number ? (
+              <span className="text-foreground">Confirm account</span>
             ) : landlord ? (
               <span className="text-foreground">Not set up</span>
             ) : undefined
           }
-          // Open while nothing is set up (tenants can't pay online yet), and whenever the tour points here.
-          defaultOpen={Boolean(landlord && !landlord.account_number)}
+          // Open while tenants can't pay online yet, and whenever the tour points here.
+          defaultOpen={Boolean(landlord && !landlord.paystack_subaccount_code)}
           forceOpen={tour.active}
         >
           {landlord?.account_number ? (
@@ -108,12 +110,24 @@ export function SettingsPage() {
               <p className="text-muted-foreground">
                 {landlord.bank_name} · ••••{landlord.account_number.slice(-4)}
               </p>
+              {!landlord.paystack_subaccount_code && (
+                <p className="text-muted-foreground mt-2">
+                  Online payments now go through Paystack. Confirm this account once so tenants can keep paying
+                  online.
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-muted-foreground text-sm">Not set up yet. Tenants can’t pay online until you add one.</p>
           )}
-          <Button asChild variant={landlord?.account_number ? 'outline' : 'default'} data-tour="payout-link">
-            <Link to="/settings/payout">{landlord?.account_number ? 'Change account' : 'Set up payout account'}</Link>
+          <Button asChild variant={landlord?.paystack_subaccount_code ? 'outline' : 'default'} data-tour="payout-link">
+            <Link to="/settings/payout">
+              {landlord?.paystack_subaccount_code
+                ? 'Change account'
+                : landlord?.account_number
+                  ? 'Confirm account'
+                  : 'Set up payout account'}
+            </Link>
           </Button>
         </CollapsibleCard>
 

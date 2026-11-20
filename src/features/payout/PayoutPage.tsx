@@ -30,7 +30,11 @@ export function PayoutPage() {
   const resolved = useResolvedAccount(bankCode, accountNumber)
 
   const { popular, others } = useMemo(() => splitBanks(banks.data ?? []), [banks.data])
-  const unchanged = bankCode === landlord?.bank_code && accountNumber === landlord?.account_number
+  // Re-saving the same account is allowed until it's set up on Paystack (accounts from before the switch).
+  const unchanged =
+    Boolean(landlord?.paystack_subaccount_code) &&
+    bankCode === landlord?.bank_code &&
+    accountNumber === landlord?.account_number
 
   return (
     <>
@@ -43,15 +47,15 @@ export function PayoutPage() {
       <div className="bg-secondary text-secondary-foreground mb-5 flex gap-3 rounded-lg p-3 text-sm">
         <ShieldCheck className="mt-0.5 size-5 shrink-0" />
         <p>
-          Rent goes straight from your tenant to this account through Flutterwave. RentPadi never holds your
-          money.
+          Rent goes straight from your tenant to this account through Paystack. Paystack’s fee comes out of each
+          payment; tenants pay exactly the rent. RentPadi never holds your money.
         </p>
       </div>
 
-      {env.flwPublicKey?.includes('TEST') && (
+      {env.paystackPublicKey?.startsWith('pk_test_') && (
         <p className="text-muted-foreground mb-4 rounded-lg border border-dashed p-3 text-xs">
-          <strong>Test mode:</strong> Flutterwave can usually only look up its test accounts. Use{' '}
-          <strong>Access Bank</strong> and account number <strong>0690000031</strong>.
+          <strong>Test mode:</strong> no real money moves. Paystack still checks the account name with the bank,
+          and limits how many lookups a test account can make each day.
         </p>
       )}
 

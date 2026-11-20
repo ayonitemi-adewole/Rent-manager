@@ -1,21 +1,15 @@
-// Landlord payout account: list banks, check an account name, save it as a Flutterwave subaccount.
+// Landlord payout account: list banks, check an account name, save it as a Paystack subaccount.
 // Requires a signed-in landlord. Body: { action: 'banks' } | { action: 'resolve' | 'save', bank_code, account_number }
-import {
-  createSubaccount,
-  FlutterwaveError,
-  listBanks,
-  resolveAccount,
-  updateSubaccount,
-} from '../_shared/flutterwave.ts'
 import { handler, json, readJson, UserError } from '../_shared/http.ts'
+import { createSubaccount, listBanks, PaystackError, resolveAccount, updateSubaccount } from '../_shared/paystack.ts'
 import { adminClient, requireUser } from '../_shared/supabase.ts'
 
-/** Flutterwave's own message is the useful one for payout setup problems (bad key, rejected account…). */
-async function withFlutterwaveMessage<T>(step: string, fn: () => Promise<T>): Promise<T> {
+/** Paystack's own message is the useful one for payout setup problems (bad key, rejected account…). */
+async function withPaystackMessage<T>(step: string, fn: () => Promise<T>): Promise<T> {
   try {
     return await fn()
   } catch (err) {
-    if (err instanceof FlutterwaveError) throw new UserError(`${step}: ${err.message}`, 502)
+    if (err instanceof PaystackError) throw new UserError(`${step}: ${err.message}`, 502)
     throw err
   }
 }
@@ -31,11 +25,10 @@ Deno.serve(
     const body = await readJson<Body>(req)
 
     if (body.action === 'banks') {
-      const banks = await withFlutterwaveMessage('Could not load banks from Flutterwave', listBanks)
-      const sorted = banks
+      const banks = (await listBanks())
         .map(({ code, name }) => ({ code, name: name.trim() }))
         .sort((a, b) => a.name.localeCompare(b.name))
-      return json({ banks: sorted })
+      return json({ banks })
     }
 
     if (body.action !== 'resolve' && body.action !== 'save') throw new UserError('Unknown action')
@@ -51,26 +44,28 @@ Deno.serve(
 
     const { data: landlord, error } = await admin
       .from('landlords')
-      .select('id, name_for_tenants, email, phone, flw_subaccount_ref')
+      .select('id, full_name, name_for_tenants, email, phone, paystack_subaccount_code')
       .eq('id', user.id)
       .maybeSingle()
     if (error) throw error
     if (!landlord) throw new UserError('Finish setting up your profile first.')
 
-    const banks = await withFlutterwaveMessage('Could not load banks from Flutterwave', listBanks)
-    const bankName = banks.find((b) => b.code === bankCode)?.name.trim() ?? null
-    const mobile = String(landlord.phone).replace(/^\+/, '')
+    const bankName = (await listBanks()).find((b) => b.code === bankCode)?.name.trim() ?? null
+    const phone = String(landlord.phone)
     const input = {
       accountNumber,
       bankCode,
       businessName: landlord.name_for_tenants,
-      mobile,
+      contactName: landlord.full_name,
+      phone,
       // Collected at onboarding. Landlords from before onboarding asked for it get a stable placeholder.
-      email: landlord.email ?? `${mobile}@${Deno.env.get('LANDLORD_EMAIL_DOMAIN') ?? 'landlords.rentpadi.app'}`,
+      email:
+        landlord.email ??
+        `${phone.replace(/^\+/, '')}@${Deno.env.get('LANDLORD_EMAIL_DOMAIN') ?? 'landlords.rentpadi.app'}`,
     }
-    const sub = await withFlutterwaveMessage('Flutterwave could not save this account', () =>
-      landlord.flw_subaccount_ref
-        ? updateSubaccount(landlord.flw_subaccount_ref, input)
+    const sub = await withPaystackMessage('Paystack could not save this account', () =>
+      landlord.paystack_subaccount_code
+        ? updateSubaccount(landlord.paystack_subaccount_code, input)
         : createSubaccount(input),
     )
 
@@ -81,8 +76,8 @@ Deno.serve(
         bank_name: bankName,
         account_number: accountNumber,
         account_name: accountName,
-        flw_subaccount_id: sub.subaccount_id,
-        flw_subaccount_ref: sub.id,
+        paystack_subaccount_code: sub.subaccount_code,
+        paystack_subaccount_id: sub.id,
         payout_updated_at: new Date().toISOString(),
       })
       .eq('id', landlord.id)

@@ -35,11 +35,11 @@ export function usePortal(token: string) {
   })
 }
 
-/** Start a Flutterwave checkout for one charge and send the tenant there. */
+/** Start a Paystack checkout for one charge and send the tenant there. */
 export function useStartCheckout(token: string) {
   return useMutation({
     mutationFn: async (chargeId: string) => {
-      const { link } = await publicFunction<{ link: string }>('flw-checkout', { token, charge_id: chargeId })
+      const { link } = await publicFunction<{ link: string }>('pay-checkout', { token, charge_id: chargeId })
       window.location.assign(link)
     },
   })
@@ -47,18 +47,14 @@ export function useStartCheckout(token: string) {
 
 export type VerifyOutcome = 'recorded' | 'pending' | 'failed' | 'not_found' | 'ignored'
 
-export function useVerifyPayment(token: string, txRef: string | null, transactionId: string | null) {
+export function useVerifyPayment(token: string, reference: string | null) {
   return useQuery({
-    queryKey: ['verify', txRef],
-    enabled: Boolean(txRef),
+    queryKey: ['verify', reference],
+    enabled: Boolean(reference),
     retry: 1,
-    // Flutterwave can take a moment to mark a transfer successful: keep checking while pending.
+    // Paystack can take a moment to confirm a bank transfer: keep checking while pending.
     refetchInterval: (q) => (q.state.data?.outcome === 'pending' ? 4000 : false),
     queryFn: () =>
-      publicFunction<{ outcome: VerifyOutcome; reason?: string }>('flw-verify', {
-        token,
-        tx_ref: txRef,
-        transaction_id: transactionId,
-      }),
+      publicFunction<{ outcome: VerifyOutcome; reason?: string }>('pay-verify', { token, reference }),
   })
 }

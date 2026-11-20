@@ -91,15 +91,24 @@ export function DashboardPage() {
             <SetupChecklist
               landlordId={landlord.id}
               fallback={
-                !landlord.flw_subaccount_id && (
+                !landlord.paystack_subaccount_code && (
                   <Card className="border-primary/30 bg-secondary py-4">
                     <CardContent className="flex items-center gap-3 px-4">
                       <Landmark className="text-primary size-6 shrink-0" />
-                      <p className="flex-1 text-sm">
-                        <span className="font-semibold">Get paid online.</span> Add the bank account rent should go to.
-                      </p>
+                      {landlord.account_number ? (
+                        // Saved before the move to Paystack: one confirmation sets it up there.
+                        <p className="flex-1 text-sm">
+                          <span className="font-semibold">Confirm your payout account.</span> Online payments now go
+                          through Paystack. Confirm your bank account once so tenants can keep paying online.
+                        </p>
+                      ) : (
+                        <p className="flex-1 text-sm">
+                          <span className="font-semibold">Get paid online.</span> Add the bank account rent should go
+                          to.
+                        </p>
+                      )}
                       <Button asChild size="sm">
-                        <Link to="/settings/payout">Set up</Link>
+                        <Link to="/settings/payout">{landlord.account_number ? 'Confirm' : 'Set up'}</Link>
                       </Button>
                     </CardContent>
                   </Card>

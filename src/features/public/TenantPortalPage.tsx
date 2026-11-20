@@ -98,7 +98,7 @@ export function TenantPortalPage() {
           {portal.can_pay_online ? (
             <p className="text-muted-foreground flex items-start gap-2 text-xs">
               <Lock className="mt-0.5 size-3.5 shrink-0" />
-              Payments are processed securely by Flutterwave and go directly to {portal.landlord_name}’s{' '}
+              Payments are processed securely by Paystack and go directly to {portal.landlord_name}’s{' '}
               {portal.payout_bank} account ending {portal.payout_account_last4}.
             </p>
           ) : (

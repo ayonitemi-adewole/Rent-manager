@@ -13,6 +13,6 @@ export function useSetupProgress(): SetupProgress | null {
     properties: properties.data.length,
     units: properties.data.reduce((sum, p) => sum + p.unitCount, 0),
     tenants: tenants.data.length,
-    payout: Boolean(landlord.data.flw_subaccount_id),
+    payout: Boolean(landlord.data.paystack_subaccount_code),
   }
 }
