@@ -1,0 +1,88 @@
+<!--meta {
+  "title": "Contact RentPadi: help, setup and founding landlords | RentPadi",
+  "description": "Questions about RentPadi, help setting up your properties, or applying to be a founding landlord. Email us and a real person will reply.",
+  "nav": "contact"
+} -->
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow"><svg class="icon"><use href="#i-mail" /></svg> Contact</span>
+    <h1>Talk to a real person</h1>
+    <p class="lead">Ask a question, get help setting up, or tell us what would make RentPadi work for you. We usually reply within one working day.</p>
+  </div>
+</section>
+
+<section class="section-tight" style="padding-top:0">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-cards">
+        <a class="contact-card" href="mailto:{{SUPPORT_EMAIL}}" data-reveal>
+          <span class="card-icon"><svg class="icon"><use href="#i-mail" /></svg></span>
+          <div><h3>Email</h3><p>{{SUPPORT_EMAIL}}</p></div>
+        </a>
+        <!--if:WHATSAPP--><a class="contact-card" href="{{WHATSAPP_URL}}" data-reveal>
+          <span class="card-icon"><svg class="icon"><use href="#i-whatsapp" /></svg></span>
+          <div><h3>WhatsApp</h3><p>Message us any time. Tenants can check their rent here too.</p></div>
+        </a><!--endif-->
+        <div class="contact-card" data-reveal>
+          <span class="card-icon"><svg class="icon"><use href="#i-pin" /></svg></span>
+          <div><h3>Ibadan, Oyo State</h3><p>In or near Ibadan? We'll come and set it up with you, in person.</p></div>
+        </div>
+        <a class="contact-card" href="/faq/" data-reveal>
+          <span class="card-icon"><svg class="icon"><use href="#i-message" /></svg></span>
+          <div><h3>FAQ</h3><p>Quick answers about payments, reminders, plans and data.</p></div>
+        </a>
+      </div>
+
+      <div class="form-card" data-reveal>
+        <h2 style="font-size:1.6rem">Send us a message</h2>
+        <p class="muted">This opens your email app with your message ready to send.</p>
+        <form class="form-grid" data-contact-form data-to="{{SUPPORT_EMAIL}}" action="mailto:{{SUPPORT_EMAIL}}" method="post" enctype="text/plain">
+          <div class="two">
+            <div class="field"><label for="c-name">Your name</label><input class="input" id="c-name" name="name" autocomplete="name" required /></div>
+            <div class="field"><label for="c-phone">Phone number</label><input class="input" id="c-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="080..." /></div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="c-topic">What's it about?</label>
+              <select class="select input" id="c-topic" name="topic">
+                <option>A question about RentPadi</option>
+                <option>Help me set up</option>
+                <option>Founding landlord programme</option>
+                <option>I'm an agent or caretaker</option>
+                <option>I'm a tenant</option>
+                <option>Something else</option>
+              </select>
+            </div>
+            <div class="field"><label for="c-units">How many units? <span class="muted">(optional)</span></label><input class="input" id="c-units" name="units" inputmode="numeric" /></div>
+          </div>
+          <div class="field"><label for="c-city">Town or city <span class="muted">(optional)</span></label><input class="input" id="c-city" name="city" autocomplete="address-level2" /></div>
+          <div class="field"><label for="c-message">Message</label><textarea class="input" id="c-message" name="message" required></textarea></div>
+          <button class="btn btn-primary" type="submit">Write the email <svg class="icon"><use href="#i-arrow" /></svg></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="founding">
+  <div class="container">
+    <div class="cta-band" data-reveal>
+      <div class="cta-grid">
+        <div>
+          <span class="eyebrow" style="background:rgb(255 255 255 / 0.1);border-color:rgb(255 255 255 / 0.2);color:var(--gold)"><svg class="icon"><use href="#i-sparkle" /></svg> Founding landlords: 30 places</span>
+          <h2>Padi Plus free for a year, and a say in what we build</h2>
+          <p>Our first 30 founding landlords get <b style="color:#fff">Padi Plus free for 12 months, then half price for the next 12</b>, promised in writing. In return, we'll check in now and then, ask what's working and what isn't, and maybe ask you to introduce another landlord.</p>
+          <ul class="trust-chips">
+            <li><svg class="icon"><use href="#i-check" /></svg> We set it up with you</li>
+            <li><svg class="icon"><use href="#i-check" /></svg> Direct line to the team</li>
+            <li><svg class="icon"><use href="#i-check" /></svg> Leave any time</li>
+          </ul>
+          <div class="hero-ctas">
+            <a class="btn btn-gold" href="mailto:{{SUPPORT_EMAIL}}?subject=Founding%20landlord%20application&amp;body=Name%3A%0APhone%3A%0ATown%3A%0ANumber%20of%20units%3A%0AHow%20I%20collect%20rent%20today%3A%0A">Apply by email <svg class="icon"><use href="#i-arrow" /></svg></a>
+          </div>
+        </div>
+        <div class="cta-mark" aria-hidden="true">{{MARK_ON_GREEN_LARGE}}</div>
+      </div>
+    </div>
+  </div>
+</section>

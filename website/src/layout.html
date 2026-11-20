@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-NG">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{{title}}</title>
+    <meta name="description" content="{{description}}" />
+    <meta name="robots" content="{{robots}}" />
+    <link rel="canonical" href="{{canonical}}" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="{{BRAND_GREEN}}" />
+    <meta name="color-scheme" content="light" />
+
+    <!-- Link previews: most RentPadi links get shared on WhatsApp. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="RentPadi" />
+    <meta property="og:locale" content="en_NG" />
+    <meta property="og:title" content="{{title}}" />
+    <meta property="og:description" content="{{description}}" />
+    <meta property="og:url" content="{{canonical}}" />
+    <meta property="og:image" content="{{SITE_URL}}/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="RentPadi logo: an open palm receiving a naira coin" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts never block the page: text shows in the phone's own font first.
+         The logo font is cut down to the letters of "Rent Padi", a few kilobytes. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;800&text=Rent%20Padi&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;800&text=Rent%20Padi&display=swap" />
+    </noscript>
+    <link rel="stylesheet" href="/assets/site.css?v={{CSS_VERSION}}" />
+    <script>document.documentElement.classList.add('js')</script>
+    <script src="/assets/site.js?v={{JS_VERSION}}" defer></script>
+    {{head}}
+  </head>
+  <body>
+    {{include:icons}}
+    <a class="skip-link" href="#main">Skip to content</a>
+    {{include:header}}
+    <main id="main">
+{{content}}
+    </main>
+    {{include:footer}}
+  </body>
+</html>
