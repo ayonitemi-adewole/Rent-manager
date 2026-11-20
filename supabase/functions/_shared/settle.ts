@@ -9,7 +9,7 @@ export type SettleResult =
   | { outcome: 'failed'; reason: string }
   | { outcome: 'ignored'; reason: string }
 
-type Attempt = { id: string; charge_id: string; amount_kobo: number; status: string }
+type Attempt = { id: string; charge_id: string; amount_kobo: number; status: string; platform_fee_kobo: number }
 
 /** Final states where no money moved. "abandoned" is not final: the tenant may still pay on the same checkout. */
 const FAILED = new Set(['failed', 'reversed'])
@@ -21,7 +21,7 @@ const FAILED = new Set(['failed', 'reversed'])
 export async function settleTransaction(admin: SupabaseClient, tx: VerifiedTransaction): Promise<SettleResult> {
   const { data: attempt, error } = await admin
     .from('payment_attempts')
-    .select('id, charge_id, amount_kobo, status')
+    .select('id, charge_id, amount_kobo, status, platform_fee_kobo')
     .eq('tx_ref', tx.reference)
     .maybeSingle<Attempt>()
   if (error) throw error
@@ -54,6 +54,10 @@ export async function settleTransaction(admin: SupabaseClient, tx: VerifiedTrans
     p_gateway: 'paystack',
     p_gateway_transaction_id: tx.id,
     p_paid_at: tx.paid_at ?? tx.created_at,
+    // Paystack's own figure; null if it didn't report one (never guessed).
+    p_gateway_fee_kobo: typeof tx.fees === 'number' && tx.fees >= 0 ? Math.round(tx.fees) : null,
+    // Fixed at checkout from the landlord's plan.
+    p_platform_fee_kobo: attempt.platform_fee_kobo,
   })
   if (rpcError) throw rpcError
 

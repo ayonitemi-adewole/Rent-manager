@@ -150,6 +150,7 @@ export type Database = {
           gateway: string
           gateway_transaction_id: number | null
           id: string
+          platform_fee_kobo: number
           status: string
           tx_ref: string
           updated_at: string
@@ -162,6 +163,7 @@ export type Database = {
           gateway?: string
           gateway_transaction_id?: number | null
           id?: string
+          platform_fee_kobo?: number
           status?: string
           tx_ref: string
           updated_at?: string
@@ -174,6 +176,7 @@ export type Database = {
           gateway?: string
           gateway_transaction_id?: number | null
           id?: string
+          platform_fee_kobo?: number
           status?: string
           tx_ref?: string
           updated_at?: string
@@ -201,11 +204,13 @@ export type Database = {
           charge_id: string
           created_at: string
           gateway: string | null
+          gateway_fee_kobo: number | null
           gateway_transaction_id: number | null
           id: string
           method: Database["public"]["Enums"]["payment_method"]
           note: string | null
           paid_at: string
+          platform_fee_kobo: number | null
           receipt_number: string | null
           receipt_token: string
           recorded_by: string | null
@@ -218,11 +223,13 @@ export type Database = {
           charge_id: string
           created_at?: string
           gateway?: string | null
+          gateway_fee_kobo?: number | null
           gateway_transaction_id?: number | null
           id?: string
           method: Database["public"]["Enums"]["payment_method"]
           note?: string | null
           paid_at?: string
+          platform_fee_kobo?: number | null
           receipt_number?: string | null
           receipt_token?: string
           recorded_by?: string | null
@@ -235,11 +242,13 @@ export type Database = {
           charge_id?: string
           created_at?: string
           gateway?: string | null
+          gateway_fee_kobo?: number | null
           gateway_transaction_id?: number | null
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           note?: string | null
           paid_at?: string
+          platform_fee_kobo?: number | null
           receipt_number?: string | null
           receipt_token?: string
           recorded_by?: string | null
@@ -633,10 +642,13 @@ export type Database = {
         Row: {
           amount_kobo: number | null
           charge_id: string | null
+          gateway: string | null
+          gateway_fee_kobo: number | null
           id: string | null
           method: Database["public"]["Enums"]["payment_method"] | null
           note: string | null
           paid_at: string | null
+          platform_fee_kobo: number | null
           period_end: string | null
           period_start: string | null
           property_name: string | null
@@ -783,10 +795,12 @@ export type Database = {
           p_amount_kobo: number
           p_charge_id: string
           p_gateway?: string
+          p_gateway_fee_kobo?: number
           p_gateway_transaction_id?: number
           p_method: Database["public"]["Enums"]["payment_method"]
           p_note?: string
           p_paid_at?: string
+          p_platform_fee_kobo?: number
           p_recorded_by?: string
           p_reference: string
         }

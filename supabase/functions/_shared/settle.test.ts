@@ -4,7 +4,7 @@ import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
 import type { VerifiedTransaction } from './paystack.ts'
 import { settleTransaction } from './settle.ts'
 
-type Attempt = { id: string; charge_id: string; amount_kobo: number; status: string }
+type Attempt = { id: string; charge_id: string; amount_kobo: number; status: string; platform_fee_kobo: number }
 
 /** Just enough of the Supabase client for settleTransaction, recording what it does. */
 function fakeAdmin(attempt: Attempt | null) {
@@ -27,7 +27,7 @@ function fakeAdmin(attempt: Attempt | null) {
   return { admin: client as unknown as SupabaseClient, calls }
 }
 
-const attempt: Attempt = { id: 'att-1', charge_id: 'chg-1', amount_kobo: 35_000_000, status: 'pending' }
+const attempt: Attempt = { id: 'att-1', charge_id: 'chg-1', amount_kobo: 35_000_000, status: 'pending', platform_fee_kobo: 0 }
 const tx = (over: Partial<VerifiedTransaction> = {}): VerifiedTransaction => ({
   id: 987,
   reference: 'RP-abc',
@@ -37,6 +37,7 @@ const tx = (over: Partial<VerifiedTransaction> = {}): VerifiedTransaction => ({
   paid_at: '2026-11-17T10:00:05Z',
   created_at: '2026-11-17T10:00:00Z',
   gateway_response: 'Successful',
+  fees: 32_250, // ₦322.50
   ...over,
 })
 
@@ -52,8 +53,24 @@ Deno.test('records a successful, full-amount NGN payment', async () => {
     p_gateway: 'paystack',
     p_gateway_transaction_id: 987,
     p_paid_at: '2026-11-17T10:00:05Z',
+    p_gateway_fee_kobo: 32_250,
+    p_platform_fee_kobo: 0,
   }])
   assertEquals(calls.updates, [{ status: 'successful', gateway_transaction_id: 987, failure_reason: null }])
+})
+
+Deno.test('records the RentPadi fee fixed at checkout, not anything from Paystack', async () => {
+  const { admin, calls } = fakeAdmin({ ...attempt, platform_fee_kobo: 200_000 })
+  await settleTransaction(admin, tx())
+  assertEquals((calls.rpc[0] as { p_platform_fee_kobo: number }).p_platform_fee_kobo, 200_000)
+})
+
+Deno.test('a missing or nonsense Paystack fee is stored as unknown, never guessed', async () => {
+  for (const fees of [null, -1]) {
+    const { admin, calls } = fakeAdmin(attempt)
+    await settleTransaction(admin, tx({ fees }))
+    assertEquals((calls.rpc[0] as { p_gateway_fee_kobo: number | null }).p_gateway_fee_kobo, null)
+  }
 })
 
 Deno.test('uses created_at when Paystack gives no paid_at', async () => {

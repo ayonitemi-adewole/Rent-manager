@@ -53,10 +53,18 @@ export async function startCheckout(admin: SupabaseClient, token: string, charge
   if (earlierError) throw earlierError
   if (earlier) throw new UserError(`Please pay the earlier rent (due ${earlier}) first.`)
 
+  // RentPadi's fee on this payment. ₦0 during the pilot; the Padi Free fee (PRICING.md step 3) is
+  // worked out here from the landlord's plan and also sent to Paystack as transaction_charge.
+  const platformFeeKobo = 0
+
   const reference = `RP-${crypto.randomUUID()}`
-  const { error: attemptError } = await admin
-    .from('payment_attempts')
-    .insert({ charge_id: charge.id, tx_ref: reference, amount_kobo: balanceKobo, gateway: 'paystack' })
+  const { error: attemptError } = await admin.from('payment_attempts').insert({
+    charge_id: charge.id,
+    tx_ref: reference,
+    amount_kobo: balanceKobo,
+    gateway: 'paystack',
+    platform_fee_kobo: platformFeeKobo,
+  })
   if (attemptError) throw attemptError
 
   const appUrl = requireEnv('APP_URL').replace(/\/$/, '')

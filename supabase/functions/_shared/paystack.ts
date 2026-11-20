@@ -179,6 +179,8 @@ export type VerifiedTransaction = {
   paid_at: string | null
   created_at: string
   gateway_response: string | null
+  /** Paystack's fee in kobo (carried by the landlord's share). Null until the payment succeeds. */
+  fees: number | null
 }
 
 /** Ask Paystack directly. Never trust a webhook body or redirect query string on its own. */
