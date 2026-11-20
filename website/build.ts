@@ -9,8 +9,9 @@
 // a token left unfilled fails the build, so typos never ship.
 //
 // Settings (environment variables, all optional):
-//   SITE_URL         where this website lives        (default https://rentpadi.app)
+//   SITE_URL         where this website lives        (default https://rentpadi-web.pages.dev)
 //   APP_URL          where the landlord app lives     (default https://rent-padi.vercel.app)
+//   SUPPORT_EMAIL    contact address on every page    (default rentpadiii@gmail.com)
 //   WHATSAPP_NUMBER  RentPadi's WhatsApp, E.164       (default none: WhatsApp links are left out)
 
 import { createHash } from 'node:crypto'
@@ -24,9 +25,10 @@ const repo = resolve(here, '..')
 const src = join(here, 'src')
 const dist = join(here, 'dist')
 
-const SITE_URL = (process.env.SITE_URL ?? 'https://rentpadi.app').replace(/\/+$/, '')
+const SITE_URL = (process.env.SITE_URL ?? 'https://rentpadi-web.pages.dev').replace(/\/+$/, '')
 const APP_URL = (process.env.APP_URL ?? 'https://rent-padi.vercel.app').replace(/\/+$/, '')
-const SUPPORT_EMAIL = 'support@rentpadi.app'
+const SUPPORT_EMAIL = (process.env.SUPPORT_EMAIL ?? 'rentpadiii@gmail.com').trim()
+if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(SUPPORT_EMAIL)) throw new Error(`SUPPORT_EMAIL is not an email address: "${SUPPORT_EMAIL}"`)
 const WHATSAPP_DIGITS = (process.env.WHATSAPP_NUMBER ?? '').replace(/\D/g, '')
 
 type PageMeta = {

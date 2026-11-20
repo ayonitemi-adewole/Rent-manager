@@ -42,9 +42,12 @@ Terms and Privacy link to the app's own `/terms` and `/privacy` pages, so there 
 
 | Variable | Default | What it's for |
 | --- | --- | --- |
-| `SITE_URL` | `https://rentpadi.app` | Canonical URLs, sitemap, link previews |
+| `SITE_URL` | `https://rentpadi-web.pages.dev` | Canonical URLs, sitemap, link previews. Set to the custom domain once there is one |
 | `APP_URL` | `https://rent-padi.vercel.app` | "Start free" and "Log in" buttons, Terms and Privacy links |
+| `SUPPORT_EMAIL` | `rentpadiii@gmail.com` | Contact links, the contact form and the founding-landlord button. The build fails if it isn't an email address. Keep it the same as the app's `VITE_SUPPORT_EMAIL` |
 | `WHATSAPP_NUMBER` | none | RentPadi's WhatsApp (E.164). Turns on the WhatsApp contact links |
+
+Changing a setting in Cloudflare only takes effect on the next build: redeploy after changing it.
 
 ## Deploying (Cloudflare Pages, free)
 
