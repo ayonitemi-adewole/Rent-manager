@@ -65,12 +65,29 @@ pg_dump --dbname="$BACKUP_DATABASE_URL" \
     --exclude-schema="$platform" \
     --exclude-table-data='"auth"."schema_migrations"' \
     --exclude-table-data='"storage"."migrations"' \
+    --exclude-table-data='"cron"."job"' \
     --exclude-table-data='"cron"."job_run_details"' \
     --exclude-table-data='"net"."_http_response"' \
     --exclude-table-data='"net"."http_request_queue"' \
     --exclude-table-data='"public"."dev_sms_outbox"' \
     | sed -E 's/^\\(un)?restrict .*$/-- &/'
   echo 'RESET ALL;'
+
+  # Scheduled jobs: Supabase doesn't allow writing cron.job rows directly (not even as postgres),
+  # so they're saved as cron.schedule() calls, which recreate them with the same name, schedule
+  # and command. Paused jobs are paused again.
+  echo '-- Scheduled jobs (pg_cron)'
+  psql "$BACKUP_DATABASE_URL" --no-psqlrc --tuples-only --no-align --set ON_ERROR_STOP=1 --command "
+    select case when jobname is null
+             then format('select cron.schedule(%L, %L);', schedule, command)
+             else format('select cron.schedule(%L, %L, %L);', jobname, schedule, command)
+           end
+           || case when active then '' else format(
+                E'\nselect cron.alter_job(jobid, active := false) from cron.job where jobname = %L and command = %L;',
+                jobname, command)
+              end
+    from cron.job
+    order by jobid"
 } > "$out/data.sql"
 
 # ── Rows per table ── (COPY blocks: one line per row, ended by "\.")
@@ -84,6 +101,7 @@ awk '
 grep -q '^CREATE TABLE IF NOT EXISTS "public"."landlords"' "$out/schema.sql" || { echo 'schema.sql has no public.landlords table' >&2; exit 1; }
 grep -q '^"public"."landlords"' "$out/counts.tsv" || { echo 'data.sql has no public.landlords data' >&2; exit 1; }
 grep -q '^"auth"."users"' "$out/counts.tsv" || { echo 'data.sql has no auth.users data' >&2; exit 1; }
+grep -q '^select cron.schedule(' "$out/data.sql" || { echo 'data.sql has no scheduled jobs' >&2; exit 1; }
 
 # Table count only: sizes would hint at how much data RentPadi holds, in a public log.
 echo "Dumped $(wc -l < "$out/counts.tsv" | tr -d ' ') tables."
