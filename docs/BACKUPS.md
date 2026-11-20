@@ -9,7 +9,7 @@ Every night at 02:15 Lagos time, [.github/workflows/backup.yml](../.github/workf
 
 If any step fails, the run fails and GitHub emails you.
 
-**Not in the backup** (keep these in your password manager): Vault secrets, edge function secrets, Auth settings, the `backup_reader` password and the age private key. Supabase Storage isn't used, so there are no files to back up.
+**Not in the backup** (keep these in your password manager): Vault secrets, edge function secrets, Auth settings, the `backup_reader` password and the age private key. Supabase Storage isn't used, so there are no files to back up. If buckets or files ever appear, the backup fails with a message saying so, so this never becomes a silent gap.
 
 The repo is public, so the workflow logs are too. The workflow never prints data, row counts or sizes, and never uploads the dump as a GitHub artifact.
 

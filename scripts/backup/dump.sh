@@ -53,18 +53,29 @@ pg_dump --dbname="$BACKUP_DATABASE_URL" \
   | sed -E 's/^SET transaction_timeout = 0;/-- &/' \
   > "$out/schema.sql"
 
+# ── Storage guard ──
+# RentPadi doesn't use Supabase Storage, so its tables are left out of the data: they're the Storage
+# service's own (only it may write them, so a restore can't load them anyway), and backing up file
+# rows without the files would be useless. If buckets or files ever appear, stop and say so, rather
+# than quietly not backing them up.
+storage_rows=$(psql "$BACKUP_DATABASE_URL" --no-psqlrc --tuples-only --no-align --set ON_ERROR_STOP=1 \
+  --command 'select (select count(*) from storage.buckets) + (select count(*) from storage.objects)')
+if [ "$storage_rows" != "0" ]; then
+  echo 'Supabase Storage now has buckets or files, which this backup does not cover. Extend dump.sh (and docs/BACKUPS.md) to back them up.' >&2
+  exit 1
+fi
+
 # ── Data ──
-# Left out: run logs and queues that are only useful for a few minutes, Supabase's own migration
-# tables, and the dev login-code outbox (codes are short-lived and shouldn't sit in backups).
+# Left out: Storage (above), run logs and queues that are only useful for a few minutes, Supabase's
+# own migration table, and the dev login-code outbox (codes are short-lived and shouldn't sit in backups).
 {
   # Load rows exactly as they were: no triggers (no "updated_at" bumps, no reminders queued) and
   # no foreign-key checks while tables are filled in whatever order pg_dump chose.
   echo 'SET session_replication_role = replica;'
   pg_dump --dbname="$BACKUP_DATABASE_URL" \
     --data-only --quote-all-identifiers \
-    --exclude-schema="$platform" \
+    --exclude-schema="$platform|storage" \
     --exclude-table-data='"auth"."schema_migrations"' \
-    --exclude-table-data='"storage"."migrations"' \
     --exclude-table-data='"cron"."job"' \
     --exclude-table-data='"cron"."job_run_details"' \
     --exclude-table-data='"net"."_http_response"' \
