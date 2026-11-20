@@ -1,0 +1,113 @@
+# Nightly database backup: dump → encrypt → upload to Cloudflare R2 → prove it restores.
+# Setup and restore steps: docs/BACKUPS.md.
+#
+# This repo is public, so its workflow logs are too. Nothing here prints data, row counts or
+# secrets, and the dump is never uploaded as a GitHub artifact (anyone could download it).
+name: Database backup
+
+on:
+  schedule:
+    - cron: '15 1 * * *' # 02:15 in Lagos, every night (runs from the default branch only)
+  workflow_dispatch: # "Run workflow" button, for the first test and before risky changes
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    # Forks have neither the secrets nor any business backing up this database.
+    if: github.repository == 'ayonitemi-adewole/Rent-manager'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        # Explicit bash runs with -eo pipefail: a failed dump or tar can't hide behind a pipe.
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the settings
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          missing=()
+          for name in BACKUP_DATABASE_URL BACKUP_AGE_RECIPIENT R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing repository secrets: ${missing[*]} (see docs/BACKUPS.md)"
+            exit 1
+          fi
+          case "$BACKUP_AGE_RECIPIENT" in
+            age1*) ;;
+            *) echo "::error::BACKUP_AGE_RECIPIENT should be an age public key (starts with age1)"; exit 1 ;;
+          esac
+
+      - name: Install pg_dump 17 and age
+        run: |
+          sudo apt-get update -qq
+          if ! apt-cache show postgresql-client-17 > /dev/null 2>&1; then
+            sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          fi
+          sudo apt-get install -y -qq --no-install-recommends postgresql-client-17 age
+          # Use version 17 directly, not whichever version Ubuntu's wrapper picks.
+          echo /usr/lib/postgresql/17/bin >> "$GITHUB_PATH"
+
+      - name: Dump the database
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: bash scripts/backup/dump.sh "$RUNNER_TEMP/dump"
+
+      - name: Encrypt and upload to R2
+        env:
+          BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          # R2 doesn't accept every checksum header newer AWS CLIs send by default.
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+        run: |
+          name="rentpadi-$(date -u +%Y-%m-%dT%H%MZ).tar.gz.age"
+          file="$RUNNER_TEMP/$name"
+          # Encrypted to the public key only: the matching private key never touches GitHub or R2.
+          tar -C "$RUNNER_TEMP/dump" -czf - schema.sql data.sql counts.tsv \
+            | age --encrypt --recipient "$BACKUP_AGE_RECIPIENT" > "$file"
+          aws s3 cp "$file" "s3://$R2_BUCKET/daily/$name" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+          # The first backup of each month is also kept longer (bucket lifecycle rules: docs/BACKUPS.md).
+          if [ "$(date -u +%d)" = "01" ]; then
+            aws s3 cp "$file" "s3://$R2_BUCKET/monthly/$name" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+          fi
+          echo "Uploaded $name (encrypted)."
+
+      # A backup nobody has restored is a hope, not a backup. Restore tonight's dump into an empty
+      # local Supabase (same Auth and Storage tables as a new project) and compare every table.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start an empty Supabase
+        run: |
+          # No migrations: the database starts as empty as a brand-new project.
+          rm -rf supabase/migrations
+          supabase start -x studio,imgproxy,logflare,vector,mailpit,edge-runtime,realtime,postgres-meta,supavisor
+
+      - name: Restore the dump and check every table
+        env:
+          RESTORE_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: bash scripts/backup/restore-check.sh "$RUNNER_TEMP/dump"
+
+      - name: Remove the unencrypted dump
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/dump"

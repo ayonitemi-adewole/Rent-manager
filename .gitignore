@@ -25,3 +25,5 @@ dist-ssr
 .env.local
 # Sentry build plugin token file (SENTRY_AUTH_TOKEN); never commit it
 .env.sentry-build-plugin
+# age private key for the database backups (docs/BACKUPS.md); never commit it
+*backup-key*
