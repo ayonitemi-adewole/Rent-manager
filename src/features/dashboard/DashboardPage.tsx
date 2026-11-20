@@ -28,6 +28,13 @@ function windows() {
   return { monthStart, since, recentStart, monthName: format(now, 'MMMM') }
 }
 
+function greeting(fullName: string | undefined) {
+  const hour = new Date().getHours()
+  const part = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const first = fullName?.trim().split(/\s+/)[0]
+  return first ? `${part}, ${first}` : part
+}
+
 export function DashboardPage() {
   const charges = useOpenCharges()
   const tenants = useTenants('active')
@@ -49,7 +56,7 @@ export function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="Who owes rent, and how soon." />
+      <PageHeader title={greeting(landlord?.full_name)} subtitle="Who owes rent, and how soon." />
       <QueryState
         isPending={isPending}
         error={error}
@@ -101,17 +108,17 @@ export function DashboardPage() {
             />
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="col-span-2 gap-1 py-4">
-              <CardContent className="flex items-center justify-between gap-3 px-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
+            <Card className="bg-primary text-primary-foreground col-span-2 gap-1 border-transparent py-4 lg:col-span-1 lg:py-5">
+              <CardContent className="flex items-end justify-between gap-3 px-4 lg:block lg:space-y-1 lg:px-5">
                 <div className="space-y-1">
-                  <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-                    <CheckCircle2 className="text-success size-4" />
+                  <p className="flex items-center gap-1.5 text-xs font-medium opacity-80">
+                    <CheckCircle2 className="size-4" />
                     Collected in {monthName}
                   </p>
-                  <p className="text-2xl font-bold tabular-nums">{formatKobo(collectedKobo)}</p>
+                  <p className="text-2xl font-bold tabular-nums lg:text-3xl">{formatKobo(collectedKobo)}</p>
                 </div>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs opacity-80">
                   {thisMonth.length} {thisMonth.length === 1 ? 'payment' : 'payments'}
                 </p>
               </CardContent>
@@ -120,46 +127,58 @@ export function DashboardPage() {
             <StatCard icon={CalendarClock} label="Due in 30 days" bucket={dueSoon} tone="text-warning" />
           </div>
 
-          {overdue.count === 0 && dueSoon.count === 0 ? (
-            <EmptyState
-              icon={PartyPopper}
-              title="All caught up"
-              description="Nobody is late, and no rent is due in the next 30 days."
-            />
-          ) : (
-            <>
-              <ChargeSection title="Overdue" bucket={overdue} />
-              <ChargeSection title="Due in the next 30 days" bucket={dueSoon} />
-            </>
-          )}
+          <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+            <div className="space-y-6 lg:col-span-2">
+              {overdue.count === 0 && dueSoon.count === 0 ? (
+                <EmptyState
+                  icon={PartyPopper}
+                  title="All caught up"
+                  description="Nobody is late, and no rent is due in the next 30 days."
+                />
+              ) : (
+                <>
+                  <ChargeSection title="Overdue" bucket={overdue} />
+                  <ChargeSection title="Due in the next 30 days" bucket={dueSoon} />
+                </>
+              )}
+            </div>
 
-          {recent.length > 0 && (
-            <section className="space-y-2">
-              <h2 className="font-semibold">Paid recently</h2>
-              <Card className="divide-y overflow-hidden py-0">
-                {recent.map((p) => (
-                  <Link
-                    key={p.id}
-                    to={`/tenants/${p.tenant_id}`}
-                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 transition-colors"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{p.tenant_name}</p>
-                      <p className="text-muted-foreground truncate text-sm">
-                        {p.unit_label} · {p.paid_at && formatDate(p.paid_at.slice(0, 10))}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span className="text-success font-semibold tabular-nums">{formatKobo(p.amount_kobo ?? 0)}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {METHOD_LABEL[p.method ?? ''] ?? p.method}
-                      </Badge>
-                    </div>
-                  </Link>
-                ))}
-              </Card>
-            </section>
-          )}
+            {recent.length === 0 ? (
+              // Large screens keep the column, so the page doesn't look lopsided.
+              <section className="hidden space-y-2 lg:block">
+                <h2 className="font-semibold">Paid recently</h2>
+                <p className="text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
+                  No payments in the last two weeks.
+                </p>
+              </section>
+            ) : (
+              <section className="space-y-2">
+                <h2 className="font-semibold">Paid recently</h2>
+                <Card className="gap-0 divide-y overflow-hidden py-0">
+                  {recent.map((p) => (
+                    <Link
+                      key={p.id}
+                      to={`/tenants/${p.tenant_id}`}
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{p.tenant_name}</p>
+                        <p className="text-muted-foreground truncate text-sm">
+                          {p.unit_label} · {p.paid_at && formatDate(p.paid_at.slice(0, 10))}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className="text-success font-semibold tabular-nums">{formatKobo(p.amount_kobo ?? 0)}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {METHOD_LABEL[p.method ?? ''] ?? p.method}
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))}
+                </Card>
+              </section>
+            )}
+          </div>
         </div>
       )}
     </>
@@ -178,13 +197,13 @@ function StatCard({
   tone: string
 }) {
   return (
-    <Card className="gap-1 py-4">
-      <CardContent className="space-y-1 px-4">
+    <Card className="gap-1 py-4 lg:py-5">
+      <CardContent className="space-y-1 px-4 lg:px-5">
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
           <Icon className={cn('size-4', bucket.count > 0 ? tone : 'text-muted-foreground')} />
           {label}
         </p>
-        <p className="text-xl font-bold tabular-nums">{formatKobo(bucket.totalKobo)}</p>
+        <p className="text-xl font-bold tabular-nums lg:text-3xl">{formatKobo(bucket.totalKobo)}</p>
         <p className="text-muted-foreground text-xs">
           {bucket.count} {bucket.count === 1 ? 'tenant' : 'tenants'}
         </p>
@@ -198,7 +217,7 @@ function ChargeSection({ title, bucket }: { title: string; bucket: Bucket }) {
   return (
     <section className="space-y-2">
       <h2 className="font-semibold">{title}</h2>
-      <Card className="divide-y overflow-hidden py-0">
+      <Card className="gap-0 divide-y overflow-hidden py-0">
         {bucket.tenants.map((t) => (
           <ChargeRow key={t.tenantId} due={t} />
         ))}

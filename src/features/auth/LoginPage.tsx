@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AuthShell } from '@/components/AuthShell'
 import { Logo } from '@/components/Logo'
 import { supabase } from '@/lib/supabase'
 import { formatNgPhone, normalizeNgPhone } from '@/lib/phone'
@@ -88,9 +89,10 @@ export function LoginPage() {
   }
 
   return (
-    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-8 px-4 py-10">
+    <AuthShell>
       <div className="space-y-2 text-center">
-        <Logo size="lg" className="justify-center" />
+        <Logo size="lg" className="justify-center lg:hidden" />
+        <h1 className="hidden text-3xl font-bold tracking-tight lg:block">Sign in</h1>
         <p className="text-muted-foreground text-sm">Know who has paid. Get rent on time.</p>
       </div>
 
@@ -199,6 +201,6 @@ export function LoginPage() {
           Phone provider.
         </p>
       )}
-    </main>
+    </AuthShell>
   )
 }

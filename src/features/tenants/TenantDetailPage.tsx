@@ -59,95 +59,100 @@ export function TenantDetailPage() {
       {t === null && <p className="text-sm">Tenant not found.</p>}
 
       {t && (
-        <div className="space-y-4">
-          {!active && (
-            <Badge variant="secondary">Moved out {t.moved_out_at && formatDate(t.moved_out_at)}</Badge>
-          )}
+        // Phones: one column. Large screens: tenancy on the left, money on the right; "moved out" stays last.
+        <div className="space-y-4 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-6 lg:space-y-0">
+          <div className="space-y-4 lg:col-start-1 lg:row-start-1">
+            {!active && (
+              <Badge variant="secondary">Moved out {t.moved_out_at && formatDate(t.moved_out_at)}</Badge>
+            )}
 
-          <div className="grid grid-cols-2 gap-2">
-            <Button asChild variant="secondary" className="h-11">
-              <a href={`tel:${t.phone}`}>
-                <Phone /> Call
-              </a>
-            </Button>
-            <Button asChild variant="secondary" className="h-11">
-              <a href={`https://wa.me/${(t.whatsapp_phone ?? t.phone).replace('+', '')}`} target="_blank" rel="noreferrer">
-                <WhatsAppIcon /> WhatsApp
-              </a>
-            </Button>
-          </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button asChild variant="secondary" className="h-11">
+                <a href={`tel:${t.phone}`}>
+                  <Phone /> Call
+                </a>
+              </Button>
+              <Button asChild variant="secondary" className="h-11">
+                <a href={`https://wa.me/${(t.whatsapp_phone ?? t.phone).replace('+', '')}`} target="_blank" rel="noreferrer">
+                  <WhatsAppIcon /> WhatsApp
+                </a>
+              </Button>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Tenancy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="divide-y text-sm">
-                <Row label="Phone">{formatNgPhone(t.phone)}</Row>
-                {t.whatsapp_phone && <Row label="WhatsApp">{formatPhone(t.whatsapp_phone)}</Row>}
-                <Row label="Unit">
-                  {t.units && (
-                    <Link to={`/properties/${t.units.property_id}`} className="text-primary hover:underline">
-                      {t.units.label} · {t.units.properties?.name}
-                    </Link>
-                  )}
-                </Row>
-                <Row label="Rent">
-                  {formatKobo(t.rent_amount_kobo)} · {rentPeriodLabel(t.rent_period)}
-                </Row>
-                <Row label="Started">{formatDate(t.start_date)}</Row>
-                <Row label="Paid up to">{t.paid_until ? formatDate(t.paid_until) : '—'}</Row>
-                <Row label="Reminders">{t.reminders_enabled ? 'On' : 'Off'}</Row>
-              </dl>
-            </CardContent>
-          </Card>
-
-          {active && (
             <Card>
               <CardHeader>
-                <CardTitle>Tenant’s payment link</CardTitle>
+                <CardTitle>Tenancy</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-muted-foreground text-sm">
-                  The tenant opens this to see what they owe and pay online. No login needed. It’s also in every
-                  reminder.
-                </p>
-                <div className="flex gap-2">
-                  <code className={copyFailed ? 'bg-muted min-w-0 flex-1 rounded-md px-3 py-2 text-xs break-all select-all' : 'bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 text-xs'}>{tenantLink}</code>
-                  <Button variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
-                    {copied ? <Check /> : <Copy />}
-                  </Button>
-                </div>
-                {copyFailed && <p className="text-muted-foreground text-xs">Couldn’t copy automatically. Press and hold the link to copy it.</p>}
-                <ConfirmAction
-                  trigger={
-                    <>
-                      <RefreshCw /> Reset link
-                    </>
-                  }
-                  triggerVariant="ghost"
-                  triggerClassName="text-muted-foreground -ml-2"
-                  question="Make a new link? The old one stops working right away, including in reminders already sent."
-                  confirmLabel="Reset link"
-                  pending={resetLink.isPending}
-                  onConfirm={() => resetLink.mutate()}
-                />
-                <FormError message={resetLink.error ? friendlyError(resetLink.error) : null} />
+              <CardContent>
+                <dl className="divide-y text-sm">
+                  <Row label="Phone">{formatNgPhone(t.phone)}</Row>
+                  {t.whatsapp_phone && <Row label="WhatsApp">{formatPhone(t.whatsapp_phone)}</Row>}
+                  <Row label="Unit">
+                    {t.units && (
+                      <Link to={`/properties/${t.units.property_id}`} className="text-primary hover:underline">
+                        {t.units.label} · {t.units.properties?.name}
+                      </Link>
+                    )}
+                  </Row>
+                  <Row label="Rent">
+                    {formatKobo(t.rent_amount_kobo)} · {rentPeriodLabel(t.rent_period)}
+                  </Row>
+                  <Row label="Started">{formatDate(t.start_date)}</Row>
+                  <Row label="Paid up to">{t.paid_until ? formatDate(t.paid_until) : '—'}</Row>
+                  <Row label="Reminders">{t.reminders_enabled ? 'On' : 'Off'}</Row>
+                </dl>
               </CardContent>
             </Card>
-          )}
 
-          <TenantCharges tenantId={t.id} />
-          <TenantPayments tenantId={t.id} />
-          <Button asChild variant="outline" className="h-11 w-full">
-            <Link to={`/tenants/${tenantId}/statement`}>
-              <FileText /> Full statement and CSV
-            </Link>
-          </Button>
-          {active && <TenantReminders tenant={t} unitLabel={t.units?.label ?? ''} />}
+            {active && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tenant’s payment link</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-muted-foreground text-sm">
+                    The tenant opens this to see what they owe and pay online. No login needed. It’s also in every
+                    reminder.
+                  </p>
+                  <div className="flex gap-2">
+                    <code className={copyFailed ? 'bg-muted min-w-0 flex-1 rounded-md px-3 py-2 text-xs break-all select-all' : 'bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 text-xs'}>{tenantLink}</code>
+                    <Button variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
+                      {copied ? <Check /> : <Copy />}
+                    </Button>
+                  </div>
+                  {copyFailed && <p className="text-muted-foreground text-xs">Couldn’t copy automatically. Press and hold the link to copy it.</p>}
+                  <ConfirmAction
+                    trigger={
+                      <>
+                        <RefreshCw /> Reset link
+                      </>
+                    }
+                    triggerVariant="ghost"
+                    triggerClassName="text-muted-foreground -ml-2"
+                    question="Make a new link? The old one stops working right away, including in reminders already sent."
+                    confirmLabel="Reset link"
+                    pending={resetLink.isPending}
+                    onConfirm={() => resetLink.mutate()}
+                  />
+                  <FormError message={resetLink.error ? friendlyError(resetLink.error) : null} />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <TenantCharges tenantId={t.id} />
+            <TenantPayments tenantId={t.id} />
+            <Button asChild variant="outline" className="h-11 w-full">
+              <Link to={`/tenants/${tenantId}/statement`}>
+                <FileText /> Full statement and CSV
+              </Link>
+            </Button>
+            {active && <TenantReminders tenant={t} unitLabel={t.units?.label ?? ''} />}
+          </div>
 
           {active && (
-            <div className="space-y-3 border-t pt-6">
+            <div className="space-y-3 border-t pt-6 lg:col-start-1 lg:row-start-2">
               <FormError message={update.error ? friendlyError(update.error) : null} />
               <ConfirmAction
                 trigger={

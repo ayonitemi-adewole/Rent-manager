@@ -5,6 +5,10 @@ import { NotFoundPage } from './NotFoundPage'
 import { pages } from './pages'
 import { RouteError } from './RouteError'
 
+/** How wide a page may grow on large screens (AppLayout reads it from the route handle). */
+export type PageWidth = 'narrow' | 'wide'
+const narrow = { width: 'narrow' satisfies PageWidth }
+
 /** Route that downloads its page the first time it is opened. */
 function page<K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) {
   return { lazy: { Component: async () => (await load())[name] } }
@@ -54,6 +58,7 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: 'properties/new',
+                        handle: narrow,
                         ...page(pages.propertyForm, 'NewPropertyPage'),
                       },
                       {
@@ -62,14 +67,17 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: 'properties/:propertyId/edit',
+                        handle: narrow,
                         ...page(pages.propertyForm, 'EditPropertyPage'),
                       },
                       {
                         path: 'properties/:propertyId/units/new',
+                        handle: narrow,
                         ...page(pages.unitForm, 'NewUnitPage'),
                       },
                       {
                         path: 'properties/:propertyId/units/:unitId/edit',
+                        handle: narrow,
                         ...page(pages.unitForm, 'EditUnitPage'),
                       },
                       {
@@ -78,6 +86,7 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: 'tenants/new',
+                        handle: narrow,
                         ...page(pages.tenantForms, 'NewTenantPage'),
                       },
                       {
@@ -86,6 +95,7 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: 'tenants/:tenantId/edit',
+                        handle: narrow,
                         ...page(pages.tenantForms, 'EditTenantPage'),
                       },
                       {
@@ -94,14 +104,17 @@ export const router = createBrowserRouter([
                       },
                       {
                         path: 'tenants/:tenantId/charges/:chargeId/record',
+                        handle: narrow,
                         ...page(pages.recordPayment, 'RecordPaymentPage'),
                       },
                       {
                         path: 'settings',
+                        handle: narrow,
                         ...page(pages.settings, 'SettingsPage'),
                       },
                       {
                         path: 'settings/payout',
+                        handle: narrow,
                         ...page(pages.payout, 'PayoutPage'),
                       },
                     ],

@@ -3,6 +3,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { z } from 'zod'
 import { Field, FormError } from '@/components/Field'
+import { AuthShell } from '@/components/AuthShell'
 import { FullPageSpinner } from '@/components/FullPageSpinner'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/button'
@@ -51,9 +52,9 @@ export function OnboardingPage() {
   )
 
   return (
-    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-8 px-4 py-10">
+    <AuthShell>
       <div className="space-y-3">
-        <Logo />
+        <Logo className="lg:hidden" />
         <h1 className="text-2xl font-bold tracking-tight">
           {isNew ? 'Welcome to RentPadi' : 'A few details before you continue'}
         </h1>
@@ -140,6 +141,6 @@ export function OnboardingPage() {
           Sign out
         </Button>
       </form>
-    </main>
+    </AuthShell>
   )
 }
