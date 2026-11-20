@@ -11,12 +11,18 @@ async function withLookupEnv(env: Record<string, string | undefined>, fn: (calls
     calls++
     return Promise.resolve(Response.json({ status: true, message: 'ok', data: { account_name: 'ADA OBI' } }))
   }
-  for (const [k, v] of Object.entries(env)) v === undefined ? Deno.env.delete(k) : Deno.env.set(k, v)
+  const apply = (vars: Record<string, string | undefined>) => {
+    for (const [k, v] of Object.entries(vars)) {
+      if (v === undefined) Deno.env.delete(k)
+      else Deno.env.set(k, v)
+    }
+  }
+  apply(env)
   try {
     await fn(() => calls)
   } finally {
     globalThis.fetch = realFetch
-    for (const [k, v] of Object.entries(saved)) v === undefined ? Deno.env.delete(k) : Deno.env.set(k, v)
+    apply(saved)
   }
 }
 

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTenantCharges } from '@/features/charges/api'
 import { useLandlord } from '@/features/landlord/api'
-import { env } from '@/lib/env'   
+import { useFeature } from '@/features/plan/api'
+import { env } from '@/lib/env'
 import { formatPhone } from '@/lib/phone'
 import { formatDate } from '@/lib/rent'
 import type { RentPeriod } from '@/lib/rent'
@@ -41,8 +42,10 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
   const charges = useTenantCharges(tenant.id)
   const { data: landlord } = useLandlord()
   const sendNow = useSendReminderNow(tenant.id)
+  // WhatsApp reminders come with the plan (Padi and up); the server enforces it too.
+  const whatsappReminders = useFeature('whatsapp_reminders')
   // RentPadi's own WhatsApp number is set once WhatsApp Business is live.
-  const canSendFromRentPadi = Boolean(env.whatsappNumber)
+  const canSendFromRentPadi = Boolean(env.whatsappNumber) && whatsappReminders
 
   // Most urgent open charge: the most overdue, else the soonest due.
   const open = (charges.data ?? [])
@@ -73,7 +76,7 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
       <CardContent className="space-y-3">
         <p className="text-muted-foreground text-sm">
           {tenant.reminders_enabled
-            ? `Automatic ${landlord?.whatsapp_reminders ? 'SMS and WhatsApp' : 'SMS'} ${reminderDaysBefore(tenant.rent_period)} days before rent is due, then 1, 7 and 14 days late.`
+            ? `Automatic ${landlord?.whatsapp_reminders && whatsappReminders ? 'SMS and WhatsApp' : 'SMS'} ${reminderDaysBefore(tenant.rent_period)} days before rent is due, then 1, 7 and 14 days late.`
             : 'Automatic reminders are off for this tenant.'}
         </p>
 
@@ -107,11 +110,18 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
           </div>
         )}
         {whatsapp && !canSendFromRentPadi && (
-          <Button asChild variant="secondary" className="h-11 w-full">
-            <a href={whatsapp} target="_blank" rel="noreferrer">
-              <WhatsAppIcon /> Send reminder on WhatsApp
-            </a>
-          </Button>
+          <div className="space-y-2">
+            <Button asChild variant="secondary" className="h-11 w-full">
+              <a href={whatsapp} target="_blank" rel="noreferrer">
+                <WhatsAppIcon /> Send reminder on WhatsApp
+              </a>
+            </Button>
+            {env.whatsappNumber && !whatsappReminders && (
+              <p className="text-muted-foreground text-xs">
+                Sending from RentPadi’s WhatsApp, with a Pay button, is included from the Padi plan.
+              </p>
+            )}
+          </div>
         )}
 
         <QueryState isPending={reminders.isPending} error={reminders.error} refetch={reminders.refetch} />

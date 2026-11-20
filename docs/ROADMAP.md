@@ -223,12 +223,14 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 - **Marketing website** in `website/` (static pages, deployed on Cloudflare Pages)
 - **Paystack payout:** at most one account lookup per save (signed lookup proof)
 - **Fees on every online payment:** `gateway_fee_kobo` (Paystack's fee, from verify) and `platform_fee_kobo` (RentPadi's, fixed at checkout on `payment_attempts`, ₦0 in the pilot). Landlords see "Paystack fee ₦322.50 · RentPadi fee ₦0 · ₦99,677.50 to your bank" on each payment and in the CSV export; tenants never see fees
+- **Plans and entitlements:** `plans` (Pilot, Padi Free, Padi, Padi Plus, Padi Pro, from PRICING.md), `landlord_subscriptions` (server-written), `app_config.default_plan` (`pilot` now, `padi_free` at launch) and one `landlord_entitlements()` function that SQL, functions and the app (`my_entitlements()`) all ask. First gate: WhatsApp reminders, automatic and "send now". Settings → Plan shows the plan, units used and what's included. Checks in `supabase/tests/entitlements.sql`
 - *In review:* test-mode shortcut that skips the account lookup (`PAYSTACK_TEST_SKIP_LOOKUP`, branch `phase-7-test-lookup-shortcut`)
 
 ### Next up
 
-1. **Plans and entitlements:** plan tables and one `landlord_entitlements` function, everyone on a pilot plan; gate WhatsApp reminders first to test the gating (step 2 of the [PRICING.md](PRICING.md) rollout; step 1 is done).
-2. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, error monitoring, daily backups, and the pilot itself.
+1. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, error monitoring, daily backups, and the pilot itself.
+2. **Padi Free fee** (step 3 of the [PRICING.md](PRICING.md) rollout; steps 1 and 2 are done): checkout sets `platform_fee_kobo` from `landlord_entitlements` (1%, max ₦2,000 per rent bill) and sends it to Paystack as `transaction_charge`. Switch `default_plan` to `padi_free` at launch.
+3. **Subscriptions** (step 4): one-off yearly payment for Padi, Padi Plus and Padi Pro, writing `landlord_subscriptions`; renewal reminders; the 7-day grace period.
 
 ---
 
