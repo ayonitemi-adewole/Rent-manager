@@ -66,20 +66,21 @@ if [ "$storage_rows" != "0" ]; then
 fi
 
 # ── Data ──
-# Left out: Storage (above), run logs and queues that are only useful for a few minutes, Supabase's
-# own migration table, and the dev login-code outbox (codes are short-lived and shouldn't sit in backups).
+# Only the schemas whose rows are ours: auth (logins), public (the app) and supabase_migrations
+# (migration history). The rest belong to Supabase's services: only they may write their tables and
+# counters, and a new project sets them up itself. Scheduled jobs are the one exception, saved as
+# cron.schedule() calls below. Storage is covered by the guard above; pg_net's queue and responses
+# only matter for a few minutes.
+# Also left out: Auth's own migration table, and the dev login-code outbox (codes are short-lived
+# and shouldn't sit in backups).
 {
   # Load rows exactly as they were: no triggers (no "updated_at" bumps, no reminders queued) and
   # no foreign-key checks while tables are filled in whatever order pg_dump chose.
   echo 'SET session_replication_role = replica;'
   pg_dump --dbname="$BACKUP_DATABASE_URL" \
     --data-only --quote-all-identifiers \
-    --exclude-schema="$platform|storage" \
+    --schema=auth --schema=public --schema=supabase_migrations \
     --exclude-table-data='"auth"."schema_migrations"' \
-    --exclude-table-data='"cron"."job"' \
-    --exclude-table-data='"cron"."job_run_details"' \
-    --exclude-table-data='"net"."_http_response"' \
-    --exclude-table-data='"net"."http_request_queue"' \
     --exclude-table-data='"public"."dev_sms_outbox"' \
     | sed -E 's/^\\(un)?restrict .*$/-- &/'
   echo 'RESET ALL;'
