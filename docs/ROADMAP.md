@@ -183,7 +183,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] Speed on slow connections: pages load on demand; tenant links skip the login system and supabase-js (252 kB → 141 kB gzipped); loading screen in the HTML; non-blocking font; landlord pages prefetched when idle (not on Data Saver/2G)
 - [ ] Switch Paystack and Termii to **live** keys and do one real ₦100 payment end-to-end
 - [x] Error monitoring (Sentry free tier) on the frontend and edge functions: minimal data collection plus scrubbing of tokens and personal data; on once `VITE_SENTRY_DSN` and `SENTRY_DSN` are set (README)
-- [ ] Daily Supabase backups (or a scheduled `pg_dump` while on the free tier)
+- [x] Daily database backups: nightly GitHub Actions job, read-only `backup_reader` login, encrypted with age, kept in Cloudflare R2 (35 days daily, 13 months monthly), and restored into an empty Supabase every night to prove it works ([BACKUPS.md](BACKUPS.md)). **Practise one restore yourself after setup.**
 - [x] Short privacy notice and terms (NDPA 2023), accepted at onboarding with version and time recorded; changing `TERMS_VERSION` asks everyone again. **Have a lawyer review the drafts and set a real support mailbox before launch.**
 - [x] Proper landlord onboarding: email (the payment company's contact for the landlord's subaccount, instead of a placeholder), optional name shown to tenants, terms consent; existing landlords asked once
 - [x] Support mailbox: `SUPPORT_EMAIL` (website) and `VITE_SUPPORT_EMAIL` (app) settings, default rentpadiii@gmail.com
@@ -228,7 +228,7 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 
 ### Next up
 
-1. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, error monitoring, daily backups, and the pilot itself.
+1. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, and the pilot itself.
 2. **Padi Free fee** (step 3 of the [PRICING.md](PRICING.md) rollout; steps 1 and 2 are done): checkout sets `platform_fee_kobo` from `landlord_entitlements` (1%, max ₦2,000 per rent bill) and sends it to Paystack as `transaction_charge`. Switch `default_plan` to `padi_free` at launch.
 3. **Subscriptions** (step 4): one-off yearly payment for Padi, Padi Plus and Padi Pro, writing `landlord_subscriptions`; renewal reminders; the 7-day grace period.
 

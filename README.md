@@ -103,6 +103,10 @@ Sentry organization **rent-padi** (EU data region) has two projects: **rent-padi
 - Collection is minimal (`MINIMAL_DATA_COLLECTION` in `supabase/functions/_shared/scrub.ts`): no user info, cookies, headers, bodies, query strings or local variables. Every event is then scrubbed (`scrubDeep`): tenant and receipt link tokens, phone numbers, emails, account numbers, keys and JWTs are replaced before it leaves.
 - In the browser, Sentry (about 31 kB) loads only when the page is idle, and not at all with Data Saver on or on 2G.
 
+## Database backups
+
+A GitHub Actions job (`.github/workflows/backup.yml`) dumps the database every night with a read-only login, encrypts it with an age public key, uploads it to a private Cloudflare R2 bucket (35 days of dailies, 13 months of monthlies) and proves the dump restores into an empty Supabase. Setup (secrets, bucket, key) and how to restore: [docs/BACKUPS.md](docs/BACKUPS.md).
+
 ## Scripts
 
 | Command | What it does |
