@@ -1,6 +1,7 @@
 import { FormError } from '@/components/Field'
 import { CollapsibleCard } from '@/components/CollapsibleCard'
 import { useLandlord, useSetWhatsappReminders } from '@/features/landlord/api'
+import { useFeature } from '@/features/plan/api'
 import { env } from '@/lib/env'
 import { friendlyError } from '@/lib/errors'
 import { formatPhone } from '@/lib/phone'
@@ -10,6 +11,7 @@ import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 export function WhatsappCard() {
   const { data: landlord } = useLandlord()
   const save = useSetWhatsappReminders()
+  const remindersIncluded = useFeature('whatsapp_reminders')
   const on = save.isPending ? Boolean(save.variables) : Boolean(landlord?.whatsapp_reminders)
 
   return (
@@ -39,6 +41,12 @@ export function WhatsappCard() {
           </span>
         </span>
       </label>
+      {on && !remindersIncluded && (
+        <p className="text-muted-foreground rounded-lg border border-dashed p-3 text-xs">
+          Your plan sends <strong>receipts</strong> on WhatsApp. WhatsApp <strong>reminders</strong> are included from
+          the Padi plan; until then reminders go by SMS. See Plan above.
+        </p>
+      )}
       <FormError message={save.error ? friendlyError(save.error) : null} />
       <p className="text-muted-foreground text-xs">
         {env.whatsappNumber

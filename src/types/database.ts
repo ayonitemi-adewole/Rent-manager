@@ -75,6 +75,63 @@ export type Database = {
         }
         Relationships: []
       }
+      landlord_subscriptions: {
+        Row: {
+          billing_method: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          discount_ends_at: string | null
+          founding: boolean
+          landlord_id: string
+          plan_code: string
+          provider_reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          billing_method?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          discount_ends_at?: string | null
+          founding?: boolean
+          landlord_id: string
+          plan_code: string
+          provider_reference?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          billing_method?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          discount_ends_at?: string | null
+          founding?: boolean
+          landlord_id?: string
+          plan_code?: string
+          provider_reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landlord_subscriptions_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: true
+            referencedRelation: "landlords"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "landlord_subscriptions_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       landlords: {
         Row: {
           account_name: string | null
@@ -272,6 +329,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      plans: {
+        Row: {
+          branded_receipts: boolean
+          caretakers: number
+          code: string
+          custom_reminders: boolean
+          documents: boolean
+          extra_unit_price_kobo: number | null
+          full_reports: boolean
+          monthly_price_kobo: number
+          name: string
+          platform_fee_bps: number
+          platform_fee_cap_kobo: number | null
+          sms_reminders_per_bill: number | null
+          sort_order: number
+          unit_limit: number | null
+          whatsapp_reminders: boolean
+          yearly_price_kobo: number
+        }
+        Insert: {
+          branded_receipts?: boolean
+          caretakers?: number
+          code: string
+          custom_reminders?: boolean
+          documents?: boolean
+          extra_unit_price_kobo?: number | null
+          full_reports?: boolean
+          monthly_price_kobo: number
+          name: string
+          platform_fee_bps?: number
+          platform_fee_cap_kobo?: number | null
+          sms_reminders_per_bill?: number | null
+          sort_order?: number
+          unit_limit?: number | null
+          whatsapp_reminders?: boolean
+          yearly_price_kobo: number
+        }
+        Update: {
+          branded_receipts?: boolean
+          caretakers?: number
+          code?: string
+          custom_reminders?: boolean
+          documents?: boolean
+          extra_unit_price_kobo?: number | null
+          full_reports?: boolean
+          monthly_price_kobo?: number
+          name?: string
+          platform_fee_bps?: number
+          platform_fee_cap_kobo?: number | null
+          sms_reminders_per_bill?: number | null
+          sort_order?: number
+          unit_limit?: number | null
+          whatsapp_reminders?: boolean
+          yearly_price_kobo?: number
+        }
+        Relationships: []
       }
       properties: {
         Row: {
@@ -744,6 +858,48 @@ export type Database = {
       generate_tenant_charges: {
         Args: { p_tenant_id: string }
         Returns: number
+      }
+      landlord_entitlements: {
+        Args: { p_landlord_id: string }
+        Returns: {
+          branded_receipts: boolean
+          caretakers: number
+          current_period_end: string | null
+          custom_reminders: boolean
+          documents: boolean
+          extra_unit_price_kobo: number | null
+          full_reports: boolean
+          plan_code: string
+          plan_name: string
+          platform_fee_bps: number
+          platform_fee_cap_kobo: number | null
+          sms_reminders_per_bill: number | null
+          subscription_status: string
+          unit_limit: number | null
+          units_used: number
+          whatsapp_reminders: boolean
+        }[]
+      }
+      my_entitlements: {
+        Args: never
+        Returns: {
+          branded_receipts: boolean
+          caretakers: number
+          current_period_end: string | null
+          custom_reminders: boolean
+          documents: boolean
+          extra_unit_price_kobo: number | null
+          full_reports: boolean
+          plan_code: string
+          plan_name: string
+          platform_fee_bps: number
+          platform_fee_cap_kobo: number | null
+          sms_reminders_per_bill: number | null
+          subscription_status: string
+          unit_limit: number | null
+          units_used: number
+          whatsapp_reminders: boolean
+        }[]
       }
       owns_charge: { Args: { p_charge_id: string }; Returns: boolean }
       prepare_manual_reminder: {

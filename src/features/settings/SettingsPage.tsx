@@ -17,6 +17,7 @@ import { friendlyError } from '@/lib/errors'
 import { formatNgPhone } from '@/lib/phone'
 import { AppearanceCard } from './AppearanceCard'
 import { ExportPaymentsCard } from './ExportPaymentsCard'
+import { PlanCard } from './PlanCard'
 import { WhatsappCard } from './WhatsappCard'
 
 export function SettingsPage() {
@@ -85,6 +86,8 @@ export function SettingsPage() {
             </Button>
           </form>
         </CollapsibleCard>
+
+        <PlanCard />
 
         <CollapsibleCard
           id="payout"
