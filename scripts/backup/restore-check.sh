@@ -26,8 +26,14 @@ while IFS=$'\t' read -r table expected; do
   checked=$((checked + 1))
 done < "$dir/counts.tsv"
 
+# Scheduled jobs are restored by cron.schedule() calls rather than rows (see dump.sh).
+jobs_expected=$(grep -c '^select cron.schedule(' "$dir/data.sql" || true)
+jobs_actual=$(psql "$RESTORE_DATABASE_URL" --no-psqlrc --tuples-only --no-align --set ON_ERROR_STOP=1 \
+  --command 'select count(*) from cron.job')
+[ "$jobs_actual" = "$jobs_expected" ] || wrong+=('"cron"."job"')
+
 if [ ${#wrong[@]} -gt 0 ]; then
   echo "Restore check FAILED: row counts differ in ${wrong[*]}" >&2
   exit 1
 fi
-echo "Restore check passed: $checked tables restored with every row."
+echo "Restore check passed: $checked tables restored with every row, and the scheduled jobs."

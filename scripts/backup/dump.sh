@@ -53,24 +53,53 @@ pg_dump --dbname="$BACKUP_DATABASE_URL" \
   | sed -E 's/^SET transaction_timeout = 0;/-- &/' \
   > "$out/schema.sql"
 
+# ── Storage guard ──
+# RentPadi doesn't use Supabase Storage, so its tables are left out of the data: they're the Storage
+# service's own (only it may write them, so a restore can't load them anyway), and backing up file
+# rows without the files would be useless. If buckets or files ever appear, stop and say so, rather
+# than quietly not backing them up.
+storage_rows=$(psql "$BACKUP_DATABASE_URL" --no-psqlrc --tuples-only --no-align --set ON_ERROR_STOP=1 \
+  --command 'select (select count(*) from storage.buckets) + (select count(*) from storage.objects)')
+if [ "$storage_rows" != "0" ]; then
+  echo 'Supabase Storage now has buckets or files, which this backup does not cover. Extend dump.sh (and docs/BACKUPS.md) to back them up.' >&2
+  exit 1
+fi
+
 # ── Data ──
-# Left out: run logs and queues that are only useful for a few minutes, Supabase's own migration
-# tables, and the dev login-code outbox (codes are short-lived and shouldn't sit in backups).
+# Only the schemas whose rows are ours: auth (logins), public (the app) and supabase_migrations
+# (migration history). The rest belong to Supabase's services: only they may write their tables and
+# counters, and a new project sets them up itself. Scheduled jobs are the one exception, saved as
+# cron.schedule() calls below. Storage is covered by the guard above; pg_net's queue and responses
+# only matter for a few minutes.
+# Also left out: Auth's own migration table, and the dev login-code outbox (codes are short-lived
+# and shouldn't sit in backups).
 {
   # Load rows exactly as they were: no triggers (no "updated_at" bumps, no reminders queued) and
   # no foreign-key checks while tables are filled in whatever order pg_dump chose.
   echo 'SET session_replication_role = replica;'
   pg_dump --dbname="$BACKUP_DATABASE_URL" \
     --data-only --quote-all-identifiers \
-    --exclude-schema="$platform" \
+    --schema=auth --schema=public --schema=supabase_migrations \
     --exclude-table-data='"auth"."schema_migrations"' \
-    --exclude-table-data='"storage"."migrations"' \
-    --exclude-table-data='"cron"."job_run_details"' \
-    --exclude-table-data='"net"."_http_response"' \
-    --exclude-table-data='"net"."http_request_queue"' \
     --exclude-table-data='"public"."dev_sms_outbox"' \
     | sed -E 's/^\\(un)?restrict .*$/-- &/'
   echo 'RESET ALL;'
+
+  # Scheduled jobs: Supabase doesn't allow writing cron.job rows directly (not even as postgres),
+  # so they're saved as cron.schedule() calls, which recreate them with the same name, schedule
+  # and command. Paused jobs are paused again.
+  echo '-- Scheduled jobs (pg_cron)'
+  psql "$BACKUP_DATABASE_URL" --no-psqlrc --tuples-only --no-align --set ON_ERROR_STOP=1 --command "
+    select case when jobname is null
+             then format('select cron.schedule(%L, %L);', schedule, command)
+             else format('select cron.schedule(%L, %L, %L);', jobname, schedule, command)
+           end
+           || case when active then '' else format(
+                E'\nselect cron.alter_job(jobid, active := false) from cron.job where jobname = %L and command = %L;',
+                jobname, command)
+              end
+    from cron.job
+    order by jobid"
 } > "$out/data.sql"
 
 # ── Rows per table ── (COPY blocks: one line per row, ended by "\.")
@@ -84,6 +113,7 @@ awk '
 grep -q '^CREATE TABLE IF NOT EXISTS "public"."landlords"' "$out/schema.sql" || { echo 'schema.sql has no public.landlords table' >&2; exit 1; }
 grep -q '^"public"."landlords"' "$out/counts.tsv" || { echo 'data.sql has no public.landlords data' >&2; exit 1; }
 grep -q '^"auth"."users"' "$out/counts.tsv" || { echo 'data.sql has no auth.users data' >&2; exit 1; }
+grep -q '^select cron.schedule(' "$out/data.sql" || { echo 'data.sql has no scheduled jobs' >&2; exit 1; }
 
 # Table count only: sizes would hint at how much data RentPadi holds, in a public log.
 echo "Dumped $(wc -l < "$out/counts.tsv" | tr -d ' ') tables."

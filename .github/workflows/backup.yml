@@ -28,7 +28,7 @@ jobs:
         # Explicit bash runs with -eo pipefail: a failed dump or tar can't hide behind a pipe.
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check the settings
         env:
@@ -51,6 +51,15 @@ jobs:
             age1*) ;;
             *) echo "::error::BACKUP_AGE_RECIPIENT should be an age public key (starts with age1)"; exit 1 ;;
           esac
+          # Catches a URL pasted with a placeholder still in it (e.g. "<the password>").
+          case "$BACKUP_DATABASE_URL" in
+            postgresql://backup_reader.*@*.pooler.supabase.com:5432/postgres) ;;
+            *) echo "::error::BACKUP_DATABASE_URL isn't a backup_reader session-pooler URL. Make it with: node scripts/backup/new-password.mjs"; exit 1 ;;
+          esac
+          if [[ "$BACKUP_DATABASE_URL" =~ [[:space:]\<\>] ]]; then
+            echo "::error::BACKUP_DATABASE_URL still has a placeholder or spaces in it. Make it with: node scripts/backup/new-password.mjs"
+            exit 1
+          fi
 
       - name: Install pg_dump 17 and age
         run: |
