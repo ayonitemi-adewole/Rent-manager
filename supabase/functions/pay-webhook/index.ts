@@ -5,6 +5,7 @@
 // 1. Check the signature.  2. Log the raw event.  3. Re-verify with Paystack.
 // 4. Record via settleTransaction (idempotent, so Paystack's retries are harmless).
 import { requireEnv } from '../_shared/http.ts'
+import { reportError } from '../_shared/monitoring.ts'
 import { isValidSignature, verifyTransaction } from '../_shared/paystack.ts'
 import { settleTransaction } from '../_shared/settle.ts'
 import { adminClient } from '../_shared/supabase.ts'
@@ -47,6 +48,7 @@ Deno.serve(async (req) => {
     .single()
   if (logError) {
     console.error(logError)
+    await reportError('pay-webhook', logError, { step: 'log event', event: body.event ?? null })
     return new Response('Error', { status: 500 }) // Paystack will retry
   }
 
@@ -63,6 +65,7 @@ Deno.serve(async (req) => {
     return new Response('ok', { status: 200 })
   } catch (err) {
     console.error(err)
+    await reportError('pay-webhook', err, { step: 'settle', reference })
     await admin.from('webhook_events').update({ error: String(err) }).eq('id', logged.id)
     return new Response('Error', { status: 500 }) // Paystack will retry
   }

@@ -7,6 +7,10 @@ export const env = {
   whatsappNumber: import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined,
   /** Where landlords and tenants reach RentPadi (Terms and Privacy pages). */
   supportEmail: import.meta.env.VITE_SUPPORT_EMAIL as string | undefined,
+  /** Sentry project DSN for the app. Unset: no error reporting. */
+  sentryDsn: import.meta.env.VITE_SENTRY_DSN as string | undefined,
+  /** e.g. "production" or "preview". Defaults to Vite's mode. */
+  sentryEnvironment: import.meta.env.VITE_SENTRY_ENVIRONMENT as string | undefined,
 }
 
 export const isSupabaseConfigured = Boolean(env.supabaseUrl && env.supabaseAnonKey)

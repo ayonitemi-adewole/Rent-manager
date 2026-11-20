@@ -10,6 +10,7 @@
 // then `supabase secrets set SEND_SMS_HOOK_SECRET='v1,whsec_…'` with the secret it generates.
 // Until then the Postgres hook (dev_send_sms_hook) stays active and codes go to dev_sms_outbox.
 
+import { reportError } from '../_shared/monitoring.ts'
 import { sendSms, termiiConfigFromEnv, type TermiiConfig } from '../_shared/termii.ts'
 import { loginCodeTemplate } from '../_shared/wa-templates.ts'
 import { verifyWebhook, WebhookSecretError } from '../_shared/webhook.ts'
@@ -63,6 +64,7 @@ export async function handleSmsHook(req: Request, deps: HookDeps = depsFromEnv()
   } catch (err) {
     if (!(err instanceof WebhookSecretError)) throw err
     console.error(`sms-hook: SEND_SMS_HOOK_SECRET is malformed. ${err.message}. Set it again, in quotes.`)
+    await reportError('sms-hook', err, { step: 'hook secret' })
     return hookError(500, 'Login codes are not set up correctly yet.')
   }
   if (!signed) {
@@ -88,6 +90,7 @@ export async function handleSmsHook(req: Request, deps: HookDeps = depsFromEnv()
   const usable = deps.channels.filter((c) => senders[c])
   if (usable.length === 0) {
     console.error('sms-hook: no channel set up (WhatsApp or Termii)')
+    await reportError('sms-hook', new Error('No login-code channel set up (WhatsApp or Termii)'))
     return hookError(500, 'Login codes cannot be sent yet. Please try again later.')
   }
 
@@ -98,6 +101,7 @@ export async function handleSmsHook(req: Request, deps: HookDeps = depsFromEnv()
     } catch (err) {
       // Never log the code itself.
       console.error(`sms-hook: ${channel} send failed`, err instanceof Error ? err.message : err)
+      await reportError('sms-hook', err, { channel })
     }
   }
   return hookError(502, 'Could not send your code. Please try again shortly.')

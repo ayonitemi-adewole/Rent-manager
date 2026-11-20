@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
 import { handler, json, readJson, UserError } from '../_shared/http.ts'
+import { reportError } from '../_shared/monitoring.ts'
 import { adminClient, requireUser } from '../_shared/supabase.ts'
 import { reminderTemplate, type OutboundRow } from '../_shared/wa-templates.ts'
 import { sendWhatsApp, whatsappConfigFromEnv, WhatsAppError } from '../_shared/whatsapp.ts'
@@ -55,6 +56,7 @@ export async function handleSendNow(req: Request, deps: SendNowDeps): Promise<Re
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`send-reminder-now: ${row.id} failed: ${message}`)
+    await reportError('send-reminder-now', err, { reminder_id: row.id })
     await deps.markFailed(row.id, message.slice(0, 500))
     throw new UserError(friendlyWhatsAppError(err), 502)
   }

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Logo } from '@/components/Logo'
 import { formatDate } from '@/lib/rent'
-import { SUPPORT_EMAIL, TERMS_VERSION } from '@/lib/legal'
+import { SUPPORT_EMAIL, TERMS_DATE } from '@/lib/legal'
 
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -12,7 +12,7 @@ function LegalPage({ title, children }: { title: string; children: ReactNode }) 
       </Link>
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground text-sm">Last updated {formatDate(TERMS_VERSION)}</p>
+        <p className="text-muted-foreground text-sm">Last updated {formatDate(TERMS_DATE)}</p>
       </header>
       <div className="space-y-6 text-sm leading-relaxed [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_p+p]:mt-2 [&_ul]:space-y-1">
         {children}
@@ -163,6 +163,11 @@ export function PrivacyPage() {
           <li>Supabase: secure hosting and database.</li>
           <li>Paystack: online payments and payouts to landlords.</li>
           <li>Termii: delivery of SMS codes, reminders and receipts.</li>
+          <li>Meta (WhatsApp): delivery of WhatsApp login codes, reminders and receipts, and the tenant chat.</li>
+          <li>
+            Sentry: error reports, so we can find and fix problems. Phone numbers, email addresses, account numbers
+            and payment-link codes are removed before a report is sent.
+          </li>
         </ul>
         <p>
           These providers may store data on servers outside Nigeria. We use providers that protect it with security

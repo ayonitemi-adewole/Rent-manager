@@ -5,6 +5,7 @@
 // TERMII_API_KEY + TERMII_SENDER_ID are set. Until then those rows simply stay queued.
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
+import { reportError } from '../_shared/monitoring.ts'
 import { receiptFileName, receiptPdf, type Receipt } from '../_shared/receipt-pdf.ts'
 import { adminClient } from '../_shared/supabase.ts'
 import { sendSms, termiiConfigFromEnv } from '../_shared/termii.ts'
@@ -46,6 +47,7 @@ export async function handleSend(req: Request, deps: SendDeps): Promise<Response
       failed++
       const message = err instanceof Error ? err.message : String(err)
       console.error(`send-reminders: ${row.channel} ${row.kind} ${row.id} failed: ${message}`)
+      await reportError('send-reminders', err, { channel: row.channel, kind: row.kind, reminder_id: row.id })
       await deps.markFailed(row.id, message.slice(0, 500))
     }
   }

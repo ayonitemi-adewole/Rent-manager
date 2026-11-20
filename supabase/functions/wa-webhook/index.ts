@@ -7,6 +7,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
 import { startCheckout } from '../_shared/checkout.ts'
 import { UserError } from '../_shared/http.ts'
+import { reportError } from '../_shared/monitoring.ts'
 import { receiptFileName, receiptPdf, type Receipt } from '../_shared/receipt-pdf.ts'
 import { adminClient } from '../_shared/supabase.ts'
 import { botReply, type BotDeps, type Portal, type Tenancy } from '../_shared/wa-bot.ts'
@@ -60,6 +61,7 @@ export async function handleWaWebhook(req: Request, deps: WebhookDeps): Promise<
       await deps.handleStatus(s)
     } catch (err) {
       console.error('wa-webhook: status update failed', err)
+      await reportError('wa-webhook', err, { step: 'status update' })
     }
   }
   for (const m of messages) {
@@ -67,6 +69,7 @@ export async function handleWaWebhook(req: Request, deps: WebhookDeps): Promise<
       await deps.handleMessage(m)
     } catch (err) {
       console.error('wa-webhook: message handling failed', err)
+      await reportError('wa-webhook', err, { step: 'message' })
     }
   }
   return new Response('ok', { status: 200 })
@@ -92,6 +95,7 @@ function botDeps(admin: SupabaseClient, wa: WhatsAppConfig, appUrl: string): Bot
       } catch (err) {
         if (err instanceof UserError) throw err // tenant-safe message
         console.error('wa-webhook: checkout failed', err)
+        await reportError('wa-webhook', err, { step: 'checkout' })
         throw new Error('Sorry, we couldn’t start the payment. Please try again in a minute.')
       }
     },
