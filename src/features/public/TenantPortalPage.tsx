@@ -74,7 +74,7 @@ export function TenantPortalPage() {
           {portal.receipts.length > 0 && (
             <section className="space-y-2">
               <h2 className="font-semibold">Your receipts</h2>
-              <Card className="divide-y overflow-hidden py-0">
+              <Card className="gap-0 divide-y overflow-hidden py-0">
                 {portal.receipts.map((r) => (
                   <Link
                     key={r.receipt_token}

@@ -33,6 +33,14 @@ export function PropertyDetailPage() {
       <QueryState isPending={isPending} error={error} refetch={refetch} />
       {property === null && <p className="text-sm">Property not found.</p>}
 
+      {property && property.units.length > 0 && (
+        <dl className="mb-6 grid grid-cols-3 gap-3 lg:max-w-xl">
+          <Stat label="Units" value={property.units.length} />
+          <Stat label="Occupied" value={property.units.filter((u) => u.activeTenant).length} />
+          <Stat label="Vacant" value={property.units.filter((u) => !u.activeTenant).length} />
+        </dl>
+      )}
+
       {property && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -60,10 +68,10 @@ export function PropertyDetailPage() {
               }
             />
           ) : (
-            <ul className="space-y-2">
+            <ul className="grid gap-2 md:grid-cols-2 lg:gap-3 xl:grid-cols-3">
               {property.units.map((unit) => (
                 <li key={unit.id}>
-                  <Card className="gap-0 py-0">
+                  <Card className="h-full gap-0 py-0">
                     <div className="flex items-start gap-3 p-4">
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-2">
@@ -108,5 +116,14 @@ export function PropertyDetailPage() {
         </section>
       )}
     </>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-card rounded-xl border px-4 py-3">
+      <dt className="text-muted-foreground text-xs font-medium">{label}</dt>
+      <dd className="text-xl font-bold tabular-nums">{value}</dd>
+    </div>
   )
 }

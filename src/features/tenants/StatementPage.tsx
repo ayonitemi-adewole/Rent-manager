@@ -73,7 +73,7 @@ export function StatementPage() {
             </span>
             <span className="text-muted-foreground"> (includes rent not yet due)</span>
           </p>
-          <Card className="divide-y overflow-hidden py-0">
+          <Card className="gap-0 divide-y overflow-hidden py-0">
             {ledger.map((e) => (
               <div key={e.id} className="flex items-start justify-between gap-3 px-4 py-3 text-sm">
                 <div className="min-w-0">
