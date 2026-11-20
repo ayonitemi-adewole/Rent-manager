@@ -222,13 +222,13 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 - **Desktop layout:** sidebar from 1024px, wider dashboard, tenant table and search, split login screen; tenant search on phones too
 - **Marketing website** in `website/` (static pages, deployed on Cloudflare Pages)
 - **Paystack payout:** at most one account lookup per save (signed lookup proof)
+- **Fees on every online payment:** `gateway_fee_kobo` (Paystack's fee, from verify) and `platform_fee_kobo` (RentPadi's, fixed at checkout on `payment_attempts`, ₦0 in the pilot). Landlords see "Paystack fee ₦322.50 · RentPadi fee ₦0 · ₦99,677.50 to your bank" on each payment and in the CSV export; tenants never see fees
 - *In review:* test-mode shortcut that skips the account lookup (`PAYSTACK_TEST_SKIP_LOOKUP`, branch `phase-7-test-lookup-shortcut`)
 
 ### Next up
 
-1. **Record fees on each payment:** `gateway_fee_kobo` (Paystack's fee, from verify) and `platform_fee_kobo` (₦0 during the pilot), and show landlords the breakdown: "₦100,000 paid · ₦322.50 bank fee · RentPadi fee ₦0 (pilot) · ₦99,677.50 to your bank". Step 1 of the [PRICING.md](PRICING.md) rollout.
-2. **Plans and entitlements:** plan tables and one `landlord_entitlements` function, everyone on a pilot plan; gate WhatsApp reminders first to test the gating (step 2).
-3. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, error monitoring, daily backups, and the pilot itself.
+1. **Plans and entitlements:** plan tables and one `landlord_entitlements` function, everyone on a pilot plan; gate WhatsApp reminders first to test the gating (step 2 of the [PRICING.md](PRICING.md) rollout; step 1 is done).
+2. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, error monitoring, daily backups, and the pilot itself.
 
 ---
 
@@ -263,12 +263,12 @@ rent_charges     (id, tenant_id fk, charge_type default 'rent',
                   status charge_status,
                   unique (tenant_id, charge_type, period_start))
 
-payment_attempts (id, charge_id fk, tx_ref unique, amount_kobo, gateway,
+payment_attempts (id, charge_id fk, tx_ref unique, amount_kobo, gateway, platform_fee_kobo,
                   status ('pending','successful','failed'), created_at)
 
 payments         (id, charge_id fk, amount_kobo, method,
                   reference unique, gateway ('paystack','flutterwave' | null for manual),
-                  gateway_transaction_id,
+                  gateway_transaction_id, gateway_fee_kobo, platform_fee_kobo,
                   receipt_number, receipt_token unique,
                   recorded_by uuid null, note,
                   voided_at, void_reason, paid_at)

@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { friendlyError } from '@/lib/errors'
-import { formatKobo } from '@/lib/money'
+import { feeBreakdown } from '@/lib/fees'
+import { formatKobo, formatKoboExact } from '@/lib/money'
 import { formatDate } from '@/lib/rent'
 import { whatsappLink } from '@/lib/reminders'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,7 @@ export function TenantPayments({ tenantId }: { tenantId: string }) {
           {payments?.map((p) => {
             const voided = p.voided_at !== null
             const canVoid = !voided && p.method !== 'link'
+            const fees = voided ? null : feeBreakdown(p)
             return (
               <li key={p.id} className="space-y-3 py-3 text-sm">
                 <div className="flex items-start justify-between gap-3">
@@ -44,6 +46,13 @@ export function TenantPayments({ tenantId }: { tenantId: string }) {
                     <p className="text-muted-foreground text-xs">
                       For {p.period_start && formatDate(p.period_start)} – {p.period_end && formatDate(p.period_end)}
                     </p>
+                    {fees && (
+                      <p className="text-muted-foreground text-xs tabular-nums">
+                        {fees.gateway} fee {formatKoboExact(fees.gatewayFeeKobo)} · RentPadi fee{' '}
+                        {formatKoboExact(fees.platformFeeKobo)} ·{' '}
+                        <span className="text-foreground font-medium">{formatKoboExact(fees.toBankKobo)} to your bank</span>
+                      </p>
+                    )}
                     {p.note && <p className="text-muted-foreground text-xs">“{p.note}”</p>}
                     {voided && <p className="text-destructive text-xs">Voided: {p.void_reason}</p>}
                     {p.receipt_token && (

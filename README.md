@@ -54,6 +54,8 @@ Each landlord gets a Paystack **subaccount** with a 0% split to RentPadi, so ren
 
 The functions: `payout` (banks, account lookup, subaccount), `pay-checkout` (starts a checkout), `pay-verify` (the page tenants return to) and `pay-webhook` (Paystack's `charge.success`). Both `pay-verify` and `pay-webhook` re-check every payment with Paystack before recording it.
 
+Each online payment records Paystack's fee (`gateway_fee_kobo`, from Paystack's verify response) and RentPadi's (`platform_fee_kobo`, fixed at checkout; ₦0 in the pilot). Landlords see the breakdown on the tenant's **Payments** card and in **Settings → Export**; tenants never see fees. When deploying a database change that the functions depend on, run `npm run db:push` **before** `npm run functions:deploy`.
+
 ### Switching an existing project from Flutterwave
 
 1. `npm run db:push`: applies `20261127090000_paystack.sql`. It drops the Flutterwave subaccount columns, keeps every landlord's bank details, and marks past online payments as `gateway = 'flutterwave'`.

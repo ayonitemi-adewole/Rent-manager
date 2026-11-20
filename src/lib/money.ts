@@ -13,6 +13,18 @@ export function formatKobo(kobo: number): string {
   return formatter.format(kobo / 100)
 }
 
+const exactFormatter = new Intl.NumberFormat('en-NG', {
+  style: 'currency',
+  currency: 'NGN',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+/** For fees, where kobo matter: 32250 → "₦322.50" ; 100000 → "₦1,000" (whole naira stay short). */
+export function formatKoboExact(kobo: number): string {
+  return kobo % 100 === 0 ? formatKobo(kobo) : exactFormatter.format(kobo / 100)
+}
+
 /** Parse what a user typed ("350,000", "₦350000.50", " 1500 ") into kobo. Returns null if invalid. */
 export function parseNairaToKobo(input: string): number | null {
   const cleaned = input.replace(/[₦,\s]/g, '').replace(/^NGN/i, '')
