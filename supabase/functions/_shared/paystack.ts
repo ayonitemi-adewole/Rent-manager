@@ -58,7 +58,14 @@ export async function listBanks(): Promise<{ code: string; name: string }[]> {
   return FALLBACK_BANKS
 }
 
-/** The account holder's name, as the bank has it. Throws UserError if the account isn't found. */
+/** Paystack's answer when the bank has no such account (422 "Could not resolve account name…"). */
+export const isAccountNotFound = (err: PaystackError) =>
+  err.status === 422 || /could not resolve|invalid account|account not found/i.test(err.message)
+
+/**
+ * The account holder's name, as the bank has it. Throws UserError: "not found" for a wrong
+ * account, otherwise Paystack's own reason (e.g. a lookup limit), so the real problem is visible.
+ */
 export async function resolveAccount(accountNumber: string, bankCode: string): Promise<string> {
   try {
     const { data } = await paystack<{ account_number: string; account_name: string }>(
@@ -67,7 +74,10 @@ export async function resolveAccount(accountNumber: string, bankCode: string): P
     return data.account_name
   } catch (err) {
     if (err instanceof PaystackError) {
-      throw new UserError('We could not find that account. Check the bank and account number.')
+      if (isAccountNotFound(err)) {
+        throw new UserError('We could not find that account. Check the bank and account number.')
+      }
+      throw new UserError(`Paystack could not check this account right now: ${err.message}`, 502)
     }
     throw err
   }

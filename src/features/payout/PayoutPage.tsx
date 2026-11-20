@@ -68,7 +68,11 @@ export function PayoutPage() {
           noValidate
           onSubmit={(e) => {
             e.preventDefault()
-            save.mutate({ bankCode, accountNumber }, { onSuccess: () => navigate('/settings', { replace: true }) })
+            if (!resolved.data) return
+            save.mutate(
+              { bankCode, accountNumber, resolved: resolved.data },
+              { onSuccess: () => navigate('/settings', { replace: true }) },
+            )
           }}
         >
           <Field id="bank" label="Bank">
@@ -113,7 +117,7 @@ export function PayoutPage() {
             <div className="border-success/30 bg-success/10 flex items-start gap-3 rounded-lg border p-3">
               <CheckCircle2 className="text-success mt-0.5 size-5 shrink-0" />
               <div>
-                <p className="font-semibold">{resolved.data}</p>
+                <p className="font-semibold">{resolved.data.account_name}</p>
                 <p className="text-muted-foreground text-xs">Is this your account? Rent will be paid to this name.</p>
               </div>
             </div>

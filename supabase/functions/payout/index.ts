@@ -1,6 +1,9 @@
 // Landlord payout account: list banks, check an account name, save it as a Paystack subaccount.
-// Requires a signed-in landlord. Body: { action: 'banks' } | { action: 'resolve' | 'save', bank_code, account_number }
-import { handler, json, readJson, UserError } from '../_shared/http.ts'
+// Requires a signed-in landlord. Body: { action: 'banks' }
+//   | { action: 'resolve', bank_code, account_number }                       → { account_name, lookup }
+//   | { action: 'save', bank_code, account_number, account_name?, lookup? }  → { account_name, bank_name }
+import { handler, json, readJson, requireEnv, UserError } from '../_shared/http.ts'
+import { signLookup, verifyLookup } from '../_shared/lookup-proof.ts'
 import { createSubaccount, listBanks, PaystackError, resolveAccount, updateSubaccount } from '../_shared/paystack.ts'
 import { adminClient, requireUser } from '../_shared/supabase.ts'
 
@@ -16,7 +19,7 @@ async function withPaystackMessage<T>(step: string, fn: () => Promise<T>): Promi
 
 type Body =
   | { action: 'banks' }
-  | { action: 'resolve' | 'save'; bank_code?: string; account_number?: string }
+  | { action: 'resolve' | 'save'; bank_code?: string; account_number?: string; account_name?: string; lookup?: string }
 
 Deno.serve(
   handler(async (req) => {
@@ -38,16 +41,40 @@ Deno.serve(
     if (!bankCode) throw new UserError('Choose your bank.')
     if (!/^\d{10}$/.test(accountNumber)) throw new UserError('Account numbers are 10 digits.')
 
-    // Always resolve server-side: the name we store comes from the bank, not from the client.
-    const accountName = await resolveAccount(accountNumber, bankCode)
-    if (body.action === 'resolve') return json({ account_name: accountName })
-
     const { data: landlord, error } = await admin
       .from('landlords')
-      .select('id, full_name, name_for_tenants, email, phone, paystack_subaccount_code')
+      .select('id, full_name, name_for_tenants, email, phone, paystack_subaccount_code, bank_code, account_number, account_name')
       .eq('id', user.id)
       .maybeSingle()
     if (error) throw error
+
+    // The name we store always comes from a bank lookup, never from the client. Paystack limits
+    // lookups (3 a day in test mode), so each save spends at most one:
+    //  - the account already on file (e.g. confirming it after the move to Paystack) was looked up
+    //    when it was saved, and only this function writes those columns: reuse its name;
+    //  - a save brings the signed proof from its own lookup (lookup-proof.ts): reuse that name;
+    //  - otherwise ask Paystack.
+    const secret = requireEnv('PAYSTACK_SECRET_KEY')
+    const onFile =
+      landlord?.account_name && landlord.bank_code === bankCode && landlord.account_number === accountNumber
+        ? landlord.account_name
+        : null
+    const claimedName = String(body.account_name ?? '')
+    const proven =
+      body.action === 'save' &&
+      claimedName !== '' &&
+      (await verifyLookup(
+        secret,
+        { userId: user.id, bankCode, accountNumber, accountName: claimedName },
+        String(body.lookup ?? ''),
+      ))
+    const accountName = onFile ?? (proven ? claimedName : await resolveAccount(accountNumber, bankCode))
+
+    if (body.action === 'resolve') {
+      const lookup = await signLookup(secret, { userId: user.id, bankCode, accountNumber, accountName })
+      return json({ account_name: accountName, lookup })
+    }
+
     if (!landlord) throw new UserError('Finish setting up your profile first.')
 
     const bankName = (await listBanks()).find((b) => b.code === bankCode)?.name.trim() ?? null
