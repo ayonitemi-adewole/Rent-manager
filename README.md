@@ -86,6 +86,23 @@ Tenants message RentPadi's WhatsApp number to check what they owe, pay (Paystack
 
 **Setup:** follow [docs/WHATSAPP_SETUP.md](docs/WHATSAPP_SETUP.md), a step-by-step guide using Meta's free test number. It covers the Meta app, a permanent token, secrets, the webhook, the three message templates, the scheduled sender, end-to-end testing, troubleshooting, and going live.
 
+## Error monitoring (Sentry)
+
+Optional, and off until a DSN is set. Errors from the app and the edge functions go to Sentry, so a broken payment, reminder or login code shows up as an alert instead of failing silently.
+
+Sentry organization **rent-padi** (EU data region) has two projects: **rent-padi-frontend** (React app) and **rent-padi-functions** (Deno edge functions). Both have **Prevent Storing of IP Addresses** and the **Data Scrubber** on (Settings → Security & Privacy); keep them on.
+
+1. **App:** in Vercel, set `VITE_SENTRY_DSN` to rent-padi-frontend's DSN (Settings → Client Keys) and `VITE_SENTRY_ENVIRONMENT=production`, then redeploy. For local development, put the same DSN in `.env.local` with `VITE_SENTRY_ENVIRONMENT=development`.
+2. **Functions:** `npx supabase secrets set SENTRY_DSN=<rent-padi-functions' DSN> SENTRY_ENVIRONMENT=production`, then `npm run functions:deploy`.
+3. **Readable production stack traces (source maps):** create an **organization auth token** in Sentry (Settings → Auth Tokens) and add it to Vercel as `SENTRY_AUTH_TOKEN`, **Production** environment only. Production builds then make source maps, upload them to Sentry under the release `VERCEL_GIT_COMMIT_SHA`, and delete them, so they're never deployed. Builds without the token make no source maps. Never commit the token.
+4. **Check it:** open the app, wait a few seconds, and in the browser console run `setTimeout(() => { throw new Error('Sentry test') })`. The error appears under **Issues** in rent-padi-frontend, with readable file names and lines once source maps are uploaded.
+
+**What's sent, and what isn't:**
+
+- Pages that crash, and unexpected failures in edge functions: payments (`pay-*`, `payout`), reminders, login codes and the WhatsApp chat. Expected answers ("account not found", a form error, a dropped connection) are not reported.
+- Collection is minimal (`MINIMAL_DATA_COLLECTION` in `supabase/functions/_shared/scrub.ts`): no user info, cookies, headers, bodies, query strings or local variables. Every event is then scrubbed (`scrubDeep`): tenant and receipt link tokens, phone numbers, emails, account numbers, keys and JWTs are replaced before it leaves.
+- In the browser, Sentry (about 31 kB) loads only when the page is idle, and not at all with Data Saver on or on 2G.
+
 ## Scripts
 
 | Command | What it does |

@@ -1,4 +1,5 @@
 // Shared HTTP helpers for edge functions.
+import { functionName, reportError } from './monitoring.ts'
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,6 +31,7 @@ export function handler(fn: (req: Request) => Promise<Response>) {
     } catch (err) {
       if (err instanceof UserError) return json({ error: err.message }, err.status)
       console.error(err)
+      await reportError(functionName(req), err)
       return json({ error: 'Something went wrong. Please try again.' }, 500)
     }
   }

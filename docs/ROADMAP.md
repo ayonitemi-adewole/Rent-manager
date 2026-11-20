@@ -182,7 +182,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 - [x] Speed on slow connections: pages load on demand; tenant links skip the login system and supabase-js (252 kB → 141 kB gzipped); loading screen in the HTML; non-blocking font; landlord pages prefetched when idle (not on Data Saver/2G)
 - [ ] Switch Paystack and Termii to **live** keys and do one real ₦100 payment end-to-end
-- [ ] Error monitoring (Sentry free tier) on the frontend and edge functions
+- [x] Error monitoring (Sentry free tier) on the frontend and edge functions: minimal data collection plus scrubbing of tokens and personal data; on once `VITE_SENTRY_DSN` and `SENTRY_DSN` are set (README)
 - [ ] Daily Supabase backups (or a scheduled `pg_dump` while on the free tier)
 - [x] Short privacy notice and terms (NDPA 2023), accepted at onboarding with version and time recorded; changing `TERMS_VERSION` asks everyone again. **Have a lawyer review the drafts and set a real support mailbox before launch.**
 - [x] Proper landlord onboarding: email (the payment company's contact for the landlord's subaccount, instead of a placeholder), optional name shown to tenants, terms consent; existing landlords asked once

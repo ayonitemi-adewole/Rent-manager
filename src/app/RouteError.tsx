@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { useRouteError } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/Logo'
+import { reportError } from '@/lib/monitoring'
 
 /** A page's file failed to download: the connection dropped, or a new version replaced the old files. */
 function isChunkLoadError(error: unknown): boolean {
@@ -13,7 +15,12 @@ function isChunkLoadError(error: unknown): boolean {
 export function RouteError() {
   const error = useRouteError()
   const offline = isChunkLoadError(error)
-  if (!offline) console.error(error)
+
+  useEffect(() => {
+    if (offline) return // a dropped connection isn't a bug
+    console.error(error)
+    reportError(error)
+  }, [error, offline])
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-4 px-4 text-center">

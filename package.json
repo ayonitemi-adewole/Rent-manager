@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.7",
+    "@sentry/react": "11.11.0",
     "@supabase/supabase-js": "^2.119.0",
     "@tanstack/react-query": "^5.108.0",
     "class-variance-authority": "^0.7.1",
@@ -35,6 +36,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@sentry/bundler-plugins": "11.11.0",
+    "@sentry/deno": "11.11.0",
     "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
