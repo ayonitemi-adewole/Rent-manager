@@ -10,7 +10,7 @@ Starting point: Vite 8 + React 19 + TypeScript scaffold, nothing else yet.
 ## Guiding principles
 
 1. **The interviews gate the build.** Phase 0 setup work is safe to do in parallel, but don't go past Phase 2 until you hit the bar: at least 8 of 20 landlords with strong pain and 3 committed pilots.
-2. **Money is never ours.** Funds settle straight to the landlord's bank account through a Flutterwave subaccount. We never hold a balance.
+2. **Money is never ours.** Funds settle straight to the landlord's bank account through a Paystack subaccount (0% split to RentPadi; Flutterwave until Phase 7). We never hold a balance.
 3. **The ledger is the product.** Every naira is stored as integer kobo. Charges and payments are append-friendly, and nothing is silently overwritten.
 4. **Mobile-first, low-bandwidth.** Assume a mid-range Android phone on 3G. Pages stay small and forms stay short.
 5. **Ship to pilots every phase.** Each phase ends with something a pilot landlord could see, even if you're the one driving it.
@@ -23,7 +23,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 | Task | Why now |
 | --- | --- |
-| Create a **Flutterwave business account** and submit KYC (CAC docs or a starter-business route) | Going live and creating subaccounts needs approval. This can take 1–3 weeks. |
+| Create a **Paystack business account** and complete its compliance checks (CAC docs or a starter-business route). *(Originally Flutterwave; see Phase 7.)* | Going live and creating subaccounts needs approval. This can take 1–3 weeks. |
 | Create a **Termii account** and register a **sender ID** (e.g. `RentMgr`) | Sender ID approval takes days. Without it, messages to DND numbers fail. |
 | Create the **Supabase project** (choose the region closest to Nigeria, e.g. `eu-west`) and the **Vercel project** | Free, instant, and unblocks Phase 1. |
 | Buy a domain (e.g. `rentmanager.ng` or `.com.ng`) | SMS links look more trustworthy with a short, branded domain. |
@@ -97,6 +97,8 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 **Goal:** a tenant pays online and the charge flips to paid automatically, with money landing in the landlord's account.
 
+> **Built on Flutterwave, since moved to Paystack (Phase 7).** The design below still holds (on-demand checkout, verify before recording, one `record_payment`), but the functions are now `payout`, `pay-checkout`, `pay-verify` and `pay-webhook`, and the landlord's subaccount is a Paystack one. Setup steps are in the README.
+
 ### Landlord payout setup
 - [x] Bank picker (popular banks first) from Flutterwave `GET /banks/NG`
 - [x] **Resolve the account name** (`POST /accounts/resolve`) and show it back to the landlord to confirm. This catches typos before money goes astray
@@ -131,14 +133,15 @@ Some of these approvals take days or weeks, so **start them today**, even before
 
 ### Reminders
 - [x] Daily `pg_cron` job (`queue-rent-reminders`, 9am WAT) queues each day's reminders in SQL (`queue_reminders`)
-- [ ] SMS sender: edge function `send-reminders` that delivers queued reminders through Termii (needs a Termii account + sender ID). Until then reminders stay **queued** and are shown on the tenant page
+- [x] Sender: edge function `send-reminders` (pg_cron, every 5 minutes) delivers queued reminders by SMS through Termii and on WhatsApp. **SMS goes out once the `TERMII_*` secrets are set and Termii approves the sender ID**; until then SMS reminders stay **queued** and are shown on the tenant page
 - [x] Schedule before due: **yearly 60, 30, 14, 7, 1 days**; **six-monthly 30, 14, 7, 1**; **monthly 14, 7, 1**. Then overdue at **+1, +7 and +14 days**. Yearly charges are created 75 days ahead (45 otherwise) so the first reminder has a charge
 - [x] Unique constraint on `reminders (charge_id, kind)` so each reminder sends at most once, even across retries
 - [x] Skip charges that are paid; for partially paid charges, mention the balance
-- [x] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rentmgr.ng/t/x7Kp2 – Mr Adeyemi`
+- [x] Keep SMS short (≤160 characters, one segment): `Hi Tola, your rent of N350,000 for Flat 2 is due 1 Dec. Pay securely: rent-padi.vercel.app/t/x7Kp2 – Mr Adeyemi`
 - [x] Reminders card on the tenant page: each reminder's date, timing, status and text
 - [x] **Send reminder on WhatsApp** button (same wording as the SMS), works without any SMS provider
-- [ ] Store the Termii message ID and delivery status (columns exist; filled by the sender)
+- [x] Store the provider's message ID (`provider_message_id`) and mark send failures; WhatsApp delivery failures come back through `wa-webhook`
+- [ ] Termii delivery reports (delivered / undelivered) for SMS
 - [x] Per-tenant toggle to pause reminders (tenant form, since Phase 1) for a tenant (landlords will ask for this)
 
 ### Manual payments
@@ -158,7 +161,7 @@ Some of these approvals take days or weeks, so **start them today**, even before
 - [x] `tenants.access_token` is random and unguessable (24 URL-safe characters, 144 bits)
 - [x] Data is served through a `SECURITY DEFINER` RPC (`tenant_portal`) or edge function that takes the token. **Don't** open RLS to anonymous users
 - [x] Shows the landlord's name, unit, the earliest amount due (one at a time) with a **Pay** button, the next amount, and past receipts
-- [x] Trust signals: landlord name, the Flutterwave badge, and "Money goes directly to [landlord's bank name] account ending 1234"
+- [x] Trust signals: landlord name, the payment company's name (now Paystack), and "Money goes directly to [landlord's bank name] account ending 1234"
 - [x] Landlord can regenerate the token (**Reset link**), which invalidates the old link
 
 ### Receipts
@@ -178,11 +181,12 @@ Some of these approvals take days or weeks, so **start them today**, even before
 ## Phase 6 — Pilot launch & hardening (~1 week)
 
 - [x] Speed on slow connections: pages load on demand; tenant links skip the login system and supabase-js (252 kB → 141 kB gzipped); loading screen in the HTML; non-blocking font; landlord pages prefetched when idle (not on Data Saver/2G)
-- [ ] Switch Flutterwave and Termii to **live** keys and do one real ₦100 payment end-to-end
+- [ ] Switch Paystack and Termii to **live** keys and do one real ₦100 payment end-to-end
 - [ ] Error monitoring (Sentry free tier) on the frontend and edge functions
 - [ ] Daily Supabase backups (or a scheduled `pg_dump` while on the free tier)
 - [x] Short privacy notice and terms (NDPA 2023), accepted at onboarding with version and time recorded; changing `TERMS_VERSION` asks everyone again. **Have a lawyer review the drafts and set a real support mailbox before launch.**
-- [x] Proper landlord onboarding: email (sent to Flutterwave instead of a placeholder), optional name shown to tenants, terms consent; existing landlords asked once
+- [x] Proper landlord onboarding: email (the payment company's contact for the landlord's subaccount, instead of a placeholder), optional name shown to tenants, terms consent; existing landlords asked once
+- [x] Support mailbox: `SUPPORT_EMAIL` (website) and `VITE_SUPPORT_EMAIL` (app) settings, default rentpadiii@gmail.com
 - [x] Login: plain-English errors, resend with 60 s countdown, code auto-submits
 - [x] Guided setup: dashboard checklist + spotlight tour that dims the app and points at each button (property → unit → tenant → payout)
 - [ ] Onboard 3–5 pilot landlords **in person**: enter their data with them and watch where they hesitate
@@ -209,6 +213,23 @@ Pick from the "Later" list in the plan, prioritised by what the pilots ask for a
 | Gateway fees too high | ✅ **Built (branch `phase-7-paystack`):** rent moved from Flutterwave (uncapped 2%) to Paystack (capped fee). Landlord subaccounts with a 0% split and `bearer: "subaccount"`, so tenants pay exactly the rent; functions `payout`, `pay-checkout`, `pay-verify`, `pay-webhook`. Existing landlords confirm their payout account once. Steps in the README. |
 | Ready to charge | Pricing: a free plan that takes a capped % of online rent (Paystack split, `transaction_charge`), or subscription tiers with no %. Plan in [PRICING.md](PRICING.md) |
 
+### Also built in Phase 7
+
+- **WhatsApp login codes** for landlords (`sms-hook`, order set by `OTP_CHANNELS`)
+- **Send a reminder now** from RentPadi's WhatsApp number, at most one every 12 hours (`send-reminder-now`)
+- **Brand:** the Rent Padi logo across the app, icons and link previews ([BRAND.md](BRAND.md))
+- **Settings:** collapsible cards; Appearance (device, light or dark); short, purposeful motion
+- **Desktop layout:** sidebar from 1024px, wider dashboard, tenant table and search, split login screen; tenant search on phones too
+- **Marketing website** in `website/` (static pages, deployed on Cloudflare Pages)
+- **Paystack payout:** at most one account lookup per save (signed lookup proof)
+- *In review:* test-mode shortcut that skips the account lookup (`PAYSTACK_TEST_SKIP_LOOKUP`, branch `phase-7-test-lookup-shortcut`)
+
+### Next up
+
+1. **Record fees on each payment:** `gateway_fee_kobo` (Paystack's fee, from verify) and `platform_fee_kobo` (₦0 during the pilot), and show landlords the breakdown: "₦100,000 paid · ₦322.50 bank fee · RentPadi fee ₦0 (pilot) · ₦99,677.50 to your bank". Step 1 of the [PRICING.md](PRICING.md) rollout.
+2. **Plans and entitlements:** plan tables and one `landlord_entitlements` function, everyone on a pilot plan; gate WhatsApp reminders first to test the gating (step 2).
+3. **Before charging anyone, finish Phase 6:** live keys and one real ₦100 payment, error monitoring, daily backups, and the pilot itself.
+
 ---
 
 ## Schema (refined)
@@ -218,12 +239,12 @@ Changes from the plan doc: amounts stored as **kobo**, partial-payment support, 
 ```sql
 -- enums
 create type rent_period    as enum ('monthly','six_monthly','yearly');
-create type charge_status  as enum ('due','partially_paid','paid','overdue','cancelled');
+create type charge_status  as enum ('unpaid','partially_paid','paid','cancelled');  -- overdue is derived (charge_overview)
 create type payment_method as enum ('link','cash','transfer');
 
 landlords        (id uuid pk = auth.users.id, name, phone unique,
                   bank_code, account_number, account_name,
-                  flw_subaccount_id, created_at)
+                  paystack_subaccount_code, created_at)
 
 properties       (id, landlord_id fk, name, address, created_at)
 
@@ -242,21 +263,24 @@ rent_charges     (id, tenant_id fk, charge_type default 'rent',
                   status charge_status,
                   unique (tenant_id, charge_type, period_start))
 
-payment_attempts (id, charge_id fk, tx_ref unique, amount_kobo,
+payment_attempts (id, charge_id fk, tx_ref unique, amount_kobo, gateway,
                   status ('pending','successful','failed'), created_at)
 
 payments         (id, charge_id fk, amount_kobo, method,
-                  reference unique, flw_transaction_id,
+                  reference unique, gateway ('paystack','flutterwave' | null for manual),
+                  gateway_transaction_id,
                   receipt_number, receipt_token unique,
                   recorded_by uuid null, note,
                   voided_at, void_reason, paid_at)
 
-reminders        (id, charge_id fk, kind ('d30','d14','d7','d1','od1','od7','od14'),
+reminders        (id, charge_id fk,
+                  kind ('d60','d30','d14','d7','d1','od1','od7','od14','receipt','manual'),
                   channel ('sms','whatsapp'), scheduled_for, sent_at,
-                  provider_message_id, status,
+                  provider_message_id, status ('queued','sending','sent','failed','skipped'),
                   unique (charge_id, kind))
 
-webhook_events   (id, provider, event_id unique, payload jsonb, received_at, processed_at)
+webhook_events   (id, provider, event_type, external_id, payload jsonb,
+                  received_at, processed_at, error)
 ```
 
 `landlord_id` lives only on `properties`. RLS on deeper tables joins up the chain. If that gets slow or awkward, denormalise `landlord_id` onto `tenants` and `rent_charges`.
@@ -269,26 +293,33 @@ webhook_events   (id, provider, event_id unique, payload jsonb, received_at, pro
 src/
   app/            routes, layout, providers (QueryClient, auth)
   features/
-    auth/         OTP login, onboarding
+    auth/         OTP login
+    landlord/     onboarding, profile
+    onboarding/   setup checklist, guided tour
     properties/   properties + units
-    tenants/      tenant CRUD, tenant detail, ledger
+    tenants/      tenant CRUD, tenant detail, statement
+    charges/      rent charges
     dashboard/
-    payments/     record payment, payout setup
-    public/       tenant page (/t/:token), receipt (/r/:token)
+    payments/     record payment, payment history, reminders
+    payout/       payout account (Paystack)
+    settings/
+    legal/        terms, privacy
+    public/       tenant page (/t/:token), payment result, receipt (/r/:token)
   components/ui/  shadcn components
   lib/            supabase client, money (kobo ⇄ ₦ formatting), dates, phone
   types/          generated database types
 supabase/
   migrations/
-  functions/      auth-sms-hook, flw-create-subaccount, flw-checkout,
-                  flw-webhook, send-reminders, tenant-portal
+  functions/      payout, pay-checkout, pay-verify, pay-webhook (Paystack),
+                  send-reminders, send-reminder-now, wa-webhook, sms-hook
+website/          marketing site (static HTML, its own build: npm run site:build)
 ```
 
 ---
 
 ## Decisions to make (ideally from the interviews)
 
-1. **Who pays the Flutterwave fee** (~1.4%, capped)? The tenant (added at checkout) or the landlord (deducted). This affects trust either way, so ask in the interviews.
+1. ✅ **Who pays the payment company's fee?** Decided: the landlord, deducted from their share (Paystack `bearer: "subaccount"`). Tenants always pay exactly the rent. See [PRICING.md](PRICING.md).
 2. **Partial payments:** this roadmap assumes yes, since paying in instalments is common. Confirm with landlords.
 3. **Existing tenants mid-tenancy:** onboarding needs a "last paid up to" date rather than only a start date.
 4. **Unit rent changes:** apply to the next tenancy only, or at renewal? This roadmap snapshots rent on the tenant row.
@@ -298,7 +329,7 @@ supabase/
 
 | Risk | Mitigation |
 | --- | --- |
-| Flutterwave KYC / live approval is slow | Start in Phase 0. Have Paystack (which also offers subaccounts) as a fallback |
+| Paystack live approval is slow, or the gateway changes again | Start in Phase 0. The payment functions are gateway-neutral (`pay-*`, `payout`) and payments record their `gateway`, so switching again is contained |
 | SMS blocked by DND or not delivered | Registered sender ID, Termii's DND route, delivery-status tracking |
 | Tenants think the payment link is a scam | Landlord warns tenants first, landlord name on the page, branded domain, small first payment |
 | Double-counting payments | Unique `reference`, verify before recording, one `record_payment` function for every path |
