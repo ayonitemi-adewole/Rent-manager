@@ -1,27 +1,40 @@
-import { Building2, LayoutDashboard, Settings, UserPlus, Users } from 'lucide-react'
-import { useEffect } from 'react'
-import { Link, NavLink, Outlet, useLocation, useMatches, useNavigation } from 'react-router'
-import { Logo } from '@/components/Logo'
-import { Button } from '@/components/ui/button'
-import { useLandlord } from '@/features/landlord/api'
-import { TourProvider } from '@/features/onboarding/TourProvider'
-import { formatNgPhone } from '@/lib/phone'
-import { cn, initials } from '@/lib/utils'
-import { prefetchCommonPages } from './pages'
-import type { PageWidth } from './router'
+import {
+  Building2,
+  LayoutDashboard,
+  Settings,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import { useEffect } from 'react';
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useMatches,
+  useNavigation,
+} from 'react-router';
+import { Logo } from '@/components/Logo';
+import { Button } from '@/components/ui/button';
+import { useLandlord } from '@/features/landlord/api';
+import { TourProvider } from '@/features/onboarding/TourProvider';
+import { formatNgPhone } from '@/lib/phone';
+import { cn, initials } from '@/lib/utils';
+import { prefetchCommonPages } from './pages';
+import type { PageWidth } from './router';
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/properties', label: 'Properties', icon: Building2, end: false },
   { to: '/tenants', label: 'Tenants', icon: Users, end: false },
   { to: '/settings', label: 'Settings', icon: Settings, end: false },
-]
+];
 
 /** Content width on large screens: forms stay a comfortable reading width, lists and the dashboard spread out. */
 const WIDTH: Record<PageWidth, string> = {
   narrow: 'lg:max-w-2xl',
   wide: 'lg:max-w-6xl',
-}
+};
 
 /**
  * Phones: logo on top, tab bar at the bottom (thumb reach).
@@ -29,18 +42,24 @@ const WIDTH: Record<PageWidth, string> = {
  * Both navs carry data-tour; the guided tour points at whichever one is visible.
  */
 export function AppLayout() {
-  const loading = useNavigation().state === 'loading'
-  const { pathname } = useLocation()
-  const matches = useMatches()
-  const width = (matches.at(-1)?.handle as { width?: PageWidth } | undefined)?.width ?? 'wide'
+  const loading = useNavigation().state === 'loading';
+  const { pathname } = useLocation();
+  const matches = useMatches();
+  const width =
+    (matches.at(-1)?.handle as { width?: PageWidth } | undefined)?.width ??
+    'wide';
 
   // Once a landlord is in, fetch the pages they open most so taps feel instant.
-  useEffect(prefetchCommonPages, [])
+  useEffect(prefetchCommonPages, []);
 
   return (
     <TourProvider>
       {loading && (
-        <div role="progressbar" aria-label="Loading page" className="fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden">
+        <div
+          role="progressbar"
+          aria-label="Loading page"
+          className="fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden"
+        >
           <div className="page-progress bg-primary h-full w-2/5" />
         </div>
       )}
@@ -78,7 +97,9 @@ export function AppLayout() {
                 className={({ isActive }) =>
                   cn(
                     'flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-[color,transform] motion-safe:active:scale-95',
-                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                    isActive
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   )
                 }
               >
@@ -90,12 +111,12 @@ export function AppLayout() {
         </ul>
       </nav>
     </TourProvider>
-  )
+  );
 }
 
 function Sidebar() {
-  const { data: landlord } = useLandlord()
-  const name = landlord?.display_name || landlord?.full_name
+  const { data: landlord } = useLandlord();
+  const name = landlord?.display_name || landlord?.full_name;
 
   return (
     <aside className="bg-card fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r lg:flex">
@@ -118,11 +139,11 @@ function Sidebar() {
                     'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                     isActive
                       ? 'bg-secondary text-primary'
-                      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+                      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
                   )
                 }
               >
-                <Icon className="size-[1.125rem]" />
+                <Icon className="size-4.5" />
                 {label}
               </NavLink>
             </li>
@@ -146,10 +167,12 @@ function Sidebar() {
           </span>
           <span className="min-w-0">
             <span className="block truncate text-sm font-semibold">{name}</span>
-            <span className="text-muted-foreground block truncate text-xs">{formatNgPhone(landlord.phone)}</span>
+            <span className="text-muted-foreground block truncate text-xs">
+              {formatNgPhone(landlord.phone)}
+            </span>
           </span>
         </Link>
       )}
     </aside>
-  )
+  );
 }
