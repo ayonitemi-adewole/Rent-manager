@@ -23,23 +23,16 @@ The repo is public, so the workflow logs are too. The workflow never prints data
 npm run db:push   # applies supabase/migrations/20261130090000_backup_role.sql
 ```
 
-Make a password with letters and digits only, so it can go in a URL as it is:
+Then make its password. This prints the SQL to run and the finished connection string, so there is nothing to fill in by hand:
 
 ```sh
-node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+node scripts/backup/new-password.mjs
 ```
 
-In the Supabase dashboard → **SQL Editor**, run:
+1. Run the `alter role backup_reader password …` line it prints in the Supabase dashboard → **SQL Editor**.
+2. Copy the `postgresql://backup_reader…` line it prints: that is the `BACKUP_DATABASE_URL` secret (step 4).
 
-```sql
-alter role backup_reader password '<the password>';
-```
-
-The connection string goes through the **session pooler**, because GitHub's machines can't reach the direct (IPv6) address:
-
-```
-postgresql://backup_reader.fyofadksrnasrnzxeptk:<the password>@aws-1-eu-west-1.pooler.supabase.com:5432/postgres
-```
+The connection string uses the **session pooler** (port 5432), because GitHub's machines can't reach the direct (IPv6) address. To change the password later, run the script again and do both steps again.
 
 ### 2. Make the encryption key
 
