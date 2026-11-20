@@ -84,12 +84,12 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
-          flw_subaccount_id: string | null
-          flw_subaccount_ref: number | null
           full_name: string
           id: string
           name_for_tenants: string | null
           payout_updated_at: string | null
+          paystack_subaccount_code: string | null
+          paystack_subaccount_id: number | null
           phone: string
           receipt_seq: number
           terms_accepted_at: string | null
@@ -105,12 +105,12 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
-          flw_subaccount_id?: string | null
-          flw_subaccount_ref?: number | null
           full_name: string
           id?: string
           name_for_tenants?: string | null
           payout_updated_at?: string | null
+          paystack_subaccount_code?: string | null
+          paystack_subaccount_id?: number | null
           phone?: string
           receipt_seq?: number
           terms_accepted_at?: string | null
@@ -126,12 +126,12 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
-          flw_subaccount_id?: string | null
-          flw_subaccount_ref?: number | null
           full_name?: string
           id?: string
           name_for_tenants?: string | null
           payout_updated_at?: string | null
+          paystack_subaccount_code?: string | null
+          paystack_subaccount_id?: number | null
           phone?: string
           receipt_seq?: number
           terms_accepted_at?: string | null
@@ -147,7 +147,8 @@ export type Database = {
           charge_id: string
           created_at: string
           failure_reason: string | null
-          flw_transaction_id: number | null
+          gateway: string
+          gateway_transaction_id: number | null
           id: string
           status: string
           tx_ref: string
@@ -158,7 +159,8 @@ export type Database = {
           charge_id: string
           created_at?: string
           failure_reason?: string | null
-          flw_transaction_id?: number | null
+          gateway?: string
+          gateway_transaction_id?: number | null
           id?: string
           status?: string
           tx_ref: string
@@ -169,7 +171,8 @@ export type Database = {
           charge_id?: string
           created_at?: string
           failure_reason?: string | null
-          flw_transaction_id?: number | null
+          gateway?: string
+          gateway_transaction_id?: number | null
           id?: string
           status?: string
           tx_ref?: string
@@ -197,7 +200,8 @@ export type Database = {
           amount_kobo: number
           charge_id: string
           created_at: string
-          flw_transaction_id: number | null
+          gateway: string | null
+          gateway_transaction_id: number | null
           id: string
           method: Database["public"]["Enums"]["payment_method"]
           note: string | null
@@ -213,7 +217,8 @@ export type Database = {
           amount_kobo: number
           charge_id: string
           created_at?: string
-          flw_transaction_id?: number | null
+          gateway?: string | null
+          gateway_transaction_id?: number | null
           id?: string
           method: Database["public"]["Enums"]["payment_method"]
           note?: string | null
@@ -229,7 +234,8 @@ export type Database = {
           amount_kobo?: number
           charge_id?: string
           created_at?: string
-          flw_transaction_id?: number | null
+          gateway?: string | null
+          gateway_transaction_id?: number | null
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           note?: string | null
@@ -776,7 +782,8 @@ export type Database = {
         Args: {
           p_amount_kobo: number
           p_charge_id: string
-          p_flw_transaction_id?: number
+          p_gateway?: string
+          p_gateway_transaction_id?: number
           p_method: Database["public"]["Enums"]["payment_method"]
           p_note?: string
           p_paid_at?: string

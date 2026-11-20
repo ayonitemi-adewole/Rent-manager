@@ -1,4 +1,4 @@
-// Tenant taps "Pay": create a payment attempt and a Flutterwave checkout link for what's owed.
+// Tenant taps "Pay": create a payment attempt and a Paystack checkout for what's owed.
 // Public (no login): the tenant's secret link token is the credential. Body: { token, charge_id }
 import { startCheckout } from '../_shared/checkout.ts'
 import { handler, json, readJson } from '../_shared/http.ts'

@@ -129,7 +129,7 @@ export function list(
   }
 }
 
-/** A message with one button that opens a web link (e.g. the Flutterwave checkout). */
+/** A message with one button that opens a web link (e.g. the Paystack checkout). */
 export function linkButton(body: string, label: string, url: string): OutboundMessage {
   return {
     type: 'interactive',

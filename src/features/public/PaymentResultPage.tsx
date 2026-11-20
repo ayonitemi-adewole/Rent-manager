@@ -6,20 +6,20 @@ import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import { useVerifyPayment } from './api'
 
-// Flutterwave redirects here: /t/:token/paid?status=successful|cancelled|failed&tx_ref=…&transaction_id=…
-// The query string is only a hint; the result shown comes from flw-verify (which asks Flutterwave).
+// Paystack redirects here: /t/:token/paid?trxref=…&reference=… after a payment, or ?status=cancelled
+// if the tenant closes the checkout. The result shown comes from pay-verify (which asks Paystack).
 export function PaymentResultPage() {
   const { token = '' } = useParams()
   const [params] = useSearchParams()
   const cancelled = params.get('status') === 'cancelled'
-  const txRef = cancelled ? null : params.get('tx_ref')
-  const verify = useVerifyPayment(token, txRef, params.get('transaction_id'))
+  const reference = cancelled ? null : (params.get('reference') ?? params.get('trxref'))
+  const verify = useVerifyPayment(token, reference)
   const outcome = verify.data?.outcome
 
   return (
     <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-4 py-8">
       <Logo />
-      {cancelled || !txRef ? (
+      {cancelled || !reference ? (
         <Result icon={<XCircle className="text-muted-foreground size-12" />} title="Payment cancelled">
           No money was taken. You can try again whenever you’re ready.
         </Result>

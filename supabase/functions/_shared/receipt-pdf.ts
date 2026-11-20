@@ -23,7 +23,7 @@ export type Receipt = {
 }
 
 export const RECEIPT_METHOD: Record<Receipt['method'], string> = {
-  link: 'Online (Flutterwave)',
+  link: 'Online payment',
   cash: 'Cash',
   transfer: 'Bank transfer',
 }

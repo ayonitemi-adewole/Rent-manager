@@ -38,7 +38,7 @@ function deps(over: Partial<BotDeps> = {}, calls: string[] = []): BotDeps {
     portal: () => Promise.resolve(portal()),
     checkout: (token, chargeId) => {
       calls.push(`checkout ${token} ${chargeId}`)
-      return Promise.resolve('https://checkout.flutterwave.test/pay/abc')
+      return Promise.resolve('https://checkout.paystack.test/pay/abc')
     },
     receiptDocument: (token) => Promise.resolve({ type: 'document', document: { id: `media-${token}` } }),
     ...over,
@@ -87,7 +87,7 @@ Deno.test('Pay rent sends a checkout button for the earliest unpaid rent', async
   const [reply] = await botReply(msg('pay:tenant-shop'), deps({}, calls))
   assertEquals(calls, ['checkout token-shop-xxxxxxxxxxxxxxx dec'])
   assertStringIncludes(body(reply), '"type":"cta_url"')
-  assertStringIncludes(body(reply), 'https://checkout.flutterwave.test/pay/abc')
+  assertStringIncludes(body(reply), 'https://checkout.paystack.test/pay/abc')
   assertStringIncludes(body(reply), 'Pay ₦40,000')
 })
 

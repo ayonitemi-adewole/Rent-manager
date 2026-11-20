@@ -1,8 +1,8 @@
-// Start a Flutterwave checkout for one of a tenant's rent charges.
-// Used by flw-checkout (the tenant's payment page) and the WhatsApp bot ("Pay rent").
+// Start a Paystack checkout for one of a tenant's rent charges.
+// Used by pay-checkout (the tenant's payment page) and the WhatsApp bot ("Pay rent").
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
-import { createPaymentLink } from './flutterwave.ts'
 import { requireEnv, UserError } from './http.ts'
+import { initializeTransaction } from './paystack.ts'
 
 type TenantRow = {
   id: string
@@ -10,24 +10,27 @@ type TenantRow = {
   phone: string
   units: {
     label: string
-    properties: { name: string; landlords: { name_for_tenants: string; flw_subaccount_id: string | null } }
+    properties: {
+      name: string
+      landlords: { name_for_tenants: string; paystack_subaccount_code: string | null }
+    }
   }
 }
 
-/** Returns the Flutterwave checkout URL. Throws UserError with a tenant-safe message. */
+/** Returns the Paystack checkout URL. Throws UserError with a tenant-safe message. */
 export async function startCheckout(admin: SupabaseClient, token: string, chargeId: string): Promise<string> {
   if (!token || token.length < 20 || !chargeId) throw new UserError('This payment link is not valid.', 404)
 
   const { data: tenant, error } = await admin
     .from('tenants')
-    .select('id, full_name, phone, units(label, properties(name, landlords(name_for_tenants, flw_subaccount_id)))')
+    .select('id, full_name, phone, units(label, properties(name, landlords(name_for_tenants, paystack_subaccount_code)))')
     .eq('access_token', token)
     .maybeSingle<TenantRow>()
   if (error) throw error
   if (!tenant) throw new UserError('This payment link is not valid.', 404)
 
   const landlord = tenant.units.properties.landlords
-  if (!landlord.flw_subaccount_id) {
+  if (!landlord.paystack_subaccount_code) {
     throw new UserError('Your landlord has not set up online payment yet. Please contact them.')
   }
 
@@ -50,25 +53,31 @@ export async function startCheckout(admin: SupabaseClient, token: string, charge
   if (earlierError) throw earlierError
   if (earlier) throw new UserError(`Please pay the earlier rent (due ${earlier}) first.`)
 
-  const txRef = `RP-${crypto.randomUUID()}`
+  const reference = `RP-${crypto.randomUUID()}`
   const { error: attemptError } = await admin
     .from('payment_attempts')
-    .insert({ charge_id: charge.id, tx_ref: txRef, amount_kobo: balanceKobo })
+    .insert({ charge_id: charge.id, tx_ref: reference, amount_kobo: balanceKobo, gateway: 'paystack' })
   if (attemptError) throw attemptError
 
   const appUrl = requireEnv('APP_URL').replace(/\/$/, '')
   const phoneDigits = tenant.phone.replace(/^\+/, '')
-  // Flutterwave requires an email; tenants often don't have one. Receipts go by SMS instead.
+  // Paystack requires an email; tenants often don't have one. Receipts go by SMS and WhatsApp instead.
   const emailDomain = Deno.env.get('TENANT_EMAIL_DOMAIN') ?? 'tenants.rentpadi.app'
 
-  return await createPaymentLink({
-    txRef,
-    amountNaira: balanceKobo / 100,
-    redirectUrl: `${appUrl}/t/${token}/paid`,
-    subaccountId: landlord.flw_subaccount_id,
-    customer: { name: tenant.full_name, phone: phoneDigits, email: `${phoneDigits}@${emailDomain}` },
-    title: `Rent: ${tenant.units.label}`,
-    description: `${tenant.units.properties.name} · ${charge.period_start} to ${charge.period_end} · to ${landlord.name_for_tenants}`,
-    meta: { charge_id: charge.id },
+  return await initializeTransaction({
+    reference,
+    amountKobo: balanceKobo,
+    email: `${phoneDigits}@${emailDomain}`,
+    // Paystack adds ?trxref=…&reference=… to the callback.
+    callbackUrl: `${appUrl}/t/${token}/paid`,
+    cancelUrl: `${appUrl}/t/${token}/paid?status=cancelled`,
+    subaccountCode: landlord.paystack_subaccount_code,
+    metadata: { charge_id: charge.id, tenant_id: tenant.id },
+    customFields: [
+      { display_name: 'Tenant', variable_name: 'tenant', value: tenant.full_name },
+      { display_name: 'Unit', variable_name: 'unit', value: `${tenant.units.label}, ${tenant.units.properties.name}` },
+      { display_name: 'Rent period', variable_name: 'period', value: `${charge.period_start} to ${charge.period_end}` },
+      { display_name: 'Landlord', variable_name: 'landlord', value: landlord.name_for_tenants },
+    ],
   })
 }
