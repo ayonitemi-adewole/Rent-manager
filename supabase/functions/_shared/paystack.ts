@@ -62,11 +62,28 @@ export async function listBanks(): Promise<{ code: string; name: string }[]> {
 export const isAccountNotFound = (err: PaystackError) =>
   err.status === 422 || /could not resolve|invalid account|account not found/i.test(err.message)
 
+/** The name stored when the test-mode shortcut skips the lookup. Obviously not a real name. */
+export const SKIPPED_LOOKUP_NAME = 'TEST MODE: NAME NOT CHECKED'
+
+/**
+ * Test-mode shortcut: Paystack allows only 3 account lookups a day in test mode. With
+ * PAYSTACK_TEST_SKIP_LOOKUP=true AND a test secret key (sk_test_…), lookups are skipped and the
+ * placeholder name is used. A live key (sk_live_…) always looks the account up, whatever the setting.
+ */
+export function isLookupSkipped(): boolean {
+  const skip = (Deno.env.get('PAYSTACK_TEST_SKIP_LOOKUP') ?? '').trim().toLowerCase() === 'true'
+  return skip && requireEnv('PAYSTACK_SECRET_KEY').trim().startsWith('sk_test_')
+}
+
 /**
  * The account holder's name, as the bank has it. Throws UserError: "not found" for a wrong
  * account, otherwise Paystack's own reason (e.g. a lookup limit), so the real problem is visible.
  */
 export async function resolveAccount(accountNumber: string, bankCode: string): Promise<string> {
+  if (isLookupSkipped()) {
+    console.warn('PAYSTACK_TEST_SKIP_LOOKUP: account lookup skipped (test mode)')
+    return SKIPPED_LOOKUP_NAME
+  }
   try {
     const { data } = await paystack<{ account_number: string; account_name: string }>(
       `/bank/resolve?account_number=${encodeURIComponent(accountNumber)}&bank_code=${encodeURIComponent(bankCode)}`,
