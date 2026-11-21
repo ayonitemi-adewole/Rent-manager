@@ -7,17 +7,17 @@ import { SUPPORT_EMAIL, TERMS_DATE } from '@/lib/legal'
 function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (
     <main className="motion-safe:animate-enter mx-auto max-w-2xl space-y-6 px-4 py-8">
-      <Link to="/" aria-label="RentPadi home">
-        <Logo />
+      <Link to="/" aria-label="RentPadi home" className="inline-block">
+        <Logo size="sm" />
       </Link>
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-2xl font-bold lg:text-3xl">{title}</h1>
         <p className="text-muted-foreground text-sm">Last updated {formatDate(TERMS_DATE)}</p>
       </header>
-      <div className="space-y-6 text-sm leading-relaxed [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_p+p]:mt-2 [&_ul]:space-y-1">
+      <div className="bg-card shadow-card space-y-7 rounded-2xl border border-border/80 p-5 text-sm leading-relaxed sm:p-8 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-bold [&_li]:ml-5 [&_li]:list-disc [&_li]:marker:text-primary [&_p+p]:mt-2 [&_ul]:space-y-1">
         {children}
       </div>
-      <p className="text-muted-foreground border-t pt-4 text-sm">
+      <p className="text-muted-foreground px-1 text-sm">
         Questions? Email{' '}
         <a className="text-primary underline underline-offset-2" href={`mailto:${SUPPORT_EMAIL}`}>
           {SUPPORT_EMAIL}

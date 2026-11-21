@@ -1,4 +1,4 @@
-import { MessageCircle, Send } from 'lucide-react'
+import { MessageCircle, MessageSquareText, Send } from 'lucide-react'
 import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,12 +16,12 @@ import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 const CHANNEL: Record<string, string> = { sms: 'SMS', whatsapp: 'WhatsApp' }
 
-const STATUS: Record<string, { label: string; className: string }> = {
-  queued: { label: 'Queued', className: 'text-muted-foreground' },
-  sending: { label: 'Sending', className: 'text-muted-foreground' },
-  sent: { label: 'Sent', className: 'border-success/30 bg-success/10 text-success' },
-  failed: { label: 'Failed', className: 'border-destructive/30 bg-destructive/10 text-destructive' },
-skipped: { label: 'Skipped', className: 'text-muted-foreground' },
+const STATUS: Record<string, { label: string; variant: 'muted' | 'success' | 'danger' }> = {
+  queued: { label: 'Queued', variant: 'muted' },
+  sending: { label: 'Sending', variant: 'muted' },
+  sent: { label: 'Sent', variant: 'success' },
+  failed: { label: 'Failed', variant: 'danger' },
+  skipped: { label: 'Skipped', variant: 'muted' },
 }
 
 type Props = {
@@ -71,7 +71,12 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reminders</CardTitle>
+        <CardTitle className="flex items-center justify-between gap-2">
+          Reminders
+          <Badge variant={tenant.reminders_enabled ? 'success' : 'muted'} dot>
+            {tenant.reminders_enabled ? 'On' : 'Off'}
+          </Badge>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-muted-foreground text-sm">
@@ -126,21 +131,28 @@ export function TenantReminders({ tenant, unitLabel }: Props) {
 
         <QueryState isPending={reminders.isPending} error={reminders.error} refetch={reminders.refetch} />
         {reminders.data && reminders.data.length > 0 && (
-          <ul className="divide-y">
+          <ul className="divide-y border-t">
             {reminders.data.map((r) => {
               const status = STATUS[r.status] ?? STATUS.queued
               return (
-                <li key={r.id} className="space-y-1 py-3 text-sm">
+                <li key={r.id} className="space-y-1.5 py-3 text-sm last:pb-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium">
-                      {formatDate(r.scheduled_for)} · {REMINDER_KIND_LABEL[r.kind] ?? r.kind}
-                      <span className="text-muted-foreground font-normal"> · {CHANNEL[r.channel] ?? r.channel}</span>
+                    <span className="flex min-w-0 items-center gap-2 font-semibold">
+                      {r.channel === 'whatsapp' ? (
+                        <WhatsAppIcon className="size-3.5" />
+                      ) : (
+                        <MessageSquareText className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+                      )}
+                      <span className="min-w-0">
+                        {formatDate(r.scheduled_for)} · {REMINDER_KIND_LABEL[r.kind] ?? r.kind}
+                        <span className="text-muted-foreground font-normal"> · {CHANNEL[r.channel] ?? r.channel}</span>
+                      </span>
                     </span>
-                    <Badge variant="outline" className={status.className}>
+                    <Badge variant={status.variant} dot>
                       {status.label}
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground text-xs">{r.message}</p>
+                  <p className="text-muted-foreground bg-muted/60 rounded-md px-2.5 py-2 text-xs leading-relaxed">{r.message}</p>
                 </li>
               )
             })}

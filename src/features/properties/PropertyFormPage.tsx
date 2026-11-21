@@ -3,7 +3,8 @@ import { Trash2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 import { z } from 'zod'
-import { Field, FormError } from '@/components/Field'
+import { DangerZone } from '@/components/DangerZone'
+import { Field, FormError, FormSection } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { ConfirmAction } from '@/components/ConfirmAction'
@@ -67,12 +68,10 @@ export function EditPropertyPage() {
               )
             }
           />
-          <div className="mt-10 space-y-3 border-t pt-6">
-            <h2 className="text-sm font-semibold">Delete property</h2>
-            <p className="text-muted-foreground text-sm">
-              Removes the property and its units. Not possible once a unit has had a tenant, to protect
-              your rent records.
-            </p>
+          <DangerZone
+            title="Delete property"
+            description="Removes the property and its units. Not possible once a unit has had a tenant, to protect your rent records."
+          >
             <FormError
               message={
                 remove.error
@@ -94,7 +93,7 @@ export function EditPropertyPage() {
               pending={remove.isPending}
               onConfirm={() => remove.mutate(undefined, { onSuccess: () => navigate('/properties', { replace: true }) })}
             />
-          </div>
+          </DangerZone>
         </>
       )}
     </>
@@ -115,12 +114,14 @@ function PropertyForm({ defaultValues, submitLabel, pending, error, onSubmit }: 
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate data-tour="property-form">
-      <Field id="name" label="Property name" error={errors.name?.message} hint="What you call it, e.g. “Bodija house” or “Ring Road shops”">
-        <Input id="name" className="h-12 text-base" autoFocus {...form.register('name')} />
-      </Field>
-      <Field id="address" label="Address (optional)" error={errors.address?.message}>
-        <Input id="address" className="h-12 text-base" autoComplete="street-address" {...form.register('address')} />
-      </Field>
+      <FormSection>
+        <Field id="name" label="Property name" error={errors.name?.message} hint="What you call it, e.g. “Bodija house” or “Ring Road shops”">
+          <Input id="name" className="h-12 text-base" autoFocus {...form.register('name')} />
+        </Field>
+        <Field id="address" label="Address (optional)" error={errors.address?.message}>
+          <Input id="address" className="h-12 text-base" autoComplete="street-address" {...form.register('address')} />
+        </Field>
+      </FormSection>
       <FormError message={error ? friendlyError(error) : null} />
       <Button type="submit" className="h-12 w-full text-base" disabled={pending}>
         {pending ? 'Saving…' : submitLabel}

@@ -1,9 +1,12 @@
+import { CircleCheck, FlaskConical, MessageSquareText } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthShell } from '@/components/AuthShell'
+import { Callout } from '@/components/Callout'
+import { FormError } from '@/components/Field'
 import { Logo } from '@/components/Logo'
 import { supabase } from '@/lib/supabase'
 import { formatNgPhone, normalizeNgPhone } from '@/lib/phone'
@@ -90,10 +93,12 @@ export function LoginPage() {
 
   return (
     <AuthShell>
-      <div className="space-y-2 text-center">
-        <Logo size="lg" className="justify-center lg:hidden" />
-        <h1 className="hidden text-3xl font-bold tracking-tight lg:block">Sign in</h1>
-        <p className="text-muted-foreground text-sm">Know who has paid. Get rent on time.</p>
+      <div className="space-y-3 text-center">
+        <Logo size="lg" className="mb-6 justify-center lg:hidden" />
+        <h1 className="text-2xl font-bold lg:text-3xl">{step.kind === 'phone' ? 'Sign in' : 'Check your phone'}</h1>
+        <p className="text-muted-foreground text-sm">
+          {step.kind === 'phone' ? 'Know who has paid. Get rent on time.' : 'Enter the code to finish signing in.'}
+        </p>
       </div>
 
       {step.kind === 'phone' ? (
@@ -111,15 +116,11 @@ export function LoginPage() {
               className="h-12 text-base"
               autoFocus
             />
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-xs leading-relaxed">
               We’ll send a 6-digit code to your WhatsApp or by SMS. No password needed.
             </p>
           </div>
-          {error && (
-            <p role="alert" className="text-destructive text-sm">
-              {error}
-            </p>
-          )}
+          <FormError message={error} />
           <Button type="submit" className="h-12 w-full text-base" disabled={busy}>
             {busy ? 'Sending code…' : 'Send code'}
           </Button>
@@ -134,7 +135,9 @@ export function LoginPage() {
           noValidate
         >
           <div className="space-y-2">
-            <Label htmlFor="code">Enter the 6-digit code sent to {formatNgPhone(step.phone)}</Label>
+            <Label htmlFor="code" className="leading-snug">
+              6-digit code sent to <span className="figure">{formatNgPhone(step.phone)}</span>
+            </Label>
             <Input
               id="code"
               inputMode="numeric"
@@ -143,20 +146,19 @@ export function LoginPage() {
               placeholder="123456"
               value={code}
               onChange={(e) => onCodeChange(e.target.value)}
-              className="h-12 text-center text-lg tracking-[0.5em]"
+              className="figure h-14 text-center text-2xl font-semibold tracking-[0.5em] placeholder:tracking-[0.5em] md:text-2xl"
               autoFocus
             />
-            <p className="text-muted-foreground text-xs">Check WhatsApp for a message from RentPadi, or your SMS.</p>
+            <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+              <MessageSquareText className="size-3.5 shrink-0" aria-hidden="true" />
+              Check WhatsApp for a message from RentPadi, or your SMS.
+            </p>
           </div>
-          {error && (
-            <p role="alert" className="text-destructive text-sm">
-              {error}
-            </p>
-          )}
+          <FormError message={error} />
           {notice && !error && (
-            <p role="status" className="text-success text-sm">
+            <Callout role="status" tone="success" icon={CircleCheck}>
               {notice}
-            </p>
+            </Callout>
           )}
           <Button type="submit" className="h-12 w-full text-base" disabled={busy || code.length !== 6}>
             {busy ? 'Checking…' : 'Sign in'}
@@ -195,11 +197,11 @@ export function LoginPage() {
       </p>
 
       {import.meta.env.DEV && (
-        <p className="text-muted-foreground rounded-md border border-dashed p-3 text-xs">
+        <Callout tone="info" icon={FlaskConical} className="text-xs">
           Demo mode: while the Send SMS hook points at <strong>dev_send_sms_hook</strong>, no message is sent. Find your
           code in Supabase → Table Editor → <strong>dev_sms_outbox</strong>, or use a test number you set up under the
           Phone provider.
-        </p>
+        </Callout>
       )}
     </AuthShell>
   )

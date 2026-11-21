@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { z } from 'zod'
-import { Field, FormError } from '@/components/Field'
+import { Field, FormError, FormSection } from '@/components/Field'
 import { AuthShell } from '@/components/AuthShell'
 import { FullPageSpinner } from '@/components/FullPageSpinner'
 import { Logo } from '@/components/Logo'
@@ -54,8 +54,8 @@ export function OnboardingPage() {
   return (
     <AuthShell>
       <div className="space-y-3">
-        <Logo className="lg:hidden" />
-        <h1 className="text-2xl font-bold tracking-tight">
+        <Logo className="mb-4 lg:hidden" />
+        <h1 className="text-2xl font-bold lg:text-3xl">
           {isNew ? 'Welcome to RentPadi' : 'A few details before you continue'}
         </h1>
         <p className="text-muted-foreground text-sm">
@@ -66,51 +66,53 @@ export function OnboardingPage() {
       </div>
 
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
-        <Field id="fullName" label="Your full name" error={errors.fullName?.message}>
-          <Input
-            id="fullName"
-            autoComplete="name"
-            placeholder="e.g. Adebayo Adeyemi"
-            className="h-12 text-base"
-            autoFocus={isNew}
-            {...form.register('fullName')}
-          />
-        </Field>
+        <FormSection>
+          <Field id="fullName" label="Your full name" error={errors.fullName?.message}>
+            <Input
+              id="fullName"
+              autoComplete="name"
+              placeholder="e.g. Adebayo Adeyemi"
+              className="h-12 text-base"
+              autoFocus={isNew}
+              {...form.register('fullName')}
+            />
+          </Field>
 
-        <Field
-          id="displayName"
-          label="Name tenants see (optional)"
-          error={errors.displayName?.message}
-          hint={`Tenants will see: “…Pay securely: <link> - ${preview}”`}
-        >
-          <Input
+          <Field
             id="displayName"
-            placeholder="e.g. Adeyemi Properties or Mr Adeyemi"
-            className="h-12 text-base"
-            {...form.register('displayName')}
-          />
-        </Field>
+            label="Name tenants see (optional)"
+            error={errors.displayName?.message}
+            hint={`Tenants will see: “…Pay securely: <link> - ${preview}”`}
+          >
+            <Input
+              id="displayName"
+              placeholder="e.g. Adeyemi Properties or Mr Adeyemi"
+              className="h-12 text-base"
+              {...form.register('displayName')}
+            />
+          </Field>
 
-        <Field
-          id="email"
-          label="Email address"
-          error={errors.email?.message}
-          hint="For your payout account and important notices. Never shown to tenants."
-        >
-          <Input
+          <Field
             id="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="name@gmail.com"
-            className="h-12 text-base"
-            autoFocus={!isNew}
-            {...form.register('email')}
-          />
-        </Field>
+            label="Email address"
+            error={errors.email?.message}
+            hint="For your payout account and important notices. Never shown to tenants."
+          >
+            <Input
+              id="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="name@gmail.com"
+              className="h-12 text-base"
+              autoFocus={!isNew}
+              {...form.register('email')}
+            />
+          </Field>
+        </FormSection>
 
         <div className="space-y-2">
-          <label htmlFor="agree" className="flex items-start gap-3 text-sm">
+          <label htmlFor="agree" className="flex cursor-pointer items-start gap-3 px-1 text-sm leading-relaxed">
             <input
               id="agree"
               type="checkbox"
@@ -130,7 +132,7 @@ export function OnboardingPage() {
               , and I’ll let my tenants know RentPadi sends their rent reminders and receipts.
             </span>
           </label>
-          {errors.agree && <p className="text-destructive text-sm">{errors.agree.message}</p>}
+          {errors.agree && <p className="text-destructive px-1 text-sm">{errors.agree.message}</p>}
         </div>
 
         <FormError message={save.error ? friendlyError(save.error) : null} />

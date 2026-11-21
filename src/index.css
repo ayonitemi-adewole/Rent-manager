@@ -3,32 +3,39 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* RentPadi palette: Padi Green brand, green = paid, amber (Naira Gold) = due, red = overdue.
-   Brand colours: src/components/brand-mark.ts and docs/BRAND.md. */
+/* RentPadi palette: Padi Green brand on a warm Cream page; green = paid, amber (Naira Gold) = due,
+   red = overdue. Brand colours: src/components/brand-mark.ts and docs/BRAND.md. */
 :root {
   /* Native controls (select lists, date pickers, scrollbars) follow the theme. */
   color-scheme: light;
-  --radius: 0.75rem;
-  --background: oklch(0.985 0.003 150);
-  --foreground: oklch(0.2 0.02 155);
+  --radius: 0.875rem;
+  --background: oklch(0.972 0.007 95); /* Cream, like a ledger page */
+  --foreground: oklch(0.23 0.03 160);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 155);
+  --card-foreground: oklch(0.23 0.03 160);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 155);
+  --popover-foreground: oklch(0.23 0.03 160);
   --primary: oklch(0.386 0.083 157); /* Padi Green #0F5132 */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.95 0.02 155);
-  --secondary-foreground: oklch(0.28 0.05 155);
-  --muted: oklch(0.96 0.005 150);
-  --muted-foreground: oklch(0.5 0.015 155);
-  --accent: oklch(0.95 0.02 155);
-  --accent-foreground: oklch(0.28 0.05 155);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.91 0.008 150);
-  --input: oklch(0.91 0.008 150);
+  --secondary: oklch(0.94 0.03 158); /* mint wash */
+  --secondary-foreground: oklch(0.33 0.07 158);
+  --muted: oklch(0.948 0.008 95);
+  --muted-foreground: oklch(0.5 0.02 150);
+  --accent: oklch(0.95 0.014 130);
+  --accent-foreground: oklch(0.28 0.05 158);
+  --destructive: oklch(0.56 0.2 27);
+  --border: oklch(0.905 0.01 95);
+  --input: oklch(0.87 0.012 95);
   --ring: oklch(0.386 0.083 157);
-  --success: oklch(0.52 0.13 155);
+  --success: oklch(0.5 0.12 155);
   --warning: oklch(0.75 0.15 75);
+  /* Amber text that stays readable on white and on bg-warning tints. */
+  --warning-foreground: oklch(0.47 0.11 62);
+  --gold: #f4b23e; /* Naira Gold */
+  --gold-foreground: #0a3a24;
+  /* The navigation rail on large screens, and other brand surfaces. */
+  --sidebar: #0f5132;
+  --sidebar-foreground: oklch(0.97 0.01 150);
   /* Logo (components/Logo.tsx): green hand, deep green cuff, green name. */
   --logo-hand: #0f5132;
   --logo-cuff: #0a3a24;
@@ -37,26 +44,29 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.17 0.01 155);
-  --foreground: oklch(0.96 0.005 150);
-  --card: oklch(0.21 0.012 155);
-  --card-foreground: oklch(0.96 0.005 150);
-  --popover: oklch(0.21 0.012 155);
-  --popover-foreground: oklch(0.96 0.005 150);
-  --primary: oklch(0.68 0.14 155);
-  --primary-foreground: oklch(0.17 0.02 155);
-  --secondary: oklch(0.27 0.02 155);
-  --secondary-foreground: oklch(0.96 0.005 150);
-  --muted: oklch(0.27 0.012 155);
-  --muted-foreground: oklch(0.7 0.015 155);
-  --accent: oklch(0.27 0.02 155);
-  --accent-foreground: oklch(0.96 0.005 150);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.68 0.14 155);
-  --success: oklch(0.68 0.14 155);
+  --background: oklch(0.165 0.012 160);
+  --foreground: oklch(0.95 0.008 120);
+  --card: oklch(0.205 0.014 160);
+  --card-foreground: oklch(0.95 0.008 120);
+  --popover: oklch(0.225 0.014 160);
+  --popover-foreground: oklch(0.95 0.008 120);
+  --primary: oklch(0.72 0.13 155);
+  --primary-foreground: oklch(0.17 0.03 160);
+  --secondary: oklch(0.28 0.035 158);
+  --secondary-foreground: oklch(0.9 0.04 158);
+  --muted: oklch(0.25 0.012 160);
+  --muted-foreground: oklch(0.7 0.015 150);
+  --accent: oklch(0.27 0.02 158);
+  --accent-foreground: oklch(0.95 0.008 120);
+  --destructive: oklch(0.66 0.19 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.72 0.13 155);
+  --success: oklch(0.72 0.13 155);
   --warning: oklch(0.8 0.14 75);
+  --warning-foreground: oklch(0.85 0.12 80);
+  --sidebar: oklch(0.22 0.035 160);
+  --sidebar-foreground: oklch(0.95 0.01 150);
   /* Logo on dark: the "on green" colours (white hand, mint cuff). */
   --logo-hand: #ffffff;
   --logo-cuff: #8cc5a5;
@@ -68,6 +78,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -88,11 +99,28 @@
   --color-ring: var(--ring);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
   --color-logo: var(--logo-text);
   --color-brand: #0f5132;
   --color-brand-gold: #f4b23e;
   /* Wordmark only; the font file holds just the letters of "RentPadi" (index.html). */
   --font-brand: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Type (docs/BRAND.md): Inter for everything but the logo. */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 1px 2px oklch(0.3 0.05 160 / 0.05), 0 6px 20px -10px oklch(0.3 0.05 160 / 0.14);
+  --shadow-float: 0 12px 32px -12px oklch(0.25 0.05 160 / 0.35), 0 2px 6px -2px oklch(0.25 0.05 160 / 0.12);
+}
+
+/* Money, phone numbers, receipt numbers, codes: equal-width digits, so columns of figures line up. */
+@utility figure {
+  font-variant-numeric: tabular-nums;
 }
 
 @layer base {
@@ -103,8 +131,44 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* The landlord's initials (components/Avatar.tsx): a soft tint picked from their name. */
+  .avatar-tint {
+    background-color: oklch(0.93 0.045 var(--avatar-hue));
+    color: oklch(0.38 0.09 var(--avatar-hue));
+  }
+  .dark .avatar-tint {
+    background-color: oklch(0.33 0.05 var(--avatar-hue));
+    color: oklch(0.9 0.06 var(--avatar-hue));
+  }
+
+  /* Login and setup on phones: a soft mint and gold glow behind the form. */
+  .auth-glow {
+    background:
+      radial-gradient(42rem 22rem at 15% -8%, oklch(0.9 0.06 158 / 0.55), transparent 70%),
+      radial-gradient(30rem 18rem at 100% 0%, oklch(0.92 0.08 80 / 0.35), transparent 70%);
+  }
+  .dark .auth-glow {
+    background:
+      radial-gradient(42rem 22rem at 15% -8%, oklch(0.35 0.06 158 / 0.5), transparent 70%),
+      radial-gradient(30rem 18rem at 100% 0%, oklch(0.4 0.07 80 / 0.2), transparent 70%);
+  }
+
+  /* Brand surfaces (dashboard total, tenant's amount due): a gentle light falling from the top. */
+  .brand-surface {
+    background:
+      radial-gradient(28rem 14rem at 0% 0%, oklch(1 0 0 / 0.1), transparent 70%),
+      var(--color-brand);
   }
 }
 
@@ -113,7 +177,7 @@
 @theme {
   /* Something new arrives: a page, a message, an inline question. */
   --animate-enter: enter 0.2s cubic-bezier(0.2, 0, 0, 1) both;
-  /* Loading spinners: wait a moment first, so quick loads don't flash a spinner. */
+  /* Loading placeholders: wait a moment first, so quick loads don't flash. */
   --animate-enter-late: fade 0.2s ease-out 0.3s both;
   /* A success worth noticing (payment received). */
   --animate-pop: pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;

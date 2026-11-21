@@ -34,9 +34,13 @@ export function PlanCard() {
             {planFeatures(plan).map((f) => (
               <li key={f.label} className={cn('flex items-start gap-2.5', !f.included && 'text-muted-foreground')}>
                 {f.included ? (
-                  <Check className="text-success mt-0.5 size-4 shrink-0" />
+                  <span className="bg-success/12 text-success mt-px grid size-4.5 shrink-0 place-items-center rounded-full">
+                    <Check className="size-3" strokeWidth={3} />
+                  </span>
                 ) : (
-                  <Minus className="mt-0.5 size-4 shrink-0" />
+                  <span className="bg-muted mt-px grid size-4.5 shrink-0 place-items-center rounded-full">
+                    <Minus className="size-3" strokeWidth={3} />
+                  </span>
                 )}
                 <span>
                   {f.label}

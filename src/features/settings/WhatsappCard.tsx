@@ -6,6 +6,7 @@ import { env } from '@/lib/env'
 import { friendlyError } from '@/lib/errors'
 import { formatPhone } from '@/lib/phone'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
+import { Switch } from '@/components/ui/switch'
 
 /** Landlord-wide switch for WhatsApp reminders and receipts. */
 export function WhatsappCard() {
@@ -25,24 +26,23 @@ export function WhatsappCard() {
       <p className="text-muted-foreground text-sm">
         Tenants open WhatsApp more than SMS. Reminders and receipts can go to both.
       </p>
-      <label className="flex items-start gap-3 rounded-lg border p-3 text-sm">
-        <input
-          type="checkbox"
-          className="accent-primary mt-0.5 size-5 shrink-0"
-          checked={on}
-          disabled={!landlord || save.isPending}
-          onChange={(e) => save.mutate(e.target.checked)}
-        />
-        <span>
-          <span className="font-medium">Also send reminders and receipts on WhatsApp</span>
-          <span className="text-muted-foreground block text-xs">
+      <label className="flex cursor-pointer items-start gap-4 rounded-lg border p-3.5 text-sm">
+        <span className="min-w-0 flex-1">
+          <span className="font-semibold">Also send reminders and receipts on WhatsApp</span>
+          <span className="text-muted-foreground mt-0.5 block text-xs leading-relaxed">
             Sent from RentPadi’s WhatsApp number, alongside SMS, to each tenant’s WhatsApp number (or their phone number
             if they haven’t given a separate one). Receipts arrive as a PDF.
           </span>
         </span>
+        <Switch
+          className="mt-0.5"
+          checked={on}
+          disabled={!landlord || save.isPending}
+          onChange={(e) => save.mutate(e.target.checked)}
+        />
       </label>
       {on && !remindersIncluded && (
-        <p className="text-muted-foreground rounded-lg border border-dashed p-3 text-xs">
+        <p className="bg-warning/10 border-warning/45 rounded-lg border p-3 text-xs">
           Your plan sends <strong>receipts</strong> on WhatsApp. WhatsApp <strong>reminders</strong> are included from
           the Padi plan; until then reminders go by SMS. See Plan above.
         </p>

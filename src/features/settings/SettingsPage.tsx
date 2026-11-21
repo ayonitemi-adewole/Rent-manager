@@ -1,19 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Compass, Landmark, LifeBuoy, LogOut, UserRound } from 'lucide-react'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { ChevronRight, Compass, Landmark, LifeBuoy } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { z } from 'zod'
+import { Avatar } from '@/components/Avatar'
 import { CollapsibleCard } from '@/components/CollapsibleCard'
-import { Field, FormError } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/features/auth/auth-context'
-import { useLandlord, useUpdateProfile } from '@/features/landlord/api'
-import { profileSchema, type ProfileForm } from '@/features/landlord/profile-schema'
+import { useLandlord } from '@/features/landlord/api'
 import { useTour } from '@/features/onboarding/tour-context'
-import { friendlyError } from '@/lib/errors'
 import { formatNgPhone } from '@/lib/phone'
 import { AppearanceCard } from './AppearanceCard'
 import { ExportPaymentsCard } from './ExportPaymentsCard'
@@ -21,152 +14,121 @@ import { PlanCard } from './PlanCard'
 import { WhatsappCard } from './WhatsappCard'
 
 export function SettingsPage() {
-  const { signOut } = useAuth()
   const { data: landlord } = useLandlord()
-  const save = useUpdateProfile()
   const tour = useTour()
-  const [saved, setSaved] = useState(false)
-  const form = useForm<z.input<typeof profileSchema>, unknown, ProfileForm>({
-    resolver: zodResolver(profileSchema),
-    values: {
-      fullName: landlord?.full_name ?? '',
-      displayName: landlord?.display_name ?? '',
-      email: landlord?.email ?? '',
-    },
-  })
-  const errors = form.formState.errors
-  const unsave = { onChange: () => setSaved(false) }
-
-  const onSubmit = form.handleSubmit((values) => save.mutate(values, { onSuccess: () => setSaved(true) }))
+  const name = landlord?.display_name || landlord?.full_name || ''
 
   return (
     <>
       <PageHeader title="Settings" />
-      <div className="space-y-4">
-        <CollapsibleCard
-          id="profile"
-          icon={<UserRound />}
-          title="Your profile"
-          description="Your name, the name tenants see, and your email."
-          status={landlord ? formatNgPhone(landlord.phone) : undefined}
-        >
-          <form onSubmit={onSubmit} className="space-y-3" noValidate>
-            <p className="text-muted-foreground text-sm">
-              Signed in as {landlord ? formatNgPhone(landlord.phone) : '…'}
-            </p>
-            <Field id="fullName" label="Your full name" error={errors.fullName?.message}>
-              <Input id="fullName" autoComplete="name" className="h-11" {...form.register('fullName', unsave)} />
-            </Field>
-            <Field
-              id="displayName"
-              label="Name tenants see (optional)"
-              error={errors.displayName?.message}
-              hint="On reminders, receipts and the payment page. Blank uses your full name."
-            >
-              <Input
-                id="displayName"
-                placeholder="e.g. Adeyemi Properties"
-                className="h-11"
-                {...form.register('displayName', unsave)}
-              />
-            </Field>
-            <Field id="email" label="Email address" error={errors.email?.message}>
-              <Input
-                id="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                className="h-11"
-                {...form.register('email', unsave)}
-              />
-            </Field>
-            <FormError message={save.error ? friendlyError(save.error) : null} />
-            <Button type="submit" variant="secondary" disabled={save.isPending}>
-              {save.isPending ? 'Saving…' : saved ? 'Saved' : 'Save'}
-            </Button>
-          </form>
-        </CollapsibleCard>
+      <div className="space-y-7">
+        {/* The profile has its own page; this row is the way there from Settings. */}
+        {landlord && (
+          <Link
+            to="/profile"
+            className="group bg-card shadow-card hover:border-primary/30 flex items-center gap-3.5 rounded-xl border border-border/80 p-4 transition-colors sm:px-5"
+          >
+            <Avatar name={name} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-bold">{name}</span>
+              <span className="text-muted-foreground block truncate text-sm">
+                <span className="figure">{formatNgPhone(landlord.phone)}</span> · Your profile
+              </span>
+            </span>
+            <ChevronRight className="text-muted-foreground size-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        )}
 
-        <PlanCard />
-
-        <CollapsibleCard
-          id="payout"
-          icon={<Landmark />}
-          title="Payout account"
-          description="The bank account tenants’ rent is paid into."
-          status={
-            landlord?.paystack_subaccount_code && landlord.account_number ? (
-              `${landlord.bank_name} ••${landlord.account_number.slice(-4)}`
-            ) : landlord?.account_number ? (
-              <span className="text-foreground">Confirm account</span>
-            ) : landlord ? (
-              <span className="text-foreground">Not set up</span>
-            ) : undefined
-          }
-          // Open while tenants can't pay online yet, and whenever the tour points here.
-          defaultOpen={Boolean(landlord && !landlord.paystack_subaccount_code)}
-          forceOpen={tour.active}
-        >
-          {landlord?.account_number ? (
-            <div className="text-sm">
-              <p className="font-semibold">{landlord.account_name}</p>
-              <p className="text-muted-foreground">
-                {landlord.bank_name} · ••••{landlord.account_number.slice(-4)}
-              </p>
-              {!landlord.paystack_subaccount_code && (
-                <p className="text-muted-foreground mt-2">
-                  Online payments now go through Paystack. Confirm this account once so tenants can keep paying
-                  online.
+        <Group title="Payments">
+          <CollapsibleCard
+            id="payout"
+            icon={<Landmark />}
+            title="Payout account"
+            description="The bank account tenants’ rent is paid into."
+            status={
+              landlord?.paystack_subaccount_code && landlord.account_number ? (
+                `${landlord.bank_name} ••${landlord.account_number.slice(-4)}`
+              ) : landlord?.account_number ? (
+                <span className="text-foreground">Confirm account</span>
+              ) : landlord ? (
+                <span className="text-foreground">Not set up</span>
+              ) : undefined
+            }
+            // Open while tenants can't pay online yet, and whenever the tour points here.
+            defaultOpen={Boolean(landlord && !landlord.paystack_subaccount_code)}
+            forceOpen={tour.active}
+          >
+            {landlord?.account_number ? (
+              <div className="bg-muted/60 rounded-lg p-3 text-sm">
+                <p className="font-semibold">{landlord.account_name}</p>
+                <p className="text-muted-foreground">
+                  {landlord.bank_name} · <span className="figure">••••{landlord.account_number.slice(-4)}</span>
                 </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-sm">Not set up yet. Tenants can’t pay online until you add one.</p>
-          )}
-          <Button asChild variant={landlord?.paystack_subaccount_code ? 'outline' : 'default'} data-tour="payout-link">
-            <Link to="/settings/payout">
-              {landlord?.paystack_subaccount_code
-                ? 'Change account'
-                : landlord?.account_number
-                  ? 'Confirm account'
-                  : 'Set up payout account'}
-            </Link>
-          </Button>
-        </CollapsibleCard>
+                {!landlord.paystack_subaccount_code && (
+                  <p className="text-muted-foreground mt-2">
+                    Online payments now go through Paystack. Confirm this account once so tenants can keep paying
+                    online.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">Not set up yet. Tenants can’t pay online until you add one.</p>
+            )}
+            <Button asChild variant={landlord?.paystack_subaccount_code ? 'outline' : 'default'} data-tour="payout-link">
+              <Link to="/settings/payout">
+                {landlord?.paystack_subaccount_code
+                  ? 'Change account'
+                  : landlord?.account_number
+                    ? 'Confirm account'
+                    : 'Set up payout account'}
+              </Link>
+            </Button>
+          </CollapsibleCard>
 
-        <WhatsappCard />
+          <PlanCard />
+        </Group>
 
-        <ExportPaymentsCard />
+        <Group title="Messages and records">
+          <WhatsappCard />
+          <ExportPaymentsCard />
+        </Group>
 
-        <AppearanceCard />
+        <Group title="App">
+          <AppearanceCard />
 
-        <CollapsibleCard
-          id="help"
-          icon={<LifeBuoy />}
-          title="Help"
-          description="A guided tour of the app, and the terms and privacy notice."
-        >
-          <p className="text-muted-foreground text-sm">
-            A step-by-step guide to adding properties, units, tenants and your payout account.
-          </p>
-          <Button variant="outline" onClick={() => tour.start()}>
-            <Compass /> Show me around
-          </Button>
-          <p className="text-muted-foreground text-sm">
-            <Link to="/terms" className="underline underline-offset-2">
-              Terms
-            </Link>{' '}
-            ·{' '}
-            <Link to="/privacy" className="underline underline-offset-2">
-              Privacy
-            </Link>
-          </p>
-        </CollapsibleCard>
-
-        <Button variant="outline" className="w-full" onClick={signOut}>
-          <LogOut /> Sign out
-        </Button>
+          <CollapsibleCard
+            id="help"
+            icon={<LifeBuoy />}
+            title="Help"
+            description="A guided tour of the app, and the terms and privacy notice."
+          >
+            <p className="text-muted-foreground text-sm">
+              A step-by-step guide to adding properties, units, tenants and your payout account.
+            </p>
+            <Button variant="outline" onClick={() => tour.start()}>
+              <Compass /> Show me around
+            </Button>
+            <p className="text-muted-foreground text-sm">
+              <Link to="/terms" className="underline underline-offset-2">
+                Terms
+              </Link>{' '}
+              ·{' '}
+              <Link to="/privacy" className="underline underline-offset-2">
+                Privacy
+              </Link>
+            </p>
+          </CollapsibleCard>
+        </Group>
       </div>
     </>
+  )
+}
+
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-muted-foreground px-1 text-xs font-bold tracking-wider uppercase">{title}</h2>
+      <div className="space-y-3">{children}</div>
+    </section>
   )
 }

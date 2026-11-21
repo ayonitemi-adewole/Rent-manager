@@ -69,18 +69,25 @@ export function CollapsibleCard({
           aria-expanded={open}
           aria-controls={regionId}
           onClick={toggle}
-          className="focus-visible:ring-ring/50 flex min-h-16 w-full items-center gap-3 rounded-xl px-5 py-4 text-left outline-none focus-visible:ring-[3px]"
+          className="focus-visible:ring-ring/50 hover:bg-accent/40 flex min-h-16 w-full items-center gap-3.5 rounded-xl px-4 py-4 text-left transition-colors outline-none focus-visible:ring-[3px] sm:px-5"
         >
-          {icon && <span className="text-muted-foreground shrink-0 [&_svg]:size-5">{icon}</span>}
-          <span className="min-w-0 flex-1">
-            <span className="block leading-tight font-semibold">{title}</span>
-            <span className="text-muted-foreground mt-1 block text-sm leading-snug">{description}</span>
-          </span>
-          {status && !open && (
-            <span className="text-muted-foreground max-w-[40%] shrink-0 truncate text-right text-xs font-medium">
-              {status}
+          {icon && (
+            <span className="bg-secondary text-primary grid size-10 shrink-0 place-items-center rounded-lg [&_svg]:size-5">
+              {icon}
             </span>
           )}
+          <span className="min-w-0 flex-1">
+            {/* Status sits beside the title, so the description keeps the full width on phones. */}
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="leading-tight font-bold">{title}</span>
+              {status && !open && (
+                <span className="bg-muted text-muted-foreground max-w-full truncate rounded-full px-2 py-0.5 text-xs font-semibold">
+                  {status}
+                </span>
+              )}
+            </span>
+            <span className="text-muted-foreground mt-1 block text-sm leading-snug">{description}</span>
+          </span>
           <ChevronDown
             aria-hidden="true"
             className={cn(
@@ -106,7 +113,7 @@ export function CollapsibleCard({
           {/* pt-1: room for focus rings at the top edge. */}
           <div
             className={cn(
-              'space-y-3 px-5 pt-1 pb-5 transition-opacity duration-200 motion-reduce:transition-none',
+              'space-y-3 px-4 pt-1 pb-5 transition-opacity duration-200 motion-reduce:transition-none sm:px-5',
               open ? 'opacity-100' : 'opacity-0',
             )}
           >

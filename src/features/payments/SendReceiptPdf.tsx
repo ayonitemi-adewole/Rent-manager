@@ -56,11 +56,11 @@ export function SendReceiptPdf({ token }: { token: string }) {
     }
   }
 
-  const button = 'text-primary inline-flex items-center gap-1 hover:underline disabled:opacity-60'
+  const button = 'text-primary inline-flex items-center gap-1 font-semibold hover:underline disabled:opacity-60'
   return (
     <>
       {state.kind === 'ready' ? (
-        <button type="button" className={`${button} font-semibold`} onClick={() => share(state.file, state.text)}>
+        <button type="button" className={`${button} bg-secondary rounded-full px-2.5 py-1`} onClick={() => share(state.file, state.text)}>
           <FileDown className="size-3.5" /> Tap to send PDF
         </button>
       ) : (
