@@ -372,6 +372,8 @@ Landlords sign in with a 6-digit code. Supabase creates the code and hands it to
 
 You can do this step before Termii is ready. While you're on the test number, though, only your allow-listed phones (step 3) can receive codes, so only those numbers can sign in.
 
+The same `login_code` template carries the code a landlord must enter to **change their payout account** (the `payout` function, `send_code`). That code goes on WhatsApp only, never SMS. Until WhatsApp is set up it goes to `dev_sms_outbox`, like demo login codes.
+
 ### a. Create the `login_code` template
 
 Meta writes the wording for login-code templates itself; you only choose the options.
