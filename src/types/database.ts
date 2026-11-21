@@ -330,6 +330,53 @@ export type Database = {
           },
         ]
       }
+      payout_codes: {
+        Row: {
+          account_number: string
+          attempts: number
+          bank_code: string
+          code_hash: string
+          expires_at: string
+          landlord_id: string
+          sends: number
+          sends_on: string
+          sent_at: string
+          used_at: string | null
+        }
+        Insert: {
+          account_number: string
+          attempts?: number
+          bank_code: string
+          code_hash: string
+          expires_at: string
+          landlord_id: string
+          sends?: number
+          sends_on: string
+          sent_at: string
+          used_at?: string | null
+        }
+        Update: {
+          account_number?: string
+          attempts?: number
+          bank_code?: string
+          code_hash?: string
+          expires_at?: string
+          landlord_id?: string
+          sends?: number
+          sends_on?: string
+          sent_at?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_codes_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: true
+            referencedRelation: "landlords"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           branded_receipts: boolean
@@ -820,6 +867,15 @@ export type Database = {
           period_start: string
         }[]
       }
+      check_payout_code: {
+        Args: {
+          p_account_number: string
+          p_bank_code: string
+          p_code_hash: string
+          p_landlord_id: string
+        }
+        Returns: string
+      }
       claim_outbound_messages: {
         Args: { p_channels: string[]; p_limit?: number }
         Returns: {
@@ -858,6 +914,15 @@ export type Database = {
       generate_tenant_charges: {
         Args: { p_tenant_id: string }
         Returns: number
+      }
+      issue_payout_code: {
+        Args: {
+          p_account_number: string
+          p_bank_code: string
+          p_code_hash: string
+          p_landlord_id: string
+        }
+        Returns: string
       }
       landlord_entitlements: {
         Args: { p_landlord_id: string }
