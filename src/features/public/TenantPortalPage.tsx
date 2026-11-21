@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import { Callout } from '@/components/Callout'
 import { FormError } from '@/components/Field'
 import { Logo, LogoMark } from '@/components/Logo'
+import { PullToRefresh } from '@/components/PullToRefresh'
 import { Money } from '@/components/Money'
 import { QueryState } from '@/components/QueryState'
 import { SectionHeader } from '@/components/SectionHeader'
@@ -30,104 +31,106 @@ export function TenantPortalPage() {
   const next = open[1]
 
   return (
-    <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-6">
-      <header className="flex items-center justify-between gap-3">
-        <Logo size="sm" />
-        <span className="bg-card text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold">
-          <Lock className="size-3" aria-hidden="true" /> Secure rent page
-        </span>
-      </header>
-      <QueryState isPending={isPending} error={error} refetch={refetch} />
-      {portal === null && (
-        <Callout tone="info" icon={Link2Off} title="This link is not valid">
-          Please ask your landlord for your current RentPadi link.
-        </Callout>
-      )}
+    <PullToRefresh>
+      <main className="motion-safe:animate-enter mx-auto flex min-h-dvh max-w-md flex-col gap-5 px-4 py-6">
+        <header className="flex items-center justify-between gap-3">
+          <Logo size="sm" />
+          <span className="bg-card text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold">
+            <Lock className="size-3" aria-hidden="true" /> Secure rent page
+          </span>
+        </header>
+        <QueryState isPending={isPending} error={error} refetch={refetch} />
+        {portal === null && (
+          <Callout tone="info" icon={Link2Off} title="This link is not valid">
+            Please ask your landlord for your current RentPadi link.
+          </Callout>
+        )}
 
-      {portal && (
-        <>
-          <div className="pt-2">
-            <h1 className="text-2xl font-bold">Hello {portal.tenant_name.split(' ')[0]},</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Rent for {portal.unit_label}, {portal.property_name} · Landlord: {portal.landlord_name}
-            </p>
-          </div>
-
-          {!current ? (
-            <div className="border-success/25 bg-success/10 flex flex-col items-center gap-2 rounded-2xl border p-6 text-center">
-              <span className="bg-success/15 text-success grid size-12 place-items-center rounded-full">
-                <CheckCircle2 className="size-6 motion-safe:animate-pop" />
-              </span>
-              <p className="text-lg font-bold">You’re all paid up</p>
-              <p className="text-muted-foreground text-sm">Thank you!</p>
+        {portal && (
+          <>
+            <div className="pt-2">
+              <h1 className="text-2xl font-bold">Hello {portal.tenant_name.split(' ')[0]},</h1>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Rent for {portal.unit_label}, {portal.property_name} · Landlord: {portal.landlord_name}
+              </p>
             </div>
-          ) : (
-            <AmountDue
-              charge={current}
-              canPay={portal.can_pay_online}
-              paying={checkout.isPending}
-              onPay={() => checkout.mutate(current.id)}
-            />
-          )}
 
-          {next && (
-            <p className="text-muted-foreground px-1 text-sm">
-              Next: {formatKobo(next.balance_kobo)} due {formatDate(next.due_date)}
-              {open.length > 2 && ` (and ${open.length - 2} more after that)`}. You can pay it once this one is paid.
-            </p>
-          )}
+            {!current ? (
+              <div className="border-success/25 bg-success/10 flex flex-col items-center gap-2 rounded-2xl border p-6 text-center">
+                <span className="bg-success/15 text-success grid size-12 place-items-center rounded-full">
+                  <CheckCircle2 className="size-6 motion-safe:animate-pop" />
+                </span>
+                <p className="text-lg font-bold">You’re all paid up</p>
+                <p className="text-muted-foreground text-sm">Thank you!</p>
+              </div>
+            ) : (
+              <AmountDue
+                charge={current}
+                canPay={portal.can_pay_online}
+                paying={checkout.isPending}
+                onPay={() => checkout.mutate(current.id)}
+              />
+            )}
 
-          <FormError message={checkout.error ? friendlyError(checkout.error) : null} />
+            {next && (
+              <p className="text-muted-foreground px-1 text-sm">
+                Next: {formatKobo(next.balance_kobo)} due {formatDate(next.due_date)}
+                {open.length > 2 && ` (and ${open.length - 2} more after that)`}. You can pay it once this one is paid.
+              </p>
+            )}
 
-          {portal.can_pay_online ? (
-            <p className="text-muted-foreground flex items-start gap-2 px-1 text-xs leading-relaxed">
-              <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-              <span>
-                Payments are processed securely by Paystack and go directly to {portal.landlord_name}’s{' '}
-                {portal.payout_bank} account ending <span className="figure">{portal.payout_account_last4}</span>.
-              </span>
-            </p>
-          ) : (
-            open.length > 0 && (
-              <Callout tone="info">Online payment isn’t available yet. Please pay your landlord directly.</Callout>
-            )
-          )}
+            <FormError message={checkout.error ? friendlyError(checkout.error) : null} />
 
-          {portal.receipts.length > 0 && (
-            <section className="space-y-3">
-              <SectionHeader title="Your receipts" count={portal.receipts.length} />
-              <Card className="gap-0 divide-y overflow-hidden py-0">
-                {portal.receipts.map((r) => (
-                  <Link
-                    key={r.receipt_token}
-                    to={`/r/${r.receipt_token}`}
-                    className="hover:bg-accent/60 flex items-center gap-3 px-4 py-3 text-sm transition-colors"
-                  >
-                    <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-full">
-                      <ReceiptText className="size-4" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="figure block font-semibold">{r.receipt_number}</span>
-                      <span className="text-muted-foreground text-xs">{formatDate(r.paid_at.slice(0, 10))}</span>
-                    </span>
-                    <Money kobo={r.amount_kobo} className="font-semibold" />
-                    <ChevronRight className="text-muted-foreground size-4 shrink-0" />
-                  </Link>
-                ))}
-              </Card>
-            </section>
-          )}
+            {portal.can_pay_online ? (
+              <p className="text-muted-foreground flex items-start gap-2 px-1 text-xs leading-relaxed">
+                <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                <span>
+                  Payments are processed securely by Paystack and go directly to {portal.landlord_name}’s{' '}
+                  {portal.payout_bank} account ending <span className="figure">{portal.payout_account_last4}</span>.
+                </span>
+              </p>
+            ) : (
+              open.length > 0 && (
+                <Callout tone="info">Online payment isn’t available yet. Please pay your landlord directly.</Callout>
+              )
+            )}
 
-          {env.whatsappNumber && (
-            <Button asChild variant="outline" className="h-11">
-              <a href={whatsappLink(env.whatsappNumber, 'Hi')} target="_blank" rel="noreferrer">
-                <WhatsAppIcon /> Check rent and receipts on WhatsApp
-              </a>
-            </Button>
-          )}
-        </>
-      )}
-    </main>
+            {portal.receipts.length > 0 && (
+              <section className="space-y-3">
+                <SectionHeader title="Your receipts" count={portal.receipts.length} />
+                <Card className="gap-0 divide-y overflow-hidden py-0">
+                  {portal.receipts.map((r) => (
+                    <Link
+                      key={r.receipt_token}
+                      to={`/r/${r.receipt_token}`}
+                      className="hover:bg-accent/60 flex items-center gap-3 px-4 py-3 text-sm transition-colors"
+                    >
+                      <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-full">
+                        <ReceiptText className="size-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="figure block font-semibold">{r.receipt_number}</span>
+                        <span className="text-muted-foreground text-xs">{formatDate(r.paid_at.slice(0, 10))}</span>
+                      </span>
+                      <Money kobo={r.amount_kobo} className="font-semibold" />
+                      <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                    </Link>
+                  ))}
+                </Card>
+              </section>
+            )}
+
+            {env.whatsappNumber && (
+              <Button asChild variant="outline" className="h-11">
+                <a href={whatsappLink(env.whatsappNumber, 'Hi')} target="_blank" rel="noreferrer">
+                  <WhatsAppIcon /> Check rent and receipts on WhatsApp
+                </a>
+              </Button>
+            )}
+          </>
+        )}
+      </main>
+    </PullToRefresh>
   )
 }
 
