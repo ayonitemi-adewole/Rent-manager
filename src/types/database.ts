@@ -762,9 +762,9 @@ export type Database = {
           method: Database["public"]["Enums"]["payment_method"] | null
           note: string | null
           paid_at: string | null
-          platform_fee_kobo: number | null
           period_end: string | null
           period_start: string | null
+          platform_fee_kobo: number | null
           property_name: string | null
           receipt_number: string | null
           receipt_token: string | null
@@ -864,18 +864,18 @@ export type Database = {
         Returns: {
           branded_receipts: boolean
           caretakers: number
-          current_period_end: string | null
+          current_period_end: string
           custom_reminders: boolean
           documents: boolean
-          extra_unit_price_kobo: number | null
+          extra_unit_price_kobo: number
           full_reports: boolean
           plan_code: string
           plan_name: string
           platform_fee_bps: number
-          platform_fee_cap_kobo: number | null
-          sms_reminders_per_bill: number | null
+          platform_fee_cap_kobo: number
+          sms_reminders_per_bill: number
           subscription_status: string
-          unit_limit: number | null
+          unit_limit: number
           units_used: number
           whatsapp_reminders: boolean
         }[]
@@ -885,18 +885,18 @@ export type Database = {
         Returns: {
           branded_receipts: boolean
           caretakers: number
-          current_period_end: string | null
+          current_period_end: string
           custom_reminders: boolean
           documents: boolean
-          extra_unit_price_kobo: number | null
+          extra_unit_price_kobo: number
           full_reports: boolean
           plan_code: string
           plan_name: string
           platform_fee_bps: number
-          platform_fee_cap_kobo: number | null
-          sms_reminders_per_bill: number | null
+          platform_fee_cap_kobo: number
+          sms_reminders_per_bill: number
           subscription_status: string
-          unit_limit: number | null
+          unit_limit: number
           units_used: number
           whatsapp_reminders: boolean
         }[]
@@ -1005,8 +1005,24 @@ export type Database = {
       unit_type:
         | "room"
         | "self_contain"
+        | "room_and_parlour"
         | "mini_flat"
+        | "one_bedroom_flat"
+        | "two_bedroom_flat"
+        | "three_bedroom_flat"
+        | "four_bedroom_flat"
+        | "studio_apartment"
+        | "apartment"
+        | "penthouse"
         | "flat"
+        | "terrace_house"
+        | "townhouse"
+        | "semi_detached_duplex"
+        | "detached_duplex"
+        | "bungalow"
+        | "detached_bungalow"
+        | "villa"
+        | "mansion"
         | "duplex"
         | "shop"
         | "other"
@@ -1147,8 +1163,24 @@ export const Constants = {
       unit_type: [
         "room",
         "self_contain",
+        "room_and_parlour",
         "mini_flat",
+        "one_bedroom_flat",
+        "two_bedroom_flat",
+        "three_bedroom_flat",
+        "four_bedroom_flat",
+        "studio_apartment",
+        "apartment",
+        "penthouse",
         "flat",
+        "terrace_house",
+        "townhouse",
+        "semi_detached_duplex",
+        "detached_duplex",
+        "bungalow",
+        "detached_bungalow",
+        "villa",
+        "mansion",
         "duplex",
         "shop",
         "other",

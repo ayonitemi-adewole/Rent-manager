@@ -1,3 +1,4 @@
+import { CloudOff, TriangleAlert } from 'lucide-react'
 import { useEffect } from 'react'
 import { useRouteError } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -24,8 +25,11 @@ export function RouteError() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-4 px-4 text-center">
-      <Logo />
-      <h1 className="text-lg font-semibold">{offline ? 'This page did not load' : 'Something went wrong'}</h1>
+      <Logo className="mb-6" />
+      <span className="bg-secondary text-primary grid size-14 -rotate-6 place-items-center rounded-2xl">
+        {offline ? <CloudOff className="size-7 rotate-6" /> : <TriangleAlert className="size-7 rotate-6" />}
+      </span>
+      <h1 className="text-xl font-bold">{offline ? 'This page did not load' : 'Something went wrong'}</h1>
       <p className="text-muted-foreground text-sm">
         {offline
           ? 'Check your internet connection, then try again.'

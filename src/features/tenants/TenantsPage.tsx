@@ -2,15 +2,15 @@ import { ChevronRight, Plus, Search, Users, X } from 'lucide-react'
 import { useDeferredValue, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { EmptyState } from '@/components/EmptyState'
+import { Money } from '@/components/Money'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { formatKobo } from '@/lib/money'
 import { formatNgPhone } from '@/lib/phone'
 import { formatDate, rentPeriodPer } from '@/lib/rent'
-import { cn, initials } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { useTenants } from './api'
 
 type Tenant = NonNullable<ReturnType<typeof useTenants>['data']>[number]
@@ -54,7 +54,7 @@ export function TenantsPage() {
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div role="tablist" className="bg-muted grid grid-cols-2 rounded-lg p-1 text-sm font-medium sm:w-64">
+        <div role="tablist" className="bg-muted grid grid-cols-2 rounded-lg p-1 text-sm font-semibold sm:w-64">
           {(
             [
               ['active', 'Current'],
@@ -67,8 +67,8 @@ export function TenantsPage() {
               aria-selected={status === value}
               onClick={() => setStatus(value)}
               className={cn(
-                'rounded-md py-2 transition-colors',
-                status === value ? 'bg-background shadow-sm' : 'text-muted-foreground',
+                'focus-visible:ring-ring/50 rounded-md py-2 transition-colors outline-none focus-visible:ring-[3px]',
+                status === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {label}
@@ -77,7 +77,7 @@ export function TenantsPage() {
         </div>
 
         {(tenants?.length ?? 0) > 0 && (
-          <div className="relative sm:ml-auto sm:w-72">
+          <div className="relative sm:ml-auto sm:w-80">
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               type="search"
@@ -85,7 +85,7 @@ export function TenantsPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search name, unit or phone"
               aria-label="Search tenants"
-              className="h-10 pr-9 pl-9"
+              className="h-11 pr-9 pl-9"
             />
             {query && (
               <button
@@ -125,41 +125,42 @@ export function TenantsPage() {
         <p className="text-muted-foreground py-8 text-center text-sm">No tenants match “{deferredQuery.trim()}”.</p>
       )}
 
-      {/* Phones and tablets: cards. */}
-      <ul className="space-y-2 lg:hidden">
-        {shown?.map((t) => (
-          <li key={t.id}>
-            <Card className="hover:bg-accent/50 py-0 transition-colors">
-              <Link to={`/tenants/${t.id}`} className="flex items-center gap-3 p-4">
-                <Avatar name={t.full_name} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{t.full_name}</p>
-                  <p className="text-muted-foreground truncate text-sm">
-                    {t.units?.label} · {t.units?.properties?.name}
-                  </p>
-                </div>
-                <p className="shrink-0 text-right text-sm tabular-nums">
-                  {formatKobo(t.rent_amount_kobo)}
-                  <span className="text-muted-foreground">{rentPeriodPer(t.rent_period)}</span>
+      {/* Phones and tablets: a list. */}
+      {shown && shown.length > 0 && (
+        <Card className="gap-0 divide-y overflow-hidden py-0 lg:hidden">
+          {shown.map((t) => (
+            <Link
+              key={t.id}
+              to={`/tenants/${t.id}`}
+              className="hover:bg-accent/60 flex items-center gap-3 px-4 py-3.5 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{t.full_name}</p>
+                <p className="text-muted-foreground truncate text-sm">
+                  {t.units?.label} · {t.units?.properties?.name}
                 </p>
-                <ChevronRight className="text-muted-foreground size-5 shrink-0" />
-              </Link>
-            </Card>
-          </li>
-        ))}
-      </ul>
+              </div>
+              <p className="shrink-0 text-right text-sm">
+                <Money kobo={t.rent_amount_kobo} className="block font-semibold" />
+                <span className="text-muted-foreground text-xs">{rentPeriodPer(t.rent_period)}</span>
+              </p>
+              <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+            </Link>
+          ))}
+        </Card>
+      )}
 
       {/* Large screens: a table, easier to scan with many tenants. */}
       {shown && shown.length > 0 && (
         <Card className="hidden overflow-hidden py-0 lg:block">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-muted-foreground text-left text-xs">
+            <thead className="bg-muted/60 text-muted-foreground text-left text-xs">
               <tr>
-                <th scope="col" className="px-5 py-3 font-medium">Tenant</th>
-                <th scope="col" className="px-5 py-3 font-medium">Unit</th>
-                <th scope="col" className="px-5 py-3 font-medium">Phone</th>
-                <th scope="col" className="px-5 py-3 font-medium">Since</th>
-                <th scope="col" className="px-5 py-3 text-right font-medium">Rent</th>
+                <th scope="col" className="px-5 py-3 font-semibold">Tenant</th>
+                <th scope="col" className="px-5 py-3 font-semibold">Unit</th>
+                <th scope="col" className="px-5 py-3 font-semibold">Phone</th>
+                <th scope="col" className="px-5 py-3 font-semibold">Since</th>
+                <th scope="col" className="px-5 py-3 text-right font-semibold">Rent</th>
                 <th scope="col" className="w-10"><span className="sr-only">Open</span></th>
               </tr>
             </thead>
@@ -168,32 +169,29 @@ export function TenantsPage() {
                 <tr
                   key={t.id}
                   onClick={() => navigate(`/tenants/${t.id}`)}
-                  className="hover:bg-accent/50 cursor-pointer transition-colors"
+                  className="group hover:bg-accent/60 cursor-pointer transition-colors"
                 >
                   <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={t.full_name} small />
-                      <Link
-                        to={`/tenants/${t.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="font-semibold hover:underline"
-                      >
-                        {t.full_name}
-                      </Link>
-                    </div>
+                    <Link
+                      to={`/tenants/${t.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="font-semibold hover:underline"
+                    >
+                      {t.full_name}
+                    </Link>
                   </td>
                   <td className="px-5 py-3">
                     {t.units?.label}
                     <span className="text-muted-foreground"> · {t.units?.properties?.name}</span>
                   </td>
-                  <td className="text-muted-foreground px-5 py-3 tabular-nums">{formatNgPhone(t.phone)}</td>
-                  <td className="text-muted-foreground px-5 py-3">{formatDate(t.start_date)}</td>
-                  <td className="px-5 py-3 text-right font-medium tabular-nums">
-                    {formatKobo(t.rent_amount_kobo)}
-                    <span className="text-muted-foreground font-normal">{rentPeriodPer(t.rent_period)}</span>
+                  <td className="text-muted-foreground figure px-5 py-3 whitespace-nowrap">{formatNgPhone(t.phone)}</td>
+                  <td className="text-muted-foreground px-5 py-3 whitespace-nowrap">{formatDate(t.start_date)}</td>
+                  <td className="px-5 py-3 text-right whitespace-nowrap">
+                    <Money kobo={t.rent_amount_kobo} className="font-semibold" />
+                    <span className="text-muted-foreground">{rentPeriodPer(t.rent_period)}</span>
                   </td>
                   <td className="pr-4">
-                    <ChevronRight className="text-muted-foreground size-4" />
+                    <ChevronRight className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5" />
                   </td>
                 </tr>
               ))}
@@ -202,19 +200,5 @@ export function TenantsPage() {
         </Card>
       )}
     </>
-  )
-}
-
-function Avatar({ name, small = false }: { name: string; small?: boolean }) {
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        'bg-secondary text-secondary-foreground grid shrink-0 place-items-center rounded-full font-semibold',
-        small ? 'size-8 text-xs' : 'size-10 text-sm',
-      )}
-    >
-      {initials(name)}
-    </div>
   )
 }

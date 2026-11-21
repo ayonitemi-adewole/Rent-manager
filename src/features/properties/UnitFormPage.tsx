@@ -1,19 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Trash2 } from 'lucide-react'
+import { CircleCheck, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 import { z } from 'zod'
-import { Field, FormError } from '@/components/Field'
+import { Callout } from '@/components/Callout'
+import { DangerZone } from '@/components/DangerZone'
+import { Field, FormError, FormSection } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { ConfirmAction } from '@/components/ConfirmAction'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { MoneyInput } from '@/components/ui/money-input'
 import { NativeSelect } from '@/components/ui/native-select'
 import { friendlyError } from '@/lib/errors'
 import { parseNairaToKobo } from '@/lib/money'
-import { RENT_PERIODS, UNIT_TYPES, type RentPeriod, type UnitType } from '@/lib/rent'
+import { RENT_PERIODS, UNIT_TYPES, unitTypeChoices, type RentPeriod, type UnitType } from '@/lib/rent'
 import { useCreateUnit, useDeleteUnit, useUnit, useUpdateUnit } from './api'
 import { UnitHistory } from './UnitHistory'
 
@@ -45,9 +48,9 @@ export function NewUnitPage() {
     <>
       <PageHeader title="Add unit" back={{ to: back, label: 'Back' }} />
       {lastSaved && (
-        <p role="status" className="bg-secondary text-secondary-foreground mb-4 rounded-md p-3 text-sm">
+        <Callout key={lastSaved} role="status" tone="success" icon={CircleCheck} className="mb-4 motion-safe:animate-enter">
           Saved “{lastSaved}”. Add the next one, or go back when you’re done.
-        </p>
+        </Callout>
       )}
       <UnitForm
         defaultValues={{ label: '', unitType: 'room', rent: '', rentPeriod: 'yearly' }}
@@ -100,7 +103,10 @@ export function EditUnitPage() {
             onSubmit={(v) => update.mutate(toRow(v), { onSuccess: () => navigate(back, { replace: true }) })}
           />
           <UnitHistory unitId={unitId} />
-          <div className="mt-10 space-y-3 border-t pt-6">
+          <DangerZone
+            title="Delete unit"
+            description="Not possible once the unit has had a tenant, to protect your rent records."
+          >
             <FormError
               message={
                 remove.error
@@ -122,7 +128,7 @@ export function EditUnitPage() {
               pending={remove.isPending}
               onConfirm={() => remove.mutate(undefined, { onSuccess: () => navigate(back, { replace: true }) })}
             />
-          </div>
+          </DangerZone>
         </>
       )}
     </>
@@ -151,33 +157,39 @@ function UnitForm({ defaultValues, pending, error, hint, showAddAnother, onSubmi
 
   return (
     <form onSubmit={submit(false)} className="space-y-4" noValidate data-tour="unit-form">
-      <Field id="label" label="Unit name" error={errors.label?.message} hint="e.g. “Room 3”, “Flat 2B”, “Shop 1”">
-        <Input id="label" className="h-12 text-base" autoFocus {...form.register('label')} />
-      </Field>
-      <Field id="unitType" label="Type" error={errors.unitType?.message}>
-        <NativeSelect id="unitType" {...form.register('unitType')}>
-          {UNIT_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </NativeSelect>
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field id="rent" label="Rent (₦)" error={errors.rent?.message}>
-          <Input id="rent" inputMode="decimal" placeholder="350,000" className="h-12 text-base" {...form.register('rent')} />
+      <FormSection>
+        <Field id="label" label="Unit name" error={errors.label?.message} hint="e.g. “Room 3”, “Flat 2B”, “Shop 1”">
+          <Input id="label" className="h-12 text-base" autoFocus {...form.register('label')} />
         </Field>
-        <Field id="rentPeriod" label="Paid" error={errors.rentPeriod?.message}>
-          <NativeSelect id="rentPeriod" {...form.register('rentPeriod')}>
-            {RENT_PERIODS.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
+        <Field id="unitType" label="Type" error={errors.unitType?.message}>
+          <NativeSelect id="unitType" {...form.register('unitType')}>
+            {unitTypeChoices(defaultValues.unitType).map(({ group, types }) => (
+              <optgroup key={group} label={group}>
+                {types.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </NativeSelect>
         </Field>
-      </div>
-      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+        <div className="grid grid-cols-2 gap-3">
+          <Field id="rent" label="Rent" error={errors.rent?.message}>
+            <MoneyInput id="rent" placeholder="350,000" {...form.register('rent')} />
+          </Field>
+          <Field id="rentPeriod" label="Paid" error={errors.rentPeriod?.message}>
+            <NativeSelect id="rentPeriod" {...form.register('rentPeriod')}>
+              {RENT_PERIODS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
+        </div>
+        {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+      </FormSection>
       <FormError message={error ? friendlyError(error, { unique: UNIQUE_LABEL }) : null} />
       <div className="space-y-2">
         <Button type="submit" className="h-12 w-full text-base" disabled={pending}>

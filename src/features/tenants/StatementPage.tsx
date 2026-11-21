@@ -1,5 +1,6 @@
-import { Download } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Download } from 'lucide-react'
 import { Link, useParams } from 'react-router'
+import { Money } from '@/components/Money'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
@@ -65,37 +66,63 @@ export function StatementPage() {
       {!isPending && !error && ledger.length === 0 && <p className="text-muted-foreground text-sm">Nothing to show yet.</p>}
 
       {ledger.length > 0 && (
-        <>
-          <p className="mb-3 text-sm">
-            Balance now:{' '}
-            <span className={cn('font-semibold tabular-nums', balance > 0 && 'text-destructive')}>
-              {balance > 0 ? `${formatKobo(balance)} owed` : 'nothing owed'}
-            </span>
-            <span className="text-muted-foreground"> (includes rent not yet due)</span>
-          </p>
+        <div className="space-y-4 lg:max-w-3xl">
+          <div
+            className={cn(
+              'flex flex-wrap items-end justify-between gap-x-4 gap-y-1 rounded-xl border p-4 sm:p-5',
+              balance > 0 ? 'border-destructive/25 bg-destructive/5' : 'border-success/25 bg-success/5',
+            )}
+          >
+            <div>
+              <p className="text-muted-foreground text-sm font-semibold">Balance now</p>
+              <p className={cn('text-2xl font-bold', balance > 0 ? 'text-destructive' : 'text-success')}>
+                {balance > 0 ? <Money kobo={balance} /> : 'Nothing owed'}
+              </p>
+            </div>
+            <p className="text-muted-foreground text-xs">Includes rent not yet due.</p>
+          </div>
+
           <Card className="gap-0 divide-y overflow-hidden py-0">
-            {ledger.map((e) => (
-              <div key={e.id} className="flex items-start justify-between gap-3 px-4 py-3 text-sm">
-                <div className="min-w-0">
-                  <p className="font-medium">{describe(e)}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {formatDate(e.date)}
-                    {e.payment?.receipt_number && ` · ${e.payment.receipt_number}`}
-                  </p>
+            {ledger.map((e) => {
+              const paid = e.kind === 'payment'
+              const Icon = paid ? ArrowDownLeft : ArrowUpRight
+              return (
+                <div key={e.id} className="flex items-center gap-3 px-4 py-3 text-sm">
+                  <span
+                    className={cn(
+                      'grid size-8 shrink-0 place-items-center rounded-full',
+                      paid ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground',
+                    )}
+                    aria-hidden="true"
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{describe(e)}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {formatDate(e.date)}
+                      {e.payment?.receipt_number && (
+                        <>
+                          {' · '}
+                          <span className="figure">{e.payment.receipt_number}</span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <div className="figure shrink-0 text-right">
+                    <p className={cn('font-semibold', paid && 'text-success')}>
+                      {paid ? `−${formatKobo(e.paidKobo)}` : `+${formatKobo(e.chargeKobo)}`}
+                    </p>
+                    <p className="text-muted-foreground text-xs">Bal. {formatKobo(e.balanceKobo)}</p>
+                  </div>
                 </div>
-                <div className="shrink-0 text-right tabular-nums">
-                  <p className={e.kind === 'payment' ? 'text-success font-semibold' : 'font-semibold'}>
-                    {e.kind === 'payment' ? `−${formatKobo(e.paidKobo)}` : `+${formatKobo(e.chargeKobo)}`}
-                  </p>
-                  <p className="text-muted-foreground text-xs">Bal. {formatKobo(e.balanceKobo)}</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </Card>
-          <Button asChild variant="link" className="mt-2 px-0">
+          <Button asChild variant="link" className="px-0">
             <Link to={`/tenants/${tenantId}`}>Back to tenant</Link>
           </Button>
-        </>
+        </div>
       )}
     </>
   )

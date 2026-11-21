@@ -1,8 +1,9 @@
-import { Check, Copy, FileText, LogOut, Pencil, Phone, RefreshCw } from 'lucide-react'
+import { Check, Copy, FileText, Link2, LogOut, Pencil, Phone, RefreshCw } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { ConfirmAction } from '@/components/ConfirmAction'
 import { FormError } from '@/components/Field'
+import { Money } from '@/components/Money'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
@@ -10,9 +11,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { friendlyError } from '@/lib/errors'
-import { formatKobo } from '@/lib/money'
 import { formatNgPhone, formatPhone } from '@/lib/phone'
 import { formatDate, rentPeriodLabel, todayIso } from '@/lib/rent'
+import { cn } from '@/lib/utils'
 import { TenantCharges } from '@/features/charges/TenantCharges'
 import { TenantPayments } from '@/features/payments/TenantPayments'
 import { TenantReminders } from '@/features/payments/TenantReminders'
@@ -43,7 +44,16 @@ export function TenantDetailPage() {
     <>
       <PageHeader
         title={t?.full_name ?? 'Tenant'}
-        subtitle={t?.units ? `${t.units.label} · ${t.units.properties?.name ?? ''}` : undefined}
+        subtitle={
+          t && (
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {t.units && `${t.units.label} · ${t.units.properties?.name ?? ''}`}
+              {!active && (
+                <Badge variant="muted">Moved out {t.moved_out_at && formatDate(t.moved_out_at)}</Badge>
+              )}
+            </span>
+          )
+        }
         back={{ to: '/tenants', label: 'Tenants' }}
         action={
           t && (
@@ -62,17 +72,13 @@ export function TenantDetailPage() {
         // Phones: one column. Large screens: tenancy on the left, money on the right; "moved out" stays last.
         <div className="space-y-4 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-6 lg:space-y-0">
           <div className="space-y-4 lg:col-start-1 lg:row-start-1">
-            {!active && (
-              <Badge variant="secondary">Moved out {t.moved_out_at && formatDate(t.moved_out_at)}</Badge>
-            )}
-
             <div className="grid grid-cols-2 gap-2">
-              <Button asChild variant="secondary" className="h-11">
+              <Button asChild variant="outline" className="h-11">
                 <a href={`tel:${t.phone}`}>
-                  <Phone /> Call
+                  <Phone className="text-primary" /> Call
                 </a>
               </Button>
-              <Button asChild variant="secondary" className="h-11">
+              <Button asChild variant="outline" className="h-11">
                 <a href={`https://wa.me/${(t.whatsapp_phone ?? t.phone).replace('+', '')}`} target="_blank" rel="noreferrer">
                   <WhatsAppIcon /> WhatsApp
                 </a>
@@ -85,8 +91,14 @@ export function TenantDetailPage() {
               </CardHeader>
               <CardContent>
                 <dl className="divide-y text-sm">
-                  <Row label="Phone">{formatNgPhone(t.phone)}</Row>
-                  {t.whatsapp_phone && <Row label="WhatsApp">{formatPhone(t.whatsapp_phone)}</Row>}
+                  <Row label="Phone">
+                    <span className="figure">{formatNgPhone(t.phone)}</span>
+                  </Row>
+                  {t.whatsapp_phone && (
+                    <Row label="WhatsApp">
+                      <span className="figure">{formatPhone(t.whatsapp_phone)}</span>
+                    </Row>
+                  )}
                   <Row label="Unit">
                     {t.units && (
                       <Link to={`/properties/${t.units.property_id}`} className="text-primary hover:underline">
@@ -95,11 +107,15 @@ export function TenantDetailPage() {
                     )}
                   </Row>
                   <Row label="Rent">
-                    {formatKobo(t.rent_amount_kobo)} · {rentPeriodLabel(t.rent_period)}
+                    <Money kobo={t.rent_amount_kobo} /> · {rentPeriodLabel(t.rent_period)}
                   </Row>
                   <Row label="Started">{formatDate(t.start_date)}</Row>
                   <Row label="Paid up to">{t.paid_until ? formatDate(t.paid_until) : '—'}</Row>
-                  <Row label="Reminders">{t.reminders_enabled ? 'On' : 'Off'}</Row>
+                  <Row label="Reminders">
+                    <Badge variant={t.reminders_enabled ? 'success' : 'muted'} dot>
+                      {t.reminders_enabled ? 'On' : 'Off'}
+                    </Badge>
+                  </Row>
                 </dl>
               </CardContent>
             </Card>
@@ -107,17 +123,33 @@ export function TenantDetailPage() {
             {active && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Tenant’s payment link</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="text-primary size-4.5" /> Tenant’s payment link
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-muted-foreground text-sm">
                     The tenant opens this to see what they owe and pay online. No login needed. It’s also in every
                     reminder.
                   </p>
-                  <div className="flex gap-2">
-                    <code className={copyFailed ? 'bg-muted min-w-0 flex-1 rounded-md px-3 py-2 text-xs break-all select-all' : 'bg-muted min-w-0 flex-1 truncate rounded-md px-3 py-2 text-xs'}>{tenantLink}</code>
-                    <Button variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
+                  <div className="bg-muted flex items-center gap-1 rounded-lg p-1 pl-3">
+                    <code
+                      className={cn(
+                        'figure min-w-0 flex-1 py-1.5 text-xs',
+                        copyFailed ? 'break-all select-all' : 'truncate',
+                      )}
+                    >
+                      {tenantLink}
+                    </code>
+                    <Button
+                      variant={copied ? 'secondary' : 'outline'}
+                      size="sm"
+                      onClick={copyLink}
+                      aria-label={copied ? 'Link copied' : 'Copy link'}
+                      className="shrink-0"
+                    >
                       {copied ? <Check /> : <Copy />}
+                      <span aria-hidden="true">{copied ? 'Copied' : 'Copy'}</span>
                     </Button>
                   </div>
                   {copyFailed && <p className="text-muted-foreground text-xs">Couldn’t copy automatically. Press and hold the link to copy it.</p>}
@@ -152,7 +184,7 @@ export function TenantDetailPage() {
           </div>
 
           {active && (
-            <div className="space-y-3 border-t pt-6 lg:col-start-1 lg:row-start-2">
+            <div className="space-y-3 border-t border-dashed pt-6 lg:col-start-1 lg:row-start-2">
               <FormError message={update.error ? friendlyError(update.error) : null} />
               <ConfirmAction
                 trigger={
@@ -176,9 +208,9 @@ export function TenantDetailPage() {
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex justify-between gap-4 py-2.5">
+    <div className="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-right font-medium">{children}</dd>
+      <dd className="text-right font-semibold">{children}</dd>
     </div>
   )
 }

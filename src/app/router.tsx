@@ -113,6 +113,11 @@ export const router = createBrowserRouter([
                         ...page(pages.settings, 'SettingsPage'),
                       },
                       {
+                        path: 'profile',
+                        handle: narrow,
+                        ...page(pages.profile, 'ProfilePage'),
+                      },
+                      {
                         path: 'settings/payout',
                         handle: narrow,
                         ...page(pages.payout, 'PayoutPage'),

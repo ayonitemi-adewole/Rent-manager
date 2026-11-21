@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 
@@ -37,9 +38,16 @@ export function ConfirmAction({
   }
 
   return (
-    <div role="alertdialog" aria-label={question} className="bg-muted space-y-3 rounded-lg p-3 motion-safe:animate-enter">
-      <p className="text-sm font-medium">{question}</p>
-      <div className="flex gap-2">
+    <div
+      role="alertdialog"
+      aria-label={question}
+      className="border-destructive/20 bg-destructive/5 space-y-3 rounded-lg border p-3.5 motion-safe:animate-enter"
+    >
+      <p className="flex items-start gap-2.5 text-sm font-medium">
+        <TriangleAlert className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        {question}
+      </p>
+      <div className="flex gap-2 pl-6.5">
         <Button variant="destructive" size="sm" onClick={onConfirm} disabled={pending} autoFocus>
           {pending ? 'Working…' : confirmLabel}
         </Button>

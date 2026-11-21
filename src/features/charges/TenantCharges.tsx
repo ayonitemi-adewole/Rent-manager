@@ -1,5 +1,8 @@
+import { HandCoins } from 'lucide-react';
 import { Link } from 'react-router';
+import { Money } from '@/components/Money';
 import { QueryState } from '@/components/QueryState';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dueLabel, firstOpenCharge, isOpen } from '@/lib/charges';
@@ -8,7 +11,7 @@ import { formatDate } from '@/lib/rent';
 import { useTenantCharges } from './api';
 import { ChargeBadge } from './ChargeBadge';
 
-/** A tenant's rent periods, newest first, with what's owed on each. */
+/** A tenant's rent periods, oldest first, with what's owed on each. */
 export function TenantCharges({ tenantId }: { tenantId: string }) {
   const {
     data: charges,
@@ -33,9 +36,9 @@ export function TenantCharges({ tenantId }: { tenantId: string }) {
         <CardTitle className="flex items-center justify-between gap-2">
           Rent
           {owed > 0 && (
-            <span className="text-destructive text-sm font-semibold tabular-nums">
+            <Badge variant="danger" dot className="figure">
               {formatKobo(owed)} overdue
-            </span>
+            </Badge>
           )}
         </CardTitle>
       </CardHeader>
@@ -49,47 +52,39 @@ export function TenantCharges({ tenantId }: { tenantId: string }) {
         )}
         <ul className="divide-y">
           {sortedCharges?.map((c) => (
-            <li
-              key={c.id}
-              className="flex items-start justify-between gap-3 py-3 text-sm"
-            >
-              <div className="min-w-0">
-                <p className="font-medium">
-                  {formatDate(c.period_start)} – {formatDate(c.period_end)}
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  {c.timing === 'paid'
-                    ? `Was due ${formatDate(c.due_date)}`
-                    : dueLabel(c.days_until_due)}
-                  {c.amount_paid_kobo > 0 &&
-                    c.timing !== 'paid' &&
-                    ` · ${formatKobo(c.amount_paid_kobo)} paid`}
-                </p>
+            <li key={c.id} className="space-y-3 py-3.5 first:pt-0 last:pb-0">
+              <div className="flex items-start justify-between gap-3 text-sm">
+                <div className="min-w-0 space-y-0.5">
+                  <p className="font-semibold">
+                    {formatDate(c.period_start)} – {formatDate(c.period_end)}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {c.timing === 'paid'
+                      ? `Was due ${formatDate(c.due_date)}`
+                      : dueLabel(c.days_until_due)}
+                    {c.amount_paid_kobo > 0 &&
+                      c.timing !== 'paid' &&
+                      ` · ${formatKobo(c.amount_paid_kobo)} paid`}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <Money kobo={c.amount_kobo} className="font-semibold" />
+                  <ChargeBadge charge={c} />
+                </div>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <span className="font-semibold tabular-nums">
-                  {formatKobo(c.amount_kobo)}
-                </span>
-                <ChargeBadge charge={c} />
-                {c.id === payableId ? (
-                  <Button
-                    asChild
-                    variant="link"
-                    size="sm"
-                    className="h-auto p-0 text-xs"
-                  >
-                    <Link to={`/tenants/${tenantId}/charges/${c.id}/record`}>
-                      Record payment
-                    </Link>
-                  </Button>
-                ) : (
-                  isOpen(c) && (
-                    <span className="text-muted-foreground text-xs">
-                      After the earlier rent
-                    </span>
-                  )
-                )}
-              </div>
+              {c.id === payableId ? (
+                <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto">
+                  <Link to={`/tenants/${tenantId}/charges/${c.id}/record`}>
+                    <HandCoins /> Record payment
+                  </Link>
+                </Button>
+              ) : (
+                isOpen(c) && (
+                  <p className="text-muted-foreground text-xs">
+                    Can be recorded after the earlier rent.
+                  </p>
+                )
+              )}
             </li>
           ))}
         </ul>

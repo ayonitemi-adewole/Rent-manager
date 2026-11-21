@@ -21,6 +21,7 @@ export const pages = {
   statement: () => import('@/features/tenants/StatementPage'),
   recordPayment: () => import('@/features/payments/RecordPaymentPage'),
   settings: () => import('@/features/settings/SettingsPage'),
+  profile: () => import('@/features/landlord/ProfilePage'),
   payout: () => import('@/features/payout/PayoutPage'),
 }
 

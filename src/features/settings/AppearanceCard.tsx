@@ -28,9 +28,9 @@ export function AppearanceCard() {
             <label
               key={value}
               className={cn(
-                'text-muted-foreground flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors',
+                'text-muted-foreground flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors',
                 'has-[:focus-visible]:ring-ring/50 has-[:focus-visible]:ring-[3px]',
-                pref === value ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground',
+                pref === value ? 'bg-card text-foreground shadow-sm' : 'hover:text-foreground',
               )}
             >
               <input

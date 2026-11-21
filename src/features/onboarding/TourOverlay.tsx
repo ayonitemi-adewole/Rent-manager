@@ -114,10 +114,12 @@ export function TourOverlay({ onClose }: { onClose: () => void }) {
         <div
           role="dialog"
           aria-labelledby="tour-title"
-          className="bg-card text-card-foreground w-full max-w-sm space-y-3 rounded-xl border p-5 text-center shadow-xl"
+          className="bg-card text-card-foreground shadow-float w-full max-w-sm space-y-3 rounded-2xl border p-6 text-center motion-safe:animate-enter"
         >
-          <PartyPopper className="text-primary mx-auto size-8" />
-          <h2 id="tour-title" className="text-lg font-semibold">
+          <span className="bg-secondary text-primary mx-auto grid size-14 -rotate-6 place-items-center rounded-2xl">
+            <PartyPopper className="size-7 rotate-6" />
+          </span>
+          <h2 id="tour-title" className="text-lg font-bold">
             You’re all set
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -153,7 +155,7 @@ export function TourOverlay({ onClose }: { onClose: () => void }) {
         <>
           <div
             aria-hidden
-            className="tour-spotlight ring-primary pointer-events-none fixed z-[60] rounded-xl ring-2"
+            className="tour-spotlight ring-gold pointer-events-none fixed z-[60] rounded-xl ring-[3px]"
             style={{ top: hole.top, left: hole.left, width: hole.width, height: hole.height }}
           />
           {blockers.map((style, i) => (
@@ -169,7 +171,7 @@ export function TourOverlay({ onClose }: { onClose: () => void }) {
         aria-labelledby="tour-title"
         aria-describedby="tour-body"
         className={cn(
-          'bg-card text-card-foreground fixed z-[61] rounded-xl border p-4 shadow-xl',
+          'bg-card text-card-foreground shadow-float fixed z-[61] rounded-2xl border p-4',
           nudge > 0 && 'tour-nudge',
         )}
         style={{ top: card.top, bottom: card.bottom, left: card.left, width: card.width }}
@@ -186,10 +188,10 @@ export function TourOverlay({ onClose }: { onClose: () => void }) {
         )}
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1 space-y-1" aria-live="polite">
-            <p className="text-primary text-xs font-semibold">
+            <p className="text-primary text-xs font-bold">
               Step {taskIndex + 1} of {total}
             </p>
-            <h2 id="tour-title" className="font-semibold">
+            <h2 id="tour-title" className="font-bold">
               {s.title}
             </h2>
             <p id="tour-body" className="text-muted-foreground text-sm">

@@ -1,7 +1,8 @@
-import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, FlaskConical, Loader2, ShieldCheck } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Field, FormError } from '@/components/Field'
+import { Callout } from '@/components/Callout'
+import { Field, FormError, FormSection } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
@@ -44,19 +45,16 @@ export function PayoutPage() {
         back={{ to: '/settings', label: 'Settings' }}
       />
 
-      <div className="bg-secondary text-secondary-foreground mb-5 flex gap-3 rounded-lg p-3 text-sm">
-        <ShieldCheck className="mt-0.5 size-5 shrink-0" />
-        <p>
-          Rent goes straight from your tenant to this account through Paystack. Paystack’s fee comes out of each
-          payment; tenants pay exactly the rent. RentPadi never holds your money.
-        </p>
-      </div>
+      <Callout icon={ShieldCheck} title="RentPadi never holds your money" className="mb-4">
+        Rent goes straight from your tenant to this account through Paystack. Paystack’s fee comes out of each
+        payment; tenants pay exactly the rent.
+      </Callout>
 
       {env.paystackPublicKey?.startsWith('pk_test_') && (
-        <p className="text-muted-foreground mb-4 rounded-lg border border-dashed p-3 text-xs">
+        <Callout tone="info" icon={FlaskConical} className="mb-4 text-xs">
           <strong>Test mode:</strong> no real money moves. Paystack still checks the account name with the bank,
           and limits how many lookups a test account can make each day.
-        </p>
+        </Callout>
       )}
 
       <QueryState isPending={banks.isPending} error={banks.error} refetch={banks.refetch} />
@@ -75,38 +73,40 @@ export function PayoutPage() {
             )
           }}
         >
-          <Field id="bank" label="Bank">
-            <NativeSelect id="bank" value={bankCode} onChange={(e) => setBankCode(e.target.value)}>
-              <option value="">Choose your bank…</option>
-              <optgroup label="Popular">
-                {popular.map((b) => (
-                  <option key={`${b.code}-${b.name}`} value={b.code}>
-                    {b.name}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="All banks">
-                {others.map((b) => (
-                  <option key={`${b.code}-${b.name}`} value={b.code}>
-                    {b.name}
-                  </option>
-                ))}
-              </optgroup>
-            </NativeSelect>
-          </Field>
+          <FormSection>
+            <Field id="bank" label="Bank">
+              <NativeSelect id="bank" value={bankCode} onChange={(e) => setBankCode(e.target.value)}>
+                <option value="">Choose your bank…</option>
+                <optgroup label="Popular">
+                  {popular.map((b) => (
+                    <option key={`${b.code}-${b.name}`} value={b.code}>
+                      {b.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="All banks">
+                  {others.map((b) => (
+                    <option key={`${b.code}-${b.name}`} value={b.code}>
+                      {b.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </NativeSelect>
+            </Field>
 
-          <Field id="accountNumber" label="Account number">
-            <Input
-              id="accountNumber"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={10}
-              placeholder="0123456789"
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
-              className="h-12 text-base tracking-wider"
-            />
-          </Field>
+            <Field id="accountNumber" label="Account number">
+              <Input
+                id="accountNumber"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={10}
+                placeholder="0123456789"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
+                className="figure h-12 text-lg tracking-[0.15em] md:text-lg"
+              />
+            </Field>
+          </FormSection>
 
           {resolved.isFetching && (
             <p className="text-muted-foreground flex items-center gap-2 text-sm">
@@ -114,13 +114,9 @@ export function PayoutPage() {
             </p>
           )}
           {resolved.data && !resolved.isFetching && (
-            <div className="border-success/30 bg-success/10 flex items-start gap-3 rounded-lg border p-3">
-              <CheckCircle2 className="text-success mt-0.5 size-5 shrink-0" />
-              <div>
-                <p className="font-semibold">{resolved.data.account_name}</p>
-                <p className="text-muted-foreground text-xs">Is this your account? Rent will be paid to this name.</p>
-              </div>
-            </div>
+            <Callout tone="success" icon={CheckCircle2} title={resolved.data.account_name} className="motion-safe:animate-enter">
+              Is this your account? Rent will be paid to this name.
+            </Callout>
           )}
           <FormError message={resolved.error ? friendlyError(resolved.error) : null} />
           <FormError message={save.error ? friendlyError(save.error) : null} />

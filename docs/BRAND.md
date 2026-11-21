@@ -12,9 +12,9 @@ The mark is **an open palm receiving a naira coin**: rent arriving, in the landl
 | **Naira Gold** | `#F4B23E` | The coin (ring `#D8901C`) |
 | **Deep Green** | `#0A3A24` | The cuff on light backgrounds; text on cream |
 | **Mint** | `#8CC5A5` | The cuff on green or dark backgrounds |
-| **Cream** | `#F6F4EE` | Light backgrounds (link previews, the app's install splash) |
+| **Cream** | `#F6F4EE` | Light backgrounds: the app's page colour (cards sit on it in white), link previews, the install splash |
 
-In the app these are CSS variables in `src/index.css` (`--primary` is Padi Green in light mode; `--logo-*` switch the logo for dark mode) and constants in `src/components/brand-mark.ts`.
+In the app these are CSS variables in `src/index.css` (`--primary` is Padi Green in light mode; `--gold` is Naira Gold, used for the call to action on green surfaces; `--sidebar` is the green navigation rail; `--logo-*` switch the logo for dark mode) and constants in `src/components/brand-mark.ts`.
 
 Status colours stay separate from the brand: green = paid, amber = due, red = overdue.
 
@@ -22,6 +22,7 @@ Status colours stay separate from the brand: green = paid, amber = due, red = ov
 
 - **Logo:** Plus Jakarta Sans. *Rent* in Medium (500), *Padi* in ExtraBold (800), tracking −2.5%. The app loads only the letters of "RentPadi" from Google Fonts (`&text=RentPadi`), a few kilobytes.
 - **Everything else:** Inter.
+- **Amounts:** the `Money` component (`src/components/Money.tsx`) sets the ₦ a little smaller than the figure, so the number reads first.
 
 ## The mark at different sizes
 
