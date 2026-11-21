@@ -1,4 +1,4 @@
-// The 6-digit code a landlord enters before changing their payout account.
+// The 6-digit code a landlord enters before saving a payout account (the first one or a new one).
 // Issued and checked by public.issue_payout_code / check_payout_code
 // (migration 20261202090000_payout_codes.sql); sent with the login_code WhatsApp template.
 

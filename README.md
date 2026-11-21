@@ -49,7 +49,7 @@ Each landlord gets a Paystack **subaccount** with a 0% split to RentPadi, so ren
    `APP_URL` is where Paystack sends tenants back after paying. Change it to the Vercel URL when you deploy.
 4. Put the public key in `.env.local` as `VITE_PAYSTACK_PUBLIC_KEY=pk_test_...`. The app only uses it to show test-mode hints.
 5. In the app: go to **Settings → Payout account**, choose a bank and enter an account number. Paystack looks up the account name; test mode allows only **3 lookups a day**.
-   Changing an account that's already saved needs a 6-digit code sent to the landlord's WhatsApp (the `login_code` template; demo mode puts it in `dev_sms_outbox`). It expires after 10 minutes and allows 5 tries; one code a minute, 5 a day.
+   Saving an account, the first one or a replacement, needs a 6-digit code sent to the landlord's WhatsApp (the `login_code` template; demo mode puts it in `dev_sms_outbox`). It expires after 10 minutes and allows 5 tries; one code a minute, 5 a day. Re-confirming the account already saved doesn't.
    > Ran out? `npx supabase secrets set PAYSTACK_TEST_SKIP_LOOKUP=true` skips the lookup and saves the account as **"TEST MODE: NAME NOT CHECKED"**. It only works with a test key (`sk_test_…`); with a live key the account is always looked up. Paystack may still check the account when it creates the subaccount. Turn it off with `npx supabase secrets unset PAYSTACK_TEST_SKIP_LOOKUP`.
 6. Open a tenant, copy their payment link, open it, and tap **Pay**. Use one of Paystack's [test cards](https://paystack.com/docs/payments/test-payments/).
 7. Back in the app, the tenant's charge shows **Paid**.
