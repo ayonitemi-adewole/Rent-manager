@@ -149,7 +149,7 @@ export function AppLayout() {
           home indicator, which is ~13px tall): 34px inset → 22px gap. 8px on phones with no inset. */}
       <nav
         aria-label="Main"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.5rem,calc(env(safe-area-inset-bottom)-0.75rem))] lg:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(1rem,calc(env(safe-area-inset-bottom)-1rem))] lg:hidden"
       >
         <ul className="bg-card/95 shadow-float pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-center rounded-4xl border p-1.5 backdrop-blur-md">
           <TabItem item={nav[0]} />
