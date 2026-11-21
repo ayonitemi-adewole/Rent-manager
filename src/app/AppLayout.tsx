@@ -39,10 +39,38 @@ type NavItem = {
 };
 
 const nav: NavItem[] = [
-  { to: '/', label: 'Dashboard', short: 'Home', icon: LayoutDashboard, end: true, tour: 'nav-dashboard' },
-  { to: '/properties', label: 'Properties', short: 'Properties', icon: Building2, end: false, tour: 'nav-properties' },
-  { to: '/tenants', label: 'Tenants', short: 'Tenants', icon: Users, end: false, tour: 'nav-tenants' },
-  { to: '/settings', label: 'Settings', short: 'Settings', icon: Settings, end: false, tour: 'nav-settings' },
+  {
+    to: '/',
+    label: 'Dashboard',
+    short: 'Home',
+    icon: LayoutDashboard,
+    end: true,
+    tour: 'nav-dashboard',
+  },
+  {
+    to: '/properties',
+    label: 'Properties',
+    short: 'Properties',
+    icon: Building2,
+    end: false,
+    tour: 'nav-properties',
+  },
+  {
+    to: '/tenants',
+    label: 'Tenants',
+    short: 'Tenants',
+    icon: Users,
+    end: false,
+    tour: 'nav-tenants',
+  },
+  {
+    to: '/settings',
+    label: 'Settings',
+    short: 'Settings',
+    icon: Settings,
+    end: false,
+    tour: 'nav-settings',
+  },
 ];
 
 /** Content width on large screens: forms stay a comfortable reading width, lists and the dashboard spread out. */
@@ -102,7 +130,10 @@ export function AppLayout() {
         </header>
 
         {/* Only the page pulls down to refresh: the header above and the tab bar below stay put. */}
-        <PullToRefresh className="flex flex-1 flex-col" contentClassName="flex flex-1 flex-col">
+        <PullToRefresh
+          className="flex flex-1 flex-col"
+          contentClassName="flex flex-1 flex-col"
+        >
           <main className="flex-1 px-4 pt-5 pb-[calc(env(safe-area-inset-bottom)+7rem)] lg:px-10 lg:pt-10 lg:pb-12">
             <div className={cn('mx-auto max-w-2xl', WIDTH[width])}>
               {/* Keyed by page, so each new page fades in (shows that the tap did something). */}
@@ -114,11 +145,13 @@ export function AppLayout() {
         </PullToRefresh>
       </div>
 
+      {/* The bar floats, so it can sit inside the phone's bottom safe area (it only has to clear the
+          home indicator, which is ~13px tall): 34px inset → 22px gap. 8px on phones with no inset. */}
       <nav
         aria-label="Main"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[calc(env(safe-area-inset-bottom)+0.625rem)] lg:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.5rem,calc(env(safe-area-inset-bottom)-0.75rem))] lg:hidden"
       >
-        <ul className="bg-card/95 shadow-float pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-center rounded-2xl border p-1.5 backdrop-blur-md">
+        <ul className="bg-card/95 shadow-float pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-center rounded-4xl border p-1.5 backdrop-blur-md">
           <TabItem item={nav[0]} />
           <TabItem item={nav[1]} />
           <li className="flex justify-center">
@@ -132,7 +165,11 @@ export function AppLayout() {
   );
 }
 
-function TabItem({ item: { to, short, icon: Icon, end, tour } }: { item: NavItem }) {
+function TabItem({
+  item: { to, short, icon: Icon, end, tour },
+}: {
+  item: NavItem;
+}) {
   return (
     <li>
       <NavLink
@@ -146,12 +183,18 @@ function TabItem({ item: { to, short, icon: Icon, end, tour } }: { item: NavItem
             <span
               className={cn(
                 'grid h-7 w-12 place-items-center rounded-full transition-colors',
-                isActive ? 'bg-secondary text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                isActive
+                  ? 'bg-secondary text-primary'
+                  : 'text-muted-foreground group-hover:text-foreground'
               )}
             >
               <Icon className="size-5" />
             </span>
-            <span className={isActive ? 'text-foreground' : 'text-muted-foreground'}>{short}</span>
+            <span
+              className={isActive ? 'text-foreground' : 'text-muted-foreground'}
+            >
+              {short}
+            </span>
           </>
         )}
       </NavLink>
@@ -201,7 +244,10 @@ function QuickAdd() {
         className="bg-primary text-primary-foreground focus-visible:ring-ring/50 grid size-12 place-items-center rounded-xl shadow-[inset_0_1px_0_rgb(255_255_255/0.15),0_6px_16px_-6px_oklch(0.3_0.08_157/0.6)] transition-transform outline-none focus-visible:ring-[3px] motion-safe:active:scale-95"
       >
         <Plus
-          className={cn('size-6 transition-transform motion-reduce:transition-none', open && 'rotate-45')}
+          className={cn(
+            'size-6 transition-transform motion-reduce:transition-none',
+            open && 'rotate-45'
+          )}
           strokeWidth={2.5}
         />
       </button>
@@ -210,8 +256,20 @@ function QuickAdd() {
           id={listId}
           className="bg-popover text-popover-foreground shadow-float absolute bottom-full left-1/2 mb-4 w-64 -translate-x-1/2 rounded-xl border p-1.5 motion-safe:animate-enter"
         >
-          <QuickAddItem to="/tenants/new" icon={UserPlus} title="Add tenant" description="Someone renting a vacant unit" onPick={close} />
-          <QuickAddItem to="/properties/new" icon={Building2} title="Add property" description="A building or compound" onPick={close} />
+          <QuickAddItem
+            to="/tenants/new"
+            icon={UserPlus}
+            title="Add tenant"
+            description="Someone renting a vacant unit"
+            onPick={close}
+          />
+          <QuickAddItem
+            to="/properties/new"
+            icon={Building2}
+            title="Add property"
+            description="A building or compound"
+            onPick={close}
+          />
         </ul>
       )}
     </div>
@@ -243,7 +301,9 @@ function QuickAddItem({
         </span>
         <span className="min-w-0">
           <span className="block font-semibold">{title}</span>
-          <span className="text-muted-foreground block text-xs">{description}</span>
+          <span className="text-muted-foreground block text-xs">
+            {description}
+          </span>
         </span>
       </Link>
     </li>
@@ -282,7 +342,10 @@ function Sidebar() {
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <span aria-hidden="true" className="bg-gold absolute top-1/2 -left-3 h-6 w-1 -translate-y-1/2 rounded-r-full" />
+                      <span
+                        aria-hidden="true"
+                        className="bg-gold absolute top-1/2 -left-3 h-6 w-1 -translate-y-1/2 rounded-r-full"
+                      />
                     )}
                     <Icon className="size-4.5" />
                     {label}
@@ -313,7 +376,9 @@ function Sidebar() {
         >
           <Avatar name={name ?? ''} size="sm" className="size-9" />
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-white">{name}</span>
+            <span className="block truncate text-sm font-semibold text-white">
+              {name}
+            </span>
             <span className="figure block truncate text-xs text-white/60">
               {formatNgPhone(landlord.phone)}
             </span>
