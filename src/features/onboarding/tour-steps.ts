@@ -133,7 +133,7 @@ export const SETUP_TASKS: SetupTask[] = [
         step: {
           target: 'payout-form',
           title: 'Where should rent go?',
-          body: 'Choose your bank and enter your account number. Online payments go straight there.',
+          body: 'Choose your bank and enter your account number, then confirm with the code we send to your WhatsApp. Online payments go straight there.',
           pinned: true,
         },
       },

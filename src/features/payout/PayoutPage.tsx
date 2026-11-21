@@ -1,7 +1,7 @@
 import { CheckCircle2, FlaskConical, Loader2, MessageSquareLock, ShieldCheck } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { isPayoutChange } from '@shared/payout-change.ts'
+import { needsPayoutCode } from '@shared/payout-change.ts'
 import { Callout } from '@/components/Callout'
 import { Field, FormError, FormSection } from '@/components/Field'
 import { PageHeader } from '@/components/PageHeader'
@@ -51,12 +51,14 @@ export function PayoutPage() {
     bankCode === landlord?.bank_code &&
     accountNumber === landlord?.account_number
 
-  // Replacing the account on file needs a code from the landlord's WhatsApp; the server checks it too.
-  const changing = isPayoutChange(landlord, bankCode, accountNumber)
+  // Saving a new account (the first, or a replacement) needs a code from the landlord's WhatsApp;
+  // the server checks it too.
+  const needsCode = needsPayoutCode(landlord, bankCode, accountNumber)
+  const replacing = Boolean(landlord?.account_number)
   // A code approves one account: once the bank or number is edited, a new code is needed.
   const sent = sendCode.data
   const codeStep =
-    changing &&
+    needsCode &&
     sendCode.isSuccess &&
     sent?.needed === true &&
     sendCode.variables.bankCode === bankCode &&
@@ -89,7 +91,7 @@ export function PayoutPage() {
     ? 'Saving…'
     : codeStep
       ? 'Confirm and save'
-      : changing
+      : needsCode
         ? sendCode.isPending
           ? 'Sending code…'
           : 'Send code to my WhatsApp'
@@ -125,8 +127,8 @@ export function PayoutPage() {
           onSubmit={(e) => {
             e.preventDefault()
             if (!resolved.data || busy) return
-            if (changing && !codeStep) return requestCode()
-            saveAccount(changing ? code : undefined)
+            if (needsCode && !codeStep) return requestCode()
+            saveAccount(needsCode ? code : undefined)
           }}
         >
           <FormSection>
@@ -175,10 +177,10 @@ export function PayoutPage() {
             </Callout>
           )}
 
-          {changing && resolved.data && !resolved.isFetching && !codeStep && (
+          {needsCode && resolved.data && !resolved.isFetching && !codeStep && (
             <Callout tone="info" icon={MessageSquareLock} className="motion-safe:animate-enter">
-              You’re changing where rent is paid. To keep your money safe, we’ll send a code to your WhatsApp to
-              confirm it’s you.
+              {replacing ? 'You’re changing where rent is paid. ' : ''}To keep your money safe, we’ll send a code to
+              your WhatsApp to confirm it’s you.
             </Callout>
           )}
 

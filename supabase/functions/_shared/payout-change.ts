@@ -4,11 +4,11 @@
 type OnFile = { bank_code: string | null; account_number: string | null }
 
 /**
- * True when saving would replace a payout account already on file: that needs a code sent to the
- * landlord's WhatsApp. Setting one up for the first time, or re-confirming the same account (e.g.
- * after the move to Paystack), doesn't.
+ * True when saving this account needs a code sent to the landlord's WhatsApp: setting one up for
+ * the first time, or replacing the one on file. Re-confirming the account already on file (e.g.
+ * after the move to Paystack) doesn't, as where rent goes stays the same.
  */
-export function isPayoutChange(onFile: OnFile | null | undefined, bankCode: string, accountNumber: string): boolean {
-  if (!onFile?.account_number) return false
+export function needsPayoutCode(onFile: OnFile | null | undefined, bankCode: string, accountNumber: string): boolean {
+  if (!onFile?.account_number) return true
   return onFile.bank_code !== bankCode || onFile.account_number !== accountNumber
 }

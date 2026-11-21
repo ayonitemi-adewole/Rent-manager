@@ -4,14 +4,14 @@
 //   | { action: 'send_code', bank_code, account_number }                           → { needed, sent_to?, phone_last4? }
 //   | { action: 'save', bank_code, account_number, account_name?, lookup?, code? } → { account_name, bank_name }
 //
-// Replacing an account already on file needs the 6-digit code that send_code sends to the
-// landlord's WhatsApp (migration 20261202090000_payout_codes.sql). Setting one up for the first
-// time, or re-confirming the same account, doesn't (_shared/payout-change.ts).
+// Saving an account, the first one or a replacement, needs the 6-digit code that send_code sends
+// to the landlord's WhatsApp (migration 20261202090000_payout_codes.sql). Re-confirming the account
+// already on file doesn't (_shared/payout-change.ts).
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.119.0'
 import { handler, json, readJson, requireEnv, UserError } from '../_shared/http.ts'
 import { signLookup, verifyLookup } from '../_shared/lookup-proof.ts'
 import { reportError } from '../_shared/monitoring.ts'
-import { isPayoutChange } from '../_shared/payout-change.ts'
+import { needsPayoutCode } from '../_shared/payout-change.ts'
 import {
   CHECK_MESSAGE,
   hashCode,
@@ -117,11 +117,11 @@ Deno.serve(
 
     const secret = requireEnv('PAYSTACK_SECRET_KEY')
     const codeFor: CodeFor = { userId: user.id, bankCode, accountNumber }
-    const changing = isPayoutChange(landlord, bankCode, accountNumber)
+    const needsCode = needsPayoutCode(landlord, bankCode, accountNumber)
 
     if (body.action === 'send_code') {
       if (!landlord) throw new UserError('Finish setting up your profile first.')
-      if (!changing) return json({ needed: false })
+      if (!needsCode) return json({ needed: false })
       const code = newCode()
       const { data: issued, error: issueError } = await admin.rpc('issue_payout_code', {
         p_landlord_id: landlord.id,
@@ -138,7 +138,7 @@ Deno.serve(
     }
 
     // Checked before any Paystack call: no lookup or subaccount change without the code.
-    if (body.action === 'save' && landlord && changing) {
+    if (body.action === 'save' && landlord && needsCode) {
       await requireCode(admin, secret, landlord.id, codeFor, body.code)
     }
 
@@ -201,7 +201,7 @@ Deno.serve(
 
     // A code works once. Marked only now, so a Paystack hiccup above doesn't use it up. The account
     // is already saved by here, so a failure is reported rather than shown to the landlord.
-    if (changing) {
+    if (needsCode) {
       const { error: usedError } = await admin
         .from('payout_codes')
         .update({ used_at: new Date().toISOString() })

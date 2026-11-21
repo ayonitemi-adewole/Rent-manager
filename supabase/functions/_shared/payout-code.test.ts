@@ -1,5 +1,5 @@
 import { assertEquals, assertMatch, assertNotEquals } from 'jsr:@std/assert@1.0.13'
-import { isPayoutChange } from './payout-change.ts'
+import { needsPayoutCode } from './payout-change.ts'
 import { hashCode, newCode } from './payout-code.ts'
 
 /** A stand-in random source that hands out the given values in order. */
@@ -34,11 +34,11 @@ Deno.test('hashCode: same inputs, same hash; any change, a different hash', asyn
   assertNotEquals(await hashCode('secret', { ...forA, accountNumber: '9876543210' }, '123456'), base)
 })
 
-Deno.test('isPayoutChange: only replacing an account on file needs a code', () => {
+Deno.test('needsPayoutCode: every new account needs a code; re-confirming the one on file does not', () => {
   const onFile = { bank_code: '058', account_number: '0123456789' }
-  assertEquals(isPayoutChange(null, '058', '0123456789'), false, 'no profile yet')
-  assertEquals(isPayoutChange({ bank_code: null, account_number: null }, '058', '0123456789'), false, 'first setup')
-  assertEquals(isPayoutChange(onFile, '058', '0123456789'), false, 'same account (confirming it)')
-  assertEquals(isPayoutChange(onFile, '044', '0123456789'), true, 'other bank')
-  assertEquals(isPayoutChange(onFile, '058', '9876543210'), true, 'other account number')
+  assertEquals(needsPayoutCode(null, '058', '0123456789'), true, 'no profile row yet')
+  assertEquals(needsPayoutCode({ bank_code: null, account_number: null }, '058', '0123456789'), true, 'first setup')
+  assertEquals(needsPayoutCode(onFile, '058', '0123456789'), false, 'same account (confirming it)')
+  assertEquals(needsPayoutCode(onFile, '044', '0123456789'), true, 'other bank')
+  assertEquals(needsPayoutCode(onFile, '058', '9876543210'), true, 'other account number')
 })
