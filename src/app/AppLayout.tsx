@@ -18,6 +18,7 @@ import {
 } from 'react-router';
 import { Avatar } from '@/components/Avatar';
 import { Logo } from '@/components/Logo';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { useLandlord } from '@/features/landlord/api';
 import { TourProvider } from '@/features/onboarding/TourProvider';
@@ -100,14 +101,17 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="flex-1 px-4 pt-5 pb-[calc(env(safe-area-inset-bottom)+7rem)] lg:px-10 lg:pt-10 lg:pb-12">
-          <div className={cn('mx-auto max-w-2xl', WIDTH[width])}>
-            {/* Keyed by page, so each new page fades in (shows that the tap did something). */}
-            <div key={pathname} className="motion-safe:animate-enter">
-              <Outlet />
+        {/* Only the page pulls down to refresh: the header above and the tab bar below stay put. */}
+        <PullToRefresh className="flex flex-1 flex-col" contentClassName="flex flex-1 flex-col">
+          <main className="flex-1 px-4 pt-5 pb-[calc(env(safe-area-inset-bottom)+7rem)] lg:px-10 lg:pt-10 lg:pb-12">
+            <div className={cn('mx-auto max-w-2xl', WIDTH[width])}>
+              {/* Keyed by page, so each new page fades in (shows that the tap did something). */}
+              <div key={pathname} className="motion-safe:animate-enter">
+                <Outlet />
+              </div>
             </div>
-          </div>
-        </main>
+          </main>
+        </PullToRefresh>
       </div>
 
       <nav

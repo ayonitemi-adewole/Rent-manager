@@ -199,6 +199,12 @@
   animation-duration: 0.25s;
 }
 
+/* Pull to refresh (components/PullToRefresh.tsx) replaces the browser's own: no reload or bounce
+   when pulling down at the top of the page. Only while a page with it is open. */
+html.pull-to-refresh {
+  overscroll-behavior-y: none;
+}
+
 /* Thin bar at the top while the next page downloads. */
 @keyframes page-progress {
   0% { transform: translateX(-100%); }
